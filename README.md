@@ -138,3 +138,21 @@ using Filtered = filter<List, std::is_floating_point>; // type_list<double>
 
 ### **总结**
 该库提供了一套编译时类型列表操作工具，涵盖常见函数式编程操作，但需注意潜在实现问题。适用于需要反射或复杂类型操作的场景，如序列化、依赖注入等。
+
+---
+
+### **反射代码体积优化（按需注册）**
+
+- 对象成员反射元数据已切换为更轻量的纯数据结构（`_ptr + _name`），默认减少模板实例与生成代码体积。
+- 默认行为保持兼容：未定义 `ENABLE_REFLECT_SKIP` 时，`RFS_OBJ_MEM(...)` 仍会自动注册。
+- 定义 `ENABLE_REFLECT_SKIP` 后，`RFS_OBJ_MEM(...)` 默认不注册（跳过全部），需使用 `RFS_OBJ_REG(...)`/`RFS_OBJ_REG_TEM(...)` 手动注册。
+- 若希望在 `ENABLE_REFLECT_SKIP` 模式下恢复“默认注册”，可定义 `RELECT_DEFAULT_REGISTER`（兼容拼写）或 `REFLECT_DEFAULT_REGISTER`。
+
+示例：
+
+```cpp
+RFS_OBJ_BEGIN(MyType)
+  RFS_OBJ_MEM(field_a)   // 在 ENABLE_REFLECT_SKIP 下默认跳过
+  RFS_OBJ_REG(field_b)   // 显式注册
+RFS_OBJ_END()
+```

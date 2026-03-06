@@ -242,10 +242,7 @@ RFS_OBJ_BEGIN(Person)
     // static constexpr auto _isFemale =
     //     SRefl ::field_traits<decltype(&class_t::isFemale)>{
     //         &class_t ::isFemale, "isFemale"};
-    // RFS_OBJ_MEM_TEM(getFemale, _template_getFamle)
-    static constexpr auto _getFemale =
-        SRefl::field_traits<decltype(&class_t ::getFemale), class_t, _template_getFamle>{
-            &class_t ::getFemale, "getFemale"};
+    RFS_OBJ_MEM_TEM(getFemale, _template_getFamle)
 RFS_OBJ_END()
 
 RFS_ENUM_BEGIN(Color)

@@ -32,6 +32,25 @@ using cv_combinations_t = typename cv_combinations<T>::type;
 template<typename T>
 using ref_combinations_t = typename ref_combinations<T>::type;
 
+// template<typename PtrT> struct compact_field_meta {
+//     using pointer_type = PtrT;
+//     pointer_type _ptr;
+//     std::string_view _name;
+
+//     [[nodiscard]] constexpr std::string_view getName() const noexcept {
+//         return _name;
+//     }
+//     [[nodiscard]] constexpr std::string_view from_TempName() const noexcept {
+//         return _name;
+//     }
+// };
+
+// template<typename PtrT>
+// [[nodiscard]] constexpr auto make_compact_field_meta(
+//     PtrT ptr, std::string_view name) noexcept {
+//     return compact_field_meta<PtrT>{ptr, name};
+// }
+
 #if !TEMPLATE_STRING_SUPPORTED
 constexpr std::string_view strip_prefix(
     std::string_view name, std::string_view prefix = "&class_t::") noexcept {
