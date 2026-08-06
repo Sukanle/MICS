@@ -1,3 +1,7 @@
 **test
-**cpython**
-**.vscode**
+**.vscode
+**variants
+**build
+__pycache__/
+**cache/
+CMakePresets.json

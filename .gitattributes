@@ -1,0 +1,29 @@
+* text=auto
+
+*.json text eol=lf
+*.xml text eol=lf
+*.md text eol=lf
+*.h text eol=lf
+*.hpp text eol=lf
+*.c text eol=lf
+*.cpp text eol=lf
+*.py text eol=lf
+*.qrc text eol=lf
+*.git* text eol=lf
+*.ps1 text eol=lf
+*.sh text eol=lf
+*.clang* text eol=lf
+CMake* text eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.svg binary
+*.ico binary
+*.rcc binary
+*.qm binary
+*.ttf binary
