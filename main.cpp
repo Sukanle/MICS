@@ -1,284 +1,515 @@
-#include "reflect.hpp"   // IWYU pragma: keep
+/*
+ * Copyright 2026 Sukanle(https://github.com/Sukanle)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// =============================================================================
+// Reflect Library — Catch2 Test Suite
+// =============================================================================
+// Covers:
+//   - Static class reflection (fields, methods, custom template names)
+//   - Static enum reflection (scoped & unscoped)
+//   - Dynamic class reflection (SKL_RFD_CLASS / SKL_RFD_PROPERTY / SKL_RFD_METHOD)
+//   - Dynamic enum reflection (SKL_RFD_ENUM_BEGIN / SKL_RFD_ENUM_VALUE)
+// =============================================================================
+
+#include "reflect.h"
+
+#include <cstdio>
 #include <string>
-#include <vector>
+#include <string_view>
 
-class Person final {
+#include <catch2/catch_test_macros.hpp>
+
+// =============================================================================
+// Test Types
+// =============================================================================
+
+class Player {
 public:
-    std::string family;
-    bool isFemale = false;
-    // NOLINTNEXTLINE
-    void IntroduceMyself() const volatile&& noexcept {
-        puts("This is IntroduceMyself().");
+    std::string name{"Unknown"};
+    int health{100};
+    int mana{50};
+
+    void heal(int amount) {
+        health += amount;
+        std::printf("    [Player::heal] +%d health -> %d\n", amount, health);
     }
-    [[nodiscard]] bool getFemale() const {
-        puts("This is isFemale().");
-        return isFemale;
+
+    [[nodiscard]] bool isAlive() const { return health > 0; }
+
+    void takeDamage(int amount) {
+        health -= amount;
+        if (health < 0) health = 0;
+        std::printf("    [Player::takeDamage] -%d health -> %d\n", amount, health);
     }
-    bool getMarried(Person& other) {
-        bool success = other.isFemale != isFemale;
-        family = (success) ? " Mrs." + other.family : "Mr." + other.family;
-        puts("Married!");
-        return success;
-    }
-};
-enum Color : uint8_t {
-    red,
-    blue,
-    green,
-};
-enum class Permission : uint8_t {
-    read = 1,
-    write = 2,
-    excute = 4,
-    all = 7,
 };
 
-namespace reflect::Dynamic {
-namespace factory {
-template<typename T> class Enum;
-}   // namespace factory
-class Numberic;
-class Type {
+class Weapon {
 public:
-    static std::map<std::string_view, const Type*> list;
-
-    enum class Kind : uint8_t { Numberic, Enum, Class, Unkown };
-    virtual ~Type() = default;
-    explicit Type(Kind kind, std::string_view name)
-        : _kind(kind)
-        , _name{name} {}
-    [[nodiscard]] const std::string& getName() const { return _name; }
-    [[nodiscard]] const Kind& getKind() const { return _kind; }
-#if __cpp_concepts
-    template<typename T>
-        requires std::is_base_of_v<Type, T>
-#else
-    template<typename T,
-             typename = std::enable_if_t<std::is_base_of_v<Type, T>>>
-#endif
-    [[nodiscard]] const T* as() const {
-        return static_cast<const T*>(this);
-    }
-
-private:
-    template<typename T> friend class factory::Enum;
-    Kind _kind;
-    std::string _name;
+    std::string name{"Fists"};
+    int damage{5};
+    float weight{1.0f};
 };
-class Numberic final : public Type {
-public:
-    enum class Kind : uint8_t {
-        Unknown = 0,
-        Int8 = 1,
-        Int16 = 2,
-        Int32 = 4,
-        Int64 = 8,
-        Float = 16,
-        Double = 32,
-        Long_Double = 64
-    };
-    Numberic(Kind kind, bool is_signed)
-        : Type{Type::Kind::Numberic, to_string(kind)}
-        , _kind{kind}
-        , _is_signed(is_signed) {
-        Type::list[getName()] = static_cast<Type*>(this);
+
+enum Fruit : uint8_t {
+    APPLE,
+    BANANA,
+    ORANGE,
+    GRAPE,
+};
+
+enum class Direction : uint8_t {
+    NORTH = 0,
+    SOUTH = 1,
+    EAST = 2,
+    WEST = 3,
+};
+
+// =============================================================================
+// Register type hashes for dynamic reflection (REQUIRED by static_assert)
+// =============================================================================
+
+STATIC_TYPE_TAG(Player, "Player");
+STATIC_TYPE_TAG(Weapon, "Weapon");
+STATIC_TYPE_TAG(Fruit, "Fruit");
+STATIC_TYPE_TAG(Direction, "Direction");
+
+// =============================================================================
+// Custom template names for SKL_RFS_PROPERTY's optional second parameter
+// =============================================================================
+
+constexpr const char _TMPL_health[]{"Health"};
+constexpr const char _TMPL_mana[]{"Mana"};
+constexpr const char _TMPL_isAlive[]{"IsAlive"};
+
+// =============================================================================
+// Static Reflection Registration
+// =============================================================================
+
+// --- Player: mix of default-name and custom-name properties ---
+SKL_RFS_REGISTER_BEGIN(Player)
+SKL_RFS_PROPERTY(name)                     // default template name
+SKL_RFS_PROPERTY(health, _TMPL_health)     // custom template name
+SKL_RFS_PROPERTY(mana, _TMPL_mana)         // custom template name
+SKL_RFS_PROPERTY(heal)                     // member function
+SKL_RFS_PROPERTY(isAlive, _TMPL_isAlive)   // const member function, custom name
+SKL_RFS_PROPERTY(takeDamage)               // member function
+SKL_RFS_REGISTER_END()
+
+// --- Weapon: all default names ---
+SKL_RFS_CLASS(Weapon)
+SKL_RFS_PROPERTY(name)
+SKL_RFS_PROPERTY(damage)
+SKL_RFS_PROPERTY(weight)
+SKL_RFS_CLASS()
+
+// --- Fruit: unscoped enum ---
+SKL_RFS_ENUM_BEGIN(Fruit)
+SKL_RFS_ENUM_VALUE(Fruit::APPLE, "APPLE")
+SKL_RFS_ENUM_VALUE(Fruit::BANANA, "BANANA")
+SKL_RFS_ENUM_VALUE(Fruit::ORANGE, "ORANGE")
+SKL_RFS_ENUM_VALUE(Fruit::GRAPE, "GRAPE")
+SKL_RFS_ENUM_END()
+
+// --- Direction: scoped enum ---
+SKL_RFS_ENUM_BEGIN(Direction)
+SKL_RFS_ENUM_VALUE(Direction::NORTH, "NORTH")
+SKL_RFS_ENUM_VALUE(Direction::SOUTH, "SOUTH")
+SKL_RFS_ENUM_VALUE(Direction::EAST, "EAST")
+SKL_RFS_ENUM_VALUE(Direction::WEST, "WEST")
+SKL_RFS_ENUM_END()
+
+// =============================================================================
+// Dynamic Reflection Registration
+// =============================================================================
+
+// use normal registration macros (BEGIN/END)
+SKL_RFD_REGISTER_BEGIN(Player)
+SKL_RFD_PROPERTY(name)
+SKL_RFD_PROPERTY(health)
+SKL_RFD_PROPERTY(mana)
+SKL_RFD_METHOD(heal)
+SKL_RFD_METHOD(isAlive)
+SKL_RFD_METHOD(takeDamage)
+SKL_RFD_REGISTER_END()
+
+// use simple registration macros (CLASS)
+SKL_RFD_CLASS(Weapon)
+SKL_RFD_PROPERTY(name)
+SKL_RFD_PROPERTY(damage)
+SKL_RFD_PROPERTY(weight)
+SKL_RFD_CLASS()
+
+// use normal registration macros (BEGIN/END)
+SKL_RFD_ENUM_BEGIN(Fruit)
+SKL_RFD_ENUM_VALUE(Fruit::APPLE, "APPLE")
+SKL_RFD_ENUM_VALUE(Fruit::BANANA, "BANANA")
+SKL_RFD_ENUM_VALUE(Fruit::ORANGE, "ORANGE")
+SKL_RFD_ENUM_VALUE(Fruit::GRAPE, "GRAPE")
+SKL_RFD_ENUM_END()
+
+// use simple registration macros (ENUM)
+SKL_RFD_ENUM(Direction)
+SKL_RFD_ENUM_VALUE(Direction::NORTH, "NORTH")
+SKL_RFD_ENUM_VALUE(Direction::SOUTH, "SOUTH")
+SKL_RFD_ENUM_VALUE(Direction::EAST, "EAST")
+SKL_RFD_ENUM_VALUE(Direction::WEST, "WEST")
+SKL_RFD_ENUM()
+
+// =============================================================================
+// Static Class Reflection Tests
+// =============================================================================
+
+TEST_CASE("Static class reflection — Player", "[static][class]") {
+    using Info = SRefl::TypeInfo<Player>;
+    Player player;
+
+    SECTION("type metadata") {
+        REQUIRE(Info::_name == "Player [class]");
+        INFO("Type name: " << Info::_name);
     }
 
-#if __cpp_concepts
-    template<typename T>
-        requires std::is_arithmetic_v<T>
-#else
-    template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-#endif
-    static Numberic create() {
-        return Numberic{to_Kind<T>(), std::is_signed_v<T>};
-    }
-    [[nodiscard]] Kind getKind() const { return _kind; }
-    [[nodiscard]] bool getSigned() const { return _is_signed; }
+    SECTION("field: name (default template name)") {
+        REQUIRE(Info::Registry::_name.getName() == "name");
+        INFO("Field 'name' = " << (player.*Info::Registry::_name._ptr));
 
-private:
-    Kind _kind;
-    bool _is_signed;
-    static std::string to_string(Kind kind) {
-        switch (kind) {
-            case Kind::Int8:        return "int8";
-            case Kind::Int16:       return "Int16";
-            case Kind::Int32:       return "int32";
-            case Kind::Int64:       return "int64";
-            case Kind::Float:       return "float";
-            case Kind::Double:      return "double";
-            case Kind::Long_Double: return "long double";
-            default:                return "Unknown";
+        player.*Info::Registry::_name._ptr = "Arthur";
+        REQUIRE((player.*Info::Registry::_name._ptr) == "Arthur");
+    }
+
+    SECTION("field: health (custom template name)") {
+        REQUIRE(Info::Registry::_health.getName() == "health");
+        REQUIRE(Info::Registry::_health.from_TempName() == "Health");
+        REQUIRE((player.*Info::Registry::_health._ptr) == 100);
+        INFO("Field 'health' (template: '"
+             << Info::Registry::_health.from_TempName()
+             << "') = "
+             << (player.*Info::Registry::_health._ptr));
+    }
+
+    SECTION("field: mana (custom template name)") {
+        REQUIRE(Info::Registry::_mana.getName() == "mana");
+        REQUIRE(Info::Registry::_mana.from_TempName() == "Mana");
+        REQUIRE((player.*Info::Registry::_mana._ptr) == 50);
+    }
+
+    SECTION("method: heal") {
+        REQUIRE(Info::Registry::_heal.is_function());
+        REQUIRE(Info::Registry::_heal.is_member());
+        REQUIRE(Info::Registry::_heal.getName() == "heal");
+
+        (player.*Info::Registry::_heal._ptr)(20);
+        REQUIRE((player.*Info::Registry::_health._ptr) == 120);
+    }
+
+    SECTION("method: isAlive (const)") {
+        REQUIRE(Info::Registry::_isAlive.is_function());
+        REQUIRE(Info::Registry::_isAlive.is_const());
+        REQUIRE(Info::Registry::_isAlive.getName() == "isAlive");
+        REQUIRE(Info::Registry::_isAlive.from_TempName() == "IsAlive");
+
+        REQUIRE((player.*Info::Registry::_isAlive._ptr)() == true);
+        INFO("isAlive() = " << std::boolalpha << (player.*Info::Registry::_isAlive._ptr)());
+    }
+
+    SECTION("method: takeDamage") {
+        REQUIRE(Info::Registry::_takeDamage.is_function());
+        REQUIRE(Info::Registry::_takeDamage.getName() == "takeDamage");
+
+        (player.*Info::Registry::_takeDamage._ptr)(200);
+        REQUIRE((player.*Info::Registry::_health._ptr) == 0);
+        REQUIRE((player.*Info::Registry::_isAlive._ptr)() == false);
+    }
+}
+
+TEST_CASE("Static class reflection — Weapon", "[static][class]") {
+    using Info = SRefl::TypeInfo<Weapon>;
+    Weapon weapon;
+
+    SECTION("type metadata") { REQUIRE(Info::_name == "Weapon [class]"); }
+
+    SECTION("field names") {
+        REQUIRE(Info::Registry::_name.getName() == "name");
+        REQUIRE(Info::Registry::_damage.getName() == "damage");
+        REQUIRE(Info::Registry::_weight.getName() == "weight");
+    }
+
+    SECTION("field defaults") {
+        REQUIRE((weapon.*Info::Registry::_damage._ptr) == 5);
+        REQUIRE((weapon.*Info::Registry::_weight._ptr) == 1.0f);
+    }
+
+    SECTION("field read/write") {
+        weapon.*Info::Registry::_name._ptr = "Excalibur";
+        weapon.*Info::Registry::_damage._ptr = 99;
+        weapon.*Info::Registry::_weight._ptr = 3.5f;
+
+        REQUIRE((weapon.*Info::Registry::_name._ptr) == "Excalibur");
+        REQUIRE((weapon.*Info::Registry::_damage._ptr) == 99);
+        REQUIRE((weapon.*Info::Registry::_weight._ptr) == 3.5f);
+
+        INFO("Weapon: "
+             << (weapon.*Info::Registry::_name._ptr)
+             << ", damage="
+             << (weapon.*Info::Registry::_damage._ptr)
+             << ", weight="
+             << (weapon.*Info::Registry::_weight._ptr));
+    }
+}
+
+// =============================================================================
+// Static Enum Reflection Tests
+// =============================================================================
+
+TEST_CASE("Static enum reflection — Fruit (unscoped)", "[static][enum]") {
+    using Info = SRefl::TypeInfo<Fruit>;
+
+    SECTION("type metadata") {
+        REQUIRE(Info::_name == "Fruit [enum]");
+        REQUIRE(Info::is_scoped == false);
+    }
+
+    SECTION("enum values") {
+        REQUIRE(std::size(Info::list) == 4u);
+
+        for (const auto &[value, name] : Info::list) {
+            REQUIRE(name.size() > 0u);
+            INFO("  " << name << " = " << static_cast<int>(value));
         }
     }
-#if __cpp_concepts
-    template<typename T>
-        requires std::is_arithmetic_v<T>
-#else
-    template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-#endif
-    static Kind to_Kind() {
-        return std::is_integral_v<T> ? static_cast<Kind>(sizeof(T))
-                                     : static_cast<Kind>(sizeof(T) * 4);
-    }
-};
-class Enum final : public Type {
-private:
-    using value_type = int32_t;
-    using enum_map = std::map<std::string_view, value_type>;
-    enum_map _map;
-
-public:
-    explicit Enum()
-        : Type{Kind::Unkown, "Unknown-Enum"} {
-        Type::list[getName()] = static_cast<Type*>(this);
-    }
-    explicit Enum(std::string_view name)
-        : Type{Kind::Enum, name} {}
-    template<typename T> void add(std::string_view name, T value) {
-        _map[name] = static_cast<value_type>(value);
-        Type::list[getName()] = static_cast<Type*>(this);
-    }
-    [[nodiscard]] const enum_map& getMap() const { return _map; }
-};
-struct MemVar {
-    std::string _name;
-    const Type* type;
-};
-struct MemFunc {
-    std::string _name;
-    const Type* _retType;
-    std::vector<const Type*> paramTypes;
-};
-
-class Class final : public Type {
-public:
-    explicit Class(const std::string& name)
-        : Type(Type::Kind::Class, name) {}
-
-private:
-    std::vector<MemVar> _vars;
-    std::vector<MemFunc> _fns;
-};
-namespace factory {
-
-template<typename T> class Numberic final {
-public:
-    static Numberic& Instance() {
-        static Numberic inst{reflect::Dynamic::Numberic::create<T>()};
-        return inst;
-    }
-    [[nodiscard]] const reflect::Dynamic::Numberic& Info() const {
-        return _info;
-    }
-
-private:
-    reflect::Dynamic::Numberic _info;
-    explicit Numberic(reflect::Dynamic::Numberic&& info)
-        : _info{std::move(info)} {}
-};
-template<typename T> class Enum final {
-public:
-    static Enum& Instance() {
-        static Enum inst;
-        return inst;
-    }
-    [[nodiscard]] const reflect::Dynamic::Enum& Info() const { return _info; }
-    Enum& Regist(std::string_view name) {
-        _info._name = name;
-        return *this;
-    };
-    template<typename U> Enum& add(std::string_view name, U value) {
-        _info.add(name, value);
-        return *this;
-    }
-    void UnRegist() { _info = reflect::Dynamic::Enum{}; }
-
-private:
-    reflect::Dynamic::Enum _info;
-};
-class Trivial final {
-public:
-    static Trivial& Instance() {
-        static Trivial inst;
-        return inst;
-    }
-};
-template<typename T> class factory final {
-public:
-    static auto& getFactory() {
-        if constexpr (std::is_arithmetic_v<T>)
-            return Numberic<T>::Instance();
-        else if constexpr (std::is_enum_v<T>)
-            return Enum<T>::Instance();
-        else if constexpr (std::is_class_v<T>)
-            return Enum<T>::Instance();
-        else
-            return Trivial::Instance();
-    }
-};
-}   // namespace factory
-template<typename T> auto& Register() {
-    return factory::factory<T>::getFactory();
-}
-template<typename T> const Type* getType() {
-    return &Register<T>().Info();
-}
-const Type* getType(std::string_view type) {
-    return Type::list.find(type)->second;
-}
-std::map<std::string_view, const Type*> Type::list{};
-}   // namespace reflect::Dynamic
-
-constexpr const char* strbool(bool value) {
-    return value ? "true" : "false";
 }
 
-[[maybe_unused]] constexpr const char _template_isFamle[]{"isFemale"};
-[[maybe_unused]] constexpr const char _template_getFamle[]{"getFamle"};
+TEST_CASE("Static enum reflection — Direction (scoped)", "[static][enum]") {
+    using Info = SRefl::TypeInfo<Direction>;
 
-RFS_OBJ_BEGIN(Person)
-    RFS_OBJ_MEM(isFemale)
-    // static constexpr auto _isFemale =
-    //     SRefl ::field_traits<decltype(&class_t::isFemale)>{
-    //         &class_t ::isFemale, "isFemale"};
-    RFS_OBJ_MEM_TEM(getFemale, _template_getFamle)
-RFS_OBJ_END()
+    SECTION("type metadata") {
+        REQUIRE(Info::_name == "Direction [enum class]");
+        REQUIRE(Info::is_scoped == true);
+    }
 
-RFS_ENUM_BEGIN(Color)
-    RFS_ENUM_LIST({MAKE_NOR_FIELD_TRAITS(red)}, {MAKE_NOR_FIELD_TRAITS(blue)})
-RFS_ENUM_END()
+    SECTION("enum values") {
+        REQUIRE(std::size(Info::list) == 4u);
 
-RFS_ENUM_BEGIN(Permission)
-    RFS_ENUM_LIST({MAKE_FIELD_TRAITS(NOR, Permission::read)},
-                  {MAKE_FIELD_TRAITS(NOR, Permission::write)},
-                  {MAKE_FIELD_TRAITS(NOR, Permission::all)})
-RFS_ENUM_END()
+        for (const auto &[value, name] : Info::list) {
+            INFO("  " << name << " = " << static_cast<int>(value));
+        }
+    }
+}
 
-int main() {
-    using ClassInfo = SRefl::TypeInfo<Person>;
-    Person man;
-    printf("Type: %s\n", ClassInfo::_name.data());
-    puts("Member:");
-    printf("\tMember Data: \n");
-    printf("\t\t%s: %s\n", ClassInfo::Registry::_isFemale.getName().data(),
-           strbool(ClassInfo::Registry::_isFemale._ptr));
-    printf("\tMember Function: \n");
-    printf("\t\t%s:\n", ClassInfo::Registry::_getFemale.from_TempName().data());
-    printf("\t\tFuntion running:\n");
-    printf("\t\t\t");
-    printf("\t\tFuntion retval: %s\n", strbool((man.*ClassInfo::Registry::_getFemale._ptr)()));
+// =============================================================================
+// Dynamic Class Reflection Tests
+// =============================================================================
 
-    printf("\n****************************************\n");
+TEST_CASE("Dynamic class reflection — Player", "[dynamic][class]") {
+    auto *ti = DRefl::Registry::instance().find_by_name("Player");
+    REQUIRE(ti != nullptr);
 
-    using ColorInfo = SRefl::TypeInfo<Color>;
-    auto& ColorList = ColorInfo::list;
-    printf("Type: %s\n", ColorInfo::_name.data());
-    puts("Member:");
-    printf("\tData: \n");
-    // printf("\t\t%s: %s\n", ColorList[Color::red].data(),
-    //        ColorInfo[Color::red]);
-    for (auto list : ColorInfo::list)
-        printf("\t\t%s: %d\n", list.second.data(), list.first);
-    return 0;
+    SECTION("type metadata") {
+        REQUIRE(ti->kind == DRefl::Kind::Class);
+        REQUIRE(ti->size == sizeof(Player));
+        INFO("Type: " << ti->name << ", size=" << ti->size);
+    }
+
+    SECTION("find fields") {
+        auto *f_name = ti->find_field("name");
+        auto *f_health = ti->find_field("health");
+        auto *f_mana = ti->find_field("mana");
+
+        REQUIRE(f_name != nullptr);
+        REQUIRE(f_health != nullptr);
+        REQUIRE(f_mana != nullptr);
+
+        Player player;
+        player.name = "Merlin";
+        player.health = 80;
+        player.mana = 200;
+
+        auto *name_ptr = static_cast<std::string *>(f_name->getter(&player));
+        auto *health_ptr = static_cast<int *>(f_health->getter(&player));
+        auto *mana_ptr = static_cast<int *>(f_mana->getter(&player));
+
+        REQUIRE(*name_ptr == "Merlin");
+        REQUIRE(*health_ptr == 80);
+        REQUIRE(*mana_ptr == 200);
+
+        INFO("Fields: name=" << *name_ptr << ", health=" << *health_ptr << ", mana=" << *mana_ptr);
+    }
+
+    SECTION("set field via dynamic setter") {
+        Player player;
+        auto *f_health = ti->find_field("health");
+        REQUIRE(f_health != nullptr);
+
+        int new_health = 999;
+        f_health->setter(&player, &new_health);
+        REQUIRE(player.health == 999);
+    }
+
+    SECTION("find methods") {
+        auto *m_heal = ti->find_method("heal");
+        auto *m_isAlive = ti->find_method("isAlive");
+        auto *m_takeDamage = ti->find_method("takeDamage");
+
+        REQUIRE(m_heal != nullptr);
+        REQUIRE(m_isAlive != nullptr);
+        REQUIRE(m_takeDamage != nullptr);
+    }
+}
+
+TEST_CASE("Dynamic class reflection — Weapon", "[dynamic][class]") {
+    auto *ti = DRefl::Registry::instance().find_by_name("Weapon");
+    REQUIRE(ti != nullptr);
+
+    SECTION("type metadata") {
+        REQUIRE(ti->kind == DRefl::Kind::Class);
+        REQUIRE(ti->fields.size() == 3u);
+    }
+
+    SECTION("field getter") {
+        Weapon weapon;
+        weapon.name = "Longbow";
+        weapon.damage = 25;
+        weapon.weight = 2.5f;
+
+        auto *f_name = ti->find_field("name");
+        auto *f_damage = ti->find_field("damage");
+        auto *f_weight = ti->find_field("weight");
+
+        REQUIRE(f_name != nullptr);
+        REQUIRE(f_damage != nullptr);
+        REQUIRE(f_weight != nullptr);
+
+        REQUIRE(*static_cast<std::string *>(f_name->getter(&weapon)) == "Longbow");
+        REQUIRE(*static_cast<int *>(f_damage->getter(&weapon)) == 25);
+        REQUIRE(*static_cast<float *>(f_weight->getter(&weapon)) == 2.5f);
+
+        INFO("Weapon: "
+             << *static_cast<std::string *>(f_name->getter(&weapon))
+             << ", damage="
+             << *static_cast<int *>(f_damage->getter(&weapon))
+             << ", weight="
+             << *static_cast<float *>(f_weight->getter(&weapon)));
+    }
+}
+
+// =============================================================================
+// Dynamic Enum Reflection Tests
+// =============================================================================
+
+TEST_CASE("Dynamic enum reflection — Fruit (unscoped)", "[dynamic][enum]") {
+    auto *ti = DRefl::Registry::instance().find_by_name("Fruit");
+    REQUIRE(ti != nullptr);
+
+    SECTION("type metadata") {
+        REQUIRE(ti->kind == DRefl::Kind::Enum);
+        REQUIRE(ti->enum_info != nullptr);
+        REQUIRE(ti->enum_info->is_scoped == false);
+    }
+
+    SECTION("enum entries") {
+        REQUIRE(ti->enum_info->entries.size() == 4u);
+
+        for (const auto &entry : ti->enum_info->entries) {
+            INFO("  " << entry.name << " = " << entry.value);
+        }
+    }
+}
+
+TEST_CASE("Dynamic enum reflection — Direction (scoped)", "[dynamic][enum]") {
+    auto *ti = DRefl::Registry::instance().find_by_name("Direction");
+    REQUIRE(ti != nullptr);
+
+    SECTION("type metadata") {
+        REQUIRE(ti->kind == DRefl::Kind::Enum);
+        REQUIRE(ti->enum_info != nullptr);
+        REQUIRE(ti->enum_info->is_scoped == true);
+    }
+
+    SECTION("enum entries") {
+        REQUIRE(ti->enum_info->entries.size() == 4u);
+
+        for (const auto &entry : ti->enum_info->entries) {
+            INFO("  " << entry.name << " = " << entry.value);
+        }
+    }
+}
+
+// =============================================================================
+// Registry Tests
+// =============================================================================
+
+TEST_CASE("Dynamic registry — lookup", "[dynamic][registry]") {
+    auto &reg = DRefl::Registry::instance();
+
+    SECTION("find_by_name") {
+        REQUIRE(reg.find_by_name("Player") != nullptr);
+        REQUIRE(reg.find_by_name("Weapon") != nullptr);
+        REQUIRE(reg.find_by_name("Fruit") != nullptr);
+        REQUIRE(reg.find_by_name("Direction") != nullptr);
+        REQUIRE(reg.find_by_name("NonExistent") == nullptr);
+    }
+
+    SECTION("type_count") { REQUIRE(reg.type_count() >= 4u); }
+
+    SECTION("type_at iteration") {
+        size_t count = reg.type_count();
+        INFO("Registered types: " << count);
+
+        for (size_t i = 0; i < count; ++i) {
+            auto *ti = reg.type_at(i);
+            REQUIRE(ti != nullptr);
+            REQUIRE(ti->name != nullptr);
+            INFO("  [" << i << "] " << ti->name);
+        }
+    }
+}
+
+// =============================================================================
+// Integration: Static + Dynamic consistency
+// =============================================================================
+
+TEST_CASE("Integration — static & dynamic reflection consistency", "[integration]") {
+    auto *ti = DRefl::Registry::instance().find_by_name("Player");
+    REQUIRE(ti != nullptr);
+
+    using Info = SRefl::TypeInfo<Player>;
+
+    SECTION("field count matches") {
+        // Static: check individual fields are accessible
+        REQUIRE(Info::Registry::_name.getName() == "name");
+        REQUIRE(Info::Registry::_health.getName() == "health");
+        REQUIRE(Info::Registry::_mana.getName() == "mana");
+
+        // Dynamic: same fields found
+        REQUIRE(ti->find_field("name") != nullptr);
+        REQUIRE(ti->find_field("health") != nullptr);
+        REQUIRE(ti->find_field("mana") != nullptr);
+    }
+
+    SECTION("method count matches") {
+        REQUIRE(Info::Registry::_heal.getName() == "heal");
+        REQUIRE(Info::Registry::_isAlive.getName() == "isAlive");
+        REQUIRE(Info::Registry::_takeDamage.getName() == "takeDamage");
+
+        REQUIRE(ti->find_method("heal") != nullptr);
+        REQUIRE(ti->find_method("isAlive") != nullptr);
+        REQUIRE(ti->find_method("takeDamage") != nullptr);
+    }
+
+    SECTION("type name consistency") {
+        REQUIRE(Info::_name == "Player [class]");
+        REQUIRE(URefl::string_view(ti->name) == "Player");
+    }
 }

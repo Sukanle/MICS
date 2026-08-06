@@ -1,0 +1,52 @@
+/*
+ * Copyright 2026 Sukanle(https://github.com/Sukanle)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef SKL_REFLECT_DYNAMIC_CONFIG_H
+#define SKL_REFLECT_DYNAMIC_CONFIG_H
+
+#include <stdint.h>
+
+namespace Reflect::Dynamic {
+
+using TypeId = uint64_t;
+using FieldId = uint32_t;
+using MethodId = uint32_t;
+
+constexpr TypeId INVALID_TYPE_ID = 0;
+
+enum class Kind : uint8_t {
+    Class,
+    Struct,
+    Enum,
+    Primitive,
+    Pointer,
+    Reference,
+};
+
+enum class FieldKind : uint8_t {
+    MemberVar,
+    StaticVar,
+    MemberFn,
+    StaticFn,
+};
+
+enum class Visibility : uint8_t {
+    Public,
+    Protected,
+    Private,
+};
+
+}   // namespace Reflect::Dynamic
+#endif
