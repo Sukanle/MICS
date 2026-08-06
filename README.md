@@ -1,158 +1,198 @@
-实现了一个用于操作类型列表（`type_list`）的模板元编程库，属于反射库的一部分，位于命名空间 `reflect::Static::fp` 中。它提供了一系列类型操作，如访问、修改、过滤、转换等，类似于函数式编程中的高阶函数，但作用于编译时的类型列表。
+# Reflect
 
----
+A modern C++20 reflection library providing both compile-time (static) and runtime (dynamic) type introspection.
 
-### **核心结构与功能**
+## Features
 
-#### **1. 类型列表基础操作**
-- **`__base_nth`**  
-  获取类型列表中第 `N` 个类型。通过递归展开列表，直到索引为 `0`。
-  ```cpp
-  // 示例：nth<type_list<int, char>, 1> => char
-  ```
+- **Static Reflection** — Compile-time type introspection, template metaprogramming, and zero-overhead field/method iteration via `consteval`/`constexpr`
+- **Dynamic Reflection** — Runtime type registration, type-erased field access, and method invocation with a global registry
+- **ABI-Stable Container** — Immutable, move-only `Utils::vector<T>` with fixed memory layout, cross-version binary compatibility, designed as the data carrier for dynamic reflection
+- **Type Hashing** — FNV-1a based compile-time type hashing, enabling cross-boundary type identification (e.g., DLL/SO hot-reload)
+- **Functional-Type Programming** — Compile-time type list manipulation (`map`, `filter`, `fold`, `flat_map`, `unique`, etc.)
 
-- **`__base_head` 和 `__base_other`**  
-  - `head` 获取列表的第一个类型。
-  - `other` 获取移除第一个类型后的剩余列表。
-  ```cpp
-  // 示例：head<type_list<int, char>> => int
-  //       other<type_list<int, char>> => type_list<char>
-  ```
-
-- **`__base_tail`**  
-  获取列表的最后一个类型。依赖 `TypeList::count` 假设列表有静态常量 `count` 表示长度。
-  ```cpp
-  // 示例：tail<type_list<int, char>> => char
-  ```
-
----
-
-#### **2. 修改类型列表**
-- **`__base_push` 和 `__base_pop`**  
-  - `push` 将类型添加到列表头部。
-  - `pop` 移除列表的最后一个类型（实现可能存在问题，见下文）。
-  ```cpp
-  // 示例：push<type_list<char>, int> => type_list<int, char>
-  //       pop<type_list<int, char>> => type_list<int>
-  ```
-
-- **`__base_concat`**  
-  连接多个类型列表为一个。
-  ```cpp
-  // 示例：concat<type_list<int>, type_list<char>> => type_list<int, char>
-  ```
-
----
-
-#### **3. 列表查询与统计**
-- **`__base_size`**  
-  返回类型列表的长度。
-  ```cpp
-  // 示例：size<type_list<int, char>> => 2
-  ```
-
-- **`__base_count`**  
-  统计满足条件 `F<T>::value` 的类型数量。
-  ```cpp
-  // 示例：count<type_list<int, char>, std::is_integral> => 2
-  ```
-
----
-
-#### **4. 高阶类型操作**
-- **`__base_map` 和 `__base_transform`**  
-  - `map` 根据条件 `F<T>` 将类型替换为 `T`。
-  - `transform` 对每个类型应用 `F<T>` 生成新类型。
-  ```cpp
-  // 示例：map<type_list<int, char>, is_integral, void> => type_list<void, void>
-  //       transform<std::add_pointer, type_list<int>> => type_list<int*>
-  ```
-
-- **`__base_flat_map`**  
-  对每个类型应用 `F<T>` 生成子列表，并连接所有子列表。
-  ```cpp
-  // 示例：flat_map<F, type_list<int>> => concat<F<int>::type...>
-  ```
-
-- **`__base_filter`**  
-  过滤出满足条件 `F<T>` 的类型（实现可能存在错误，见下文）。
-  ```cpp
-  // 示例：filter<type_list<int, char>, std::is_integral> => type_list<int, char>
-  ```
-
-- **`__base_fold`**  
-  折叠操作，用 `Func` 累积处理列表中的类型。
-  ```cpp
-  // 示例：fold<type_list<int, char>, void, some_func> => 最终累积类型
-  ```
-
----
-
-#### **5. 实用工具**
-- **`__base_unique`**  
-  去重，保留首次出现的类型。
-  ```cpp
-  // 示例：unique<type_list<int, int>> => type_list<int>
-  ```
-
-- **`__base_find_index`**  
-  查找类型的索引，找不到返回 `-1`（可能触发断言，需谨慎）。
-  ```cpp
-  // 示例：find_index<type_list<int, char>, char> => 1
-  ```
-
-- **`__base_remove`**  
-  移除所有匹配 `Target` 的类型。
-  ```cpp
-  // 示例：remove<type_list<int, char>, int> => type_list<char>
-  ```
-
----
-
-### **潜在问题与注意事项**
-
-1. **`__base_pop` 的实现**  
-   当前实现通过递归将元素重新添加到新列表，可能实际效果是反转列表，而非简单移除最后一个元素。需验证逻辑是否正确。
-
-2. **`__base_filter` 的条件错误**  
-   代码中 `F<T>::value != F<T>::value` 永远为 `false`，可能是笔误。正确条件应为 `F<T>::value` 是否为 `true`。
-
-3. **`__base_find_index` 的断言**  
-   当查找失败时，`static_assert(Index != 0, ...)` 可能意外触发编译错误，而非返回 `-1`。需确认设计意图。
-
-4. **`type_list` 的依赖**  
-   假设 `type_list` 有静态常量 `count`，需确保其定义包含 `static constexpr template_constants count = sizeof...(Args);`。
-
----
-
-### **使用示例**
-```cpp
-using List = type_list<int, char, double>;
-using ThirdType = nth<List, 2>;                // double
-using NewList = push<List, float>;             // type_list<float, int, char, double>
-constexpr auto Size = size<List>;              // 3
-using Filtered = filter<List, std::is_floating_point>; // type_list<double>
-```
-
----
-
-### **总结**
-该库提供了一套编译时类型列表操作工具，涵盖常见函数式编程操作，但需注意潜在实现问题。适用于需要反射或复杂类型操作的场景，如序列化、依赖注入等。
-
----
-
-### **反射代码体积优化（按需注册）**
-
-- 对象成员反射元数据已切换为更轻量的纯数据结构（`_ptr + _name`），默认减少模板实例与生成代码体积。
-- 默认行为保持兼容：未定义 `ENABLE_REFLECT_SKIP` 时，`RFS_OBJ_MEM(...)` 仍会自动注册。
-- 定义 `ENABLE_REFLECT_SKIP` 后，`RFS_OBJ_MEM(...)` 默认不注册（跳过全部），需使用 `RFS_OBJ_REG(...)`/`RFS_OBJ_REG_TEM(...)` 手动注册。
-- 若希望在 `ENABLE_REFLECT_SKIP` 模式下恢复“默认注册”，可定义 `RELECT_DEFAULT_REGISTER`（兼容拼写）或 `REFLECT_DEFAULT_REGISTER`。
-
-示例：
+## Quick Start
 
 ```cpp
-RFS_OBJ_BEGIN(MyType)
-  RFS_OBJ_MEM(field_a)   // 在 ENABLE_REFLECT_SKIP 下默认跳过
-  RFS_OBJ_REG(field_b)   // 显式注册
-RFS_OBJ_END()
+#include "reflect.h"
+
+// --- Static Reflection ---
+struct Person {
+    std::string name;
+    int age = 0;
+    void greet() const { std::printf("Hello, I'm %s\n", name.c_str()); }
+};
+
+// Register fields and methods at compile time
+RFS_CLASS(Person)
+    SKL_RFS_PROPERTY(name)
+    SKL_RFS_PROPERTY(age)
+    SKL_RFS_PROPERTY(greet)
+RFS_CLASS_END()
+
+// Iterate over registered members at compile time
+constexpr auto info = SRefl::type_info<Person>();
+// info.fields, info.methods, etc.
+
+// --- Dynamic Reflection ---
+SKL_RFD_CLASS(Person)
+    SKL_RFD_PROPERTY(name)
+    SKL_RFD_PROPERTY(age)
+    SKL_RFD_METHOD(greet)
+SKL_RFD_CLASS_END()
+
+// Query at runtime
+auto *ti = DRefl::Registry::instance().find_by_name("Person");
+auto *field = ti->find_field("name");
+field->setter(&obj, &new_value);    // type-erased field write
 ```
+
+## Registration Macros
+
+The library provides two tiers of registration macros:
+
+### Simplified Macros (Recommended)
+
+These are the concise, unified entry points for everyday use:
+
+| Macro | Description |
+|-------|-------------|
+| `RFS_CLASS(ClassName)` | Begin static class registration |
+| `SKL_RFS_PROPERTY(member)` | Register a static field or method |
+| `RFS_CLASS_END()` | End static class registration |
+| `SKL_RFD_CLASS(ClassName)` | Begin dynamic class registration |
+| `SKL_RFD_PROPERTY(member)` | Register a dynamic property |
+| `SKL_RFD_PROPERTY(member, SKL_REFT_META_STRING)` | Register with forced string storage |
+| `SKL_RFD_METHOD(method)` | Register a dynamic method |
+| `SKL_RFD_METHOD(method, SKL_REFT_META_STRING)` | Register with forced string storage |
+| `SKL_RFD_CLASS_END()` | End dynamic class registration |
+
+### Legacy Macros (Backward Compatible)
+
+The original verbose macros remain available internally:
+
+| Simplified | Legacy Equivalent |
+|------------|-------------------|
+| `RFS_CLASS(T)` | `SKL_RFS_OBJ_BEGIN(T)` |
+| `SKL_RFS_PROPERTY(m)` | `RFS_OBJ_MEM(m)` |
+| `RFS_CLASS_END()` | `SKL_RFS_OBJ_END()` |
+| `SKL_RFD_CLASS(T)` | `SKL_RFD_REGISTER_BEGIN(T)` |
+| `SKL_RFD_PROPERTY(m)` | `SKL_RFD_FIELD(m)` |
+| `SKL_RFD_CLASS_END()` | `SKL_RFD_REGISTER_END()` |
+
+## Metadata System (`metadata.h`)
+
+The metadata system provides a stable ABI through fixed-layout structures and external string tables.
+
+### Metadata Modes
+
+| Mode | Value | Description |
+|------|-------|-------------|
+| `SKL_REFT_MODE_HASH` | `0` | Hash-only, no strings — Release / minimal deployment |
+| `SKL_REFT_MODE_STR` | `1` | Essential strings — Debug / development |
+| `SKL_REFT_MODE_FULL` | `2` | Full debug metadata — Editor / IDE integration |
+
+Default strategy: Debug → `STR`, Release → `HASH`. Override with `-DSKL_REFT_META_MODE=0|1|2`.
+
+### Key Types
+
+```cpp
+// Fixed ABI structure — layout never changes
+struct MetaEntry {
+    uint64_t id;              // FNV1a64 hash
+    uint32_t flags;           // MetaFlags bitmask
+    uint32_t metadataIndex;   // Index into external string table
+};
+
+// External string table — safe across DLL boundaries
+struct MetaStringTable {
+    uint32_t count;
+    uint32_t dataSize;
+    const StringEntry* entries;
+    const char* data;
+};
+```
+
+### Constexpr Hash
+
+```cpp
+constexpr uint64_t id = SKL_REFT_HASH("Player.Health");   // FNV1a64, cross-compiler stable
+constexpr uint32_t id32 = SKL_REFT_HASH32("Player.Health");
+```
+
+## Directory Structure
+
+```
+Refection/
+├── reflect.h              # Main entry header (includes static + dynamic)
+├── metadata.h             # Metadata system (MetaEntry, MetaMode, SKL_REFT_HASH, StringTable)
+├── static/                # Compile-time static reflection
+│   ├── reflect.h          # Public API & field_traits, TypeInfo
+│   ├── base_reflect.h     # __base_field_traits (var/fn dispatch)
+│   ├── base_fp.h          # Low-level type list operations
+│   ├── fp.h               # Public type list API (Fp namespace)
+│   ├── var_traits.h       # Variable/field traits
+│   ├── fn_traits.h        # Function/method traits (qualifiers, hash)
+│   ├── enum_traits.h      # Enum traits & scoped enum detection
+│   ├── config.h           # type_list, template_depth, is_virtual_base_of
+│   └── template_string.h  # Non-type template parameter string support
+├── dynamic/               # Runtime dynamic reflection
+│   ├── reflect.h          # Public API, registration macros, type_id_of
+│   ├── config.h           # TypeId, Kind, FieldKind, Visibility enums
+│   ├── type_info.h        # TypeInfo: aggregate descriptor (fields/methods/bases)
+│   ├── field_info.h       # FieldInfo + FieldAccessor (getter/setter)
+│   ├── fn_info.h          # FnInfo + MethodInvoker + ParamInfo
+│   ├── enum_info.h        # EnumInfo + EnumEntry
+│   ├── any.h              # Any: type-erased value container (SBO)
+│   └── registry.h         # Registry: global singleton type registry
+├── utils/                 # Shared utilities
+│   ├── hash.h             # FNV-1a hash functions, calling convention tags
+│   ├── type_hash.h        # Compile-time type → hash mapping
+│   ├── string_view.h      # Lightweight string_view implementation
+│   └── vector.h           # ABI-stable immutable container (dynamic reflection data carrier)
+├── doc/                   # API documentation
+└── HLMD/                  # Macro utility library (internal)
+```
+
+## Supported Platforms & Toolchains
+
+| Platform | Compiler | Minimum Version | Status |
+|----------|----------|-----------------|--------|
+| Windows  | MSVC     | VS 2022 (17.0+) | ✓ |
+| Windows  | MinGW-w64 (GCC) | 13.0+ | ✓ |
+| Windows  | Clang-cl | 17.0+ | ✓ |
+| Linux    | GCC      | 13.0+ | ✓ |
+| Linux    | Clang    | 17.0+ | ✓ |
+
+**Requirements:** C++17 or later (C++20 recommended for `consteval` and `__cpp_nontype_template_args`; concepts support recommended)
+
+## Testing
+
+Tests use [Catch2](https://github.com/catchorg/Catch2), driven by `main.cpp` covering:
+
+| Test Category | Tags | Coverage |
+|--------------|------|----------|
+| Static class reflection | `[static][class]` | Type metadata, field read/write, method invocation for `Player` and `Weapon` (incl. custom template names and const methods) |
+| Static enum reflection | `[static][enum]` | Value lists and `is_scoped` detection for `Fruit` (unscoped) and `Direction` (scoped `enum class`) |
+| Dynamic class reflection | `[dynamic][class]` | Type lookup by name via `Registry`, `FieldAccessor` getter/setter, `FnInfo` method lookup |
+| Dynamic enum reflection | `[dynamic][enum]` | `EnumInfo` entry iteration, `is_scoped` flag |
+| Registry queries | `[dynamic][registry]` | `find_by_name`, `type_count`, `type_at` iteration |
+| Integration consistency | `[integration]` | Verifies field/method count and name consistency between static and dynamic reflection for the same type |
+
+```bash
+# Build and run tests
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+ctest --test-dir build
+```
+
+## Future Plans
+
+- **MOC (Meta Object Compiler)** — Planned to be built on Clang LibTooling, using C++ attributes (`[[...]]`) to annotate classes and members, automatically generating static and dynamic reflection registration code. Developers simply add attributes like `[[meta::export]]`, `[[meta::property]]`, `[[meta::method]]` to classes or fields, and the MOC tool will scan source files and emit the corresponding registration code — no manual macros needed.
+
+## License
+
+Apache License, Version 2.0. See [LICENSE](./LICENSE) for the full text.
+
+---
+
+Copyright 2026 [Sukanle](https://github.com/Sukanle)
