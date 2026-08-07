@@ -1,6 +1,15 @@
-# Reflect
+<div align="center">
 
-A modern C++20 reflection library providing both compile-time (static) and runtime (dynamic) type introspection.
+# Reflection
+
+## A modern C++17 (and later) reflection library providing both compile-time (static) and runtime (dynamic) type introspection.
+
+![Liencese](https://img.shields.io/badge/Liencese-Apache_2.0-blue)
+![Language](https://img.shields.io/badge/Language-C/C++-red)
+![Version](https://img.shields.io/badge/Version-1.0.0-green)
+
+English | [中文](README_ZH.md)
+</div>
 
 ## Features
 
@@ -23,11 +32,11 @@ struct Person {
 };
 
 // Register fields and methods at compile time
-RFS_CLASS(Person)
+SKL_RFS_CLASS(Person)
     SKL_RFS_PROPERTY(name)
     SKL_RFS_PROPERTY(age)
     SKL_RFS_PROPERTY(greet)
-RFS_CLASS_END()
+SKL_RFS_CLASS()
 
 // Iterate over registered members at compile time
 constexpr auto info = SRefl::type_info<Person>();
@@ -38,13 +47,17 @@ SKL_RFD_CLASS(Person)
     SKL_RFD_PROPERTY(name)
     SKL_RFD_PROPERTY(age)
     SKL_RFD_METHOD(greet)
-SKL_RFD_CLASS_END()
+SKL_RFD_CLASS()
 
 // Query at runtime
 auto *ti = DRefl::Registry::instance().find_by_name("Person");
 auto *field = ti->find_field("name");
 field->setter(&obj, &new_value);    // type-erased field write
 ```
+
+> [!NOTE]
+> - [Static Reflection API.md](doc/static_utils_api_zh_CN.md)
+> - [Dynamic Reflection API.md](doc/dynamic_utils_api_zh_CN.md)
 
 ## Registration Macros
 
@@ -56,15 +69,19 @@ These are the concise, unified entry points for everyday use:
 
 | Macro | Description |
 |-------|-------------|
-| `RFS_CLASS(ClassName)` | Begin static class registration |
+| `SKL_RFS_CLASS(ClassName)` | Begin static class registration |
 | `SKL_RFS_PROPERTY(member)` | Register a static field or method |
-| `RFS_CLASS_END()` | End static class registration |
+| `SKL_RFS_CLASS()` | End static class registration |
+| `SKL_RFS_ENUM(EnumName)` | Begin static enum registration |
+| `SKL_RFS_ENUM_VALUE(value, name)` | Register a static enum value |
+| `SKL_RFS_ENUM()` | End static enum registration |
 | `SKL_RFD_CLASS(ClassName)` | Begin dynamic class registration |
 | `SKL_RFD_PROPERTY(member)` | Register a dynamic property |
-| `SKL_RFD_PROPERTY(member, SKL_REFT_META_STRING)` | Register with forced string storage |
 | `SKL_RFD_METHOD(method)` | Register a dynamic method |
-| `SKL_RFD_METHOD(method, SKL_REFT_META_STRING)` | Register with forced string storage |
-| `SKL_RFD_CLASS_END()` | End dynamic class registration |
+| `SKL_RFD_CLASS()` | End dynamic class registration |
+| `SKL_RFD_ENUM(EnumName)` | Begin dynamic enum registration |
+| `SKL_RFD_ENUM_VALUE(value, name)` | Register a dynamic enum value |
+| `SKL_RFD_ENUM()` | End dynamic enum registration |
 
 ### Legacy Macros (Backward Compatible)
 
@@ -72,12 +89,19 @@ The original verbose macros remain available internally:
 
 | Simplified | Legacy Equivalent |
 |------------|-------------------|
-| `RFS_CLASS(T)` | `SKL_RFS_OBJ_BEGIN(T)` |
-| `SKL_RFS_PROPERTY(m)` | `RFS_OBJ_MEM(m)` |
-| `RFS_CLASS_END()` | `SKL_RFS_OBJ_END()` |
+| `SKL_RFS_CLASS(T)` | `SKL_RFS_REGISTER_BEGIN(T)` |
+| `SKL_RFS_PROPERTY(m)` | `SKL_RFS_PROPERTY(m)` |
+| `SKL_RFS_CLASS()` | `SKL_RFS_REGISTER_END()` |
+| `SKL_RFS_ENUM(T)` | `SKL_RFS_ENUM_BEGIN(T)` |
+| `SKL_RFS_ENUM_VALUE(v, n)` | `SKL_RFS_ENUM_VALUE(v, n)` |
+| `SKL_RFS_ENUM()` | `SKL_RFS_ENUM_END()` |
 | `SKL_RFD_CLASS(T)` | `SKL_RFD_REGISTER_BEGIN(T)` |
 | `SKL_RFD_PROPERTY(m)` | `SKL_RFD_FIELD(m)` |
-| `SKL_RFD_CLASS_END()` | `SKL_RFD_REGISTER_END()` |
+| `SKL_RFD_METHOD(m)` | `SKL_RFD_METHOD(m)` |
+| `SKL_RFD_CLASS()` | `SKL_RFD_REGISTER_END()` |
+| `SKL_RFD_ENUM(T)` | `SKL_RFD_ENUM_BEGIN(T)` |
+| `SKL_RFD_ENUM_VALUE(v, n)` | `SKL_RFD_ENUM_VALUE(v, n)` |
+| `SKL_RFD_ENUM()` | `SKL_RFD_ENUM_END()` |
 
 ## Metadata System (`metadata.h`)
 

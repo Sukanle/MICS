@@ -1,6 +1,15 @@
-# Reflect
+<div align="center">
 
-一个现代 C++20 反射库，同时提供编译期（静态）和运行时（动态）类型内省能力。
+# Reflection
+
+## 一个现代 C++17「及更高版本」反射库，同时提供编译期（静态）和运行时（动态）类型内省能力。
+
+![Liencese](https://img.shields.io/badge/Liencese-Apache_2.0-blue)
+![Language](https://img.shields.io/badge/Language-C/C++-red)
+![Version](https://img.shields.io/badge/Version-1.0.0-green)
+
+[English](README.md) | 中文 
+</div>
 
 ## 特性
 
@@ -23,11 +32,11 @@ struct Person {
 };
 
 // 在编译期注册字段和方法
-RFS_CLASS(Person)
+SKL_RFS_CLASS(Person)
     SKL_RFS_PROPERTY(name)
     SKL_RFS_PROPERTY(age)
     SKL_RFS_PROPERTY(greet)
-RFS_CLASS_END()
+SKL_RFS_CLASS()
 
 // 在编译期遍历已注册的成员
 constexpr auto info = SRefl::type_info<Person>();
@@ -38,13 +47,17 @@ SKL_RFD_CLASS(Person)
     SKL_RFD_PROPERTY(name)
     SKL_RFD_PROPERTY(age)
     SKL_RFD_METHOD(greet)
-SKL_RFD_CLASS_END()
+SKL_RFD_CLASS()
 
 // 在运行时查询
 auto *ti = DRefl::Registry::instance().find_by_name("Person");
 auto *field = ti->find_field("name");
 field->setter(&obj, &new_value);    // 类型擦除的字段写入
 ```
+
+> [!NOTE]
+> - [静态反射 API.md](doc/static_utils_api_zh_CN.md)
+> - [动态反射 API.md](doc/dynamic_utils_api_zh_CN.md)
 
 ## 注册宏
 
@@ -56,15 +69,19 @@ field->setter(&obj, &new_value);    // 类型擦除的字段写入
 
 | 宏 | 说明 |
 |---|------|
-| `RFS_CLASS(ClassName)` | 开始静态类注册 |
+| `SKL_RFS_CLASS(ClassName)` | 开始静态类注册 |
 | `SKL_RFS_PROPERTY(member)` | 注册静态字段或方法 |
-| `RFS_CLASS_END()` | 结束静态类注册 |
+| `SKL_RFS_CLASS()` | 结束静态类注册 |
+| `SKL_RFS_ENUM(EnumName)` | 开始静态枚举注册 |
+| `SKL_RFS_ENUM_VALUE(value, name)` | 注册静态枚举值 |
+| `SKL_RFS_ENUM()` | 结束静态枚举注册 |
 | `SKL_RFD_CLASS(ClassName)` | 开始动态类注册 |
 | `SKL_RFD_PROPERTY(member)` | 注册动态属性 |
-| `SKL_RFD_PROPERTY(member, SKL_REFT_META_STRING)` | 注册并强制保存字符串 |
 | `SKL_RFD_METHOD(method)` | 注册动态方法 |
-| `SKL_RFD_METHOD(method, SKL_REFT_META_STRING)` | 注册并强制保存字符串 |
-| `SKL_RFD_CLASS_END()` | 结束动态类注册 |
+| `SKL_RFD_CLASS()` | 结束动态类注册 |
+| `SKL_RFD_ENUM(EnumName)` | 开始动态枚举注册 |
+| `SKL_RFD_ENUM_VALUE(value, name)` | 注册动态枚举值 |
+| `SKL_RFD_ENUM()` | 结束动态枚举注册 |
 
 ### 旧版宏（向后兼容）
 
@@ -72,12 +89,19 @@ field->setter(&obj, &new_value);    // 类型擦除的字段写入
 
 | 简化宏 | 旧版等价宏 |
 |--------|-----------|
-| `RFS_CLASS(T)` | `SKL_RFS_OBJ_BEGIN(T)` |
-| `SKL_RFS_PROPERTY(m)` | `RFS_OBJ_MEM(m)` |
-| `RFS_CLASS_END()` | `SKL_RFS_OBJ_END()` |
+| `SKL_RFS_CLASS(T)` | `SKL_RFS_REGISTER_BEGIN(T)` |
+| `SKL_RFS_PROPERTY(m)` | `SKL_RFS_PROPERTY(m)` |
+| `SKL_RFS_CLASS()` | `SKL_RFS_REGISTER_END()` |
+| `SKL_RFS_ENUM(T)` | `SKL_RFS_ENUM_BEGIN(T)` |
+| `SKL_RFS_ENUM_VALUE(v, n)` | `SKL_RFS_ENUM_VALUE(v, n)` |
+| `SKL_RFS_ENUM()` | `SKL_RFS_ENUM_END()` |
 | `SKL_RFD_CLASS(T)` | `SKL_RFD_REGISTER_BEGIN(T)` |
 | `SKL_RFD_PROPERTY(m)` | `SKL_RFD_FIELD(m)` |
-| `SKL_RFD_CLASS_END()` | `SKL_RFD_REGISTER_END()` |
+| `SKL_RFD_METHOD(m)` | `SKL_RFD_METHOD(m)` |
+| `SKL_RFD_CLASS()` | `SKL_RFD_REGISTER_END()` |
+| `SKL_RFD_ENUM(T)` | `SKL_RFD_ENUM_BEGIN(T)` |
+| `SKL_RFD_ENUM_VALUE(v, n)` | `SKL_RFD_ENUM_VALUE(v, n)` |
+| `SKL_RFD_ENUM()` | `SKL_RFD_ENUM_END()` |
 
 ## 元数据系统（`metadata.h`）
 
