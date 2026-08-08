@@ -88,11 +88,11 @@ struct __base_field_traits<T, Kind::NonStaticMem_Fn, Class, Name> : fn_traits<T,
 
     [[nodiscard]] consteval static bool is_member() { return traits::is_member; }
     [[nodiscard]] consteval static bool is_static() { return traits::is_static; }
-    [[nodiscard]] consteval static bool is_const() { return (traits::modifie && fn_qualify::CONST); }
-    [[nodiscard]] consteval static bool is_volatile() { return (traits::modifie && fn_qualify::VOLATILE); }
-    [[nodiscard]] consteval static bool is_lvalue() { return (traits::modifie && fn_qualify::LVALUE); }
-    [[nodiscard]] consteval static bool is_rvalue() { return (traits::modifie && fn_qualify::RVALUE); }
-    [[nodiscard]] consteval static bool is_noexcept() { return (traits::modifie && fn_qualify::NOEXCEPT); }
+    [[nodiscard]] consteval static bool is_const() { return (traits::modifie & fn_qualify::SREFL_CONST); }
+    [[nodiscard]] consteval static bool is_volatile() { return (traits::modifie & fn_qualify::SREFL_VOLATILE); }
+    [[nodiscard]] consteval static bool is_lvalue() { return (traits::modifie & fn_qualify::SREFL_LVALUE); }
+    [[nodiscard]] consteval static bool is_rvalue() { return (traits::modifie & fn_qualify::SREFL_RVALUE); }
+    [[nodiscard]] consteval static bool is_noexcept() { return (traits::modifie & fn_qualify::SREFL_NOEXCEPT); }
     [[nodiscard]] consteval static bool is_function() { return true; }
     [[nodiscard]] consteval static bool is_variable() { return false; }
     [[nodiscard]] consteval static template_depth params_count() { return traits::params_count; }

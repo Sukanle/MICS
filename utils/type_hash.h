@@ -28,10 +28,10 @@ struct type_tag {
     static constexpr bool defined = false;
 };
 
-#define STATIC_TYPE_TAG(T, tag)                                                            \
-    template<>                                                                             \
-    struct ::Reflect::Utils::type_tag<T> {                                                 \
-        static constexpr bool defined = true;                                              \
+#define STATIC_TYPE_TAG(T, tag)                                                          \
+    template<>                                                                           \
+    struct Reflect::Utils::type_tag<T> {                                                 \
+        static constexpr bool defined = true;                                            \
         static constexpr ::Reflect::Utils::hash64_t value = ::Reflect::Utils::cstr64(tag); \
     }
 
