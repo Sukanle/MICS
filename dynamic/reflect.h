@@ -63,7 +63,14 @@ template<auto mp>
 FieldSetter make_field_setter() noexcept {
     using Class = typename member_type<decltype(mp)>::class_type;
     using Member = typename member_type<decltype(mp)>::type;
-    return [](void *obj, void *value) { (static_cast<Class *>(obj)->*mp) = *static_cast<Member *>(value); };
+    if constexpr (std::is_array_v<Member>) {
+        return [](void *obj, void *value) {
+            auto &arr = static_cast<Class *>(obj)->*mp;
+            memcpy(&arr, value, sizeof(Member));
+        };
+    } else {
+        return [](void *obj, void *value) { (static_cast<Class *>(obj)->*mp) = *static_cast<Member *>(value); };
+    }
 }
 
 }   // namespace detail

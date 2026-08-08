@@ -22,6 +22,8 @@
 #include <utility>
 #include <type_traits>
 
+#include "utils/type_hash.h"   // IWYU pragma: keep
+
 #include "dynamic/config.h"   // IWYU pragma: keep
 
 namespace Reflect::Dynamic {
@@ -103,7 +105,9 @@ public:
     }
 
     template<typename T>
-    static TypeId type_id_of() noexcept;
+    static TypeId type_id_of() noexcept {
+        return Utils::type_hash<T>();
+    }
 
 private:
     bool is_sbo() const noexcept { return _handler.clone == nullptr; }
