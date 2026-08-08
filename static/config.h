@@ -22,11 +22,11 @@
 
 namespace Reflect::Static {
 #ifndef MAX_TEMPLATE_DEPTH
-#  define MAX_TEMPLATE_DEPTH std::numeric_limits<template_depth>::max()
+#define MAX_TEMPLATE_DEPTH std::numeric_limits<template_depth>::max()
 using template_depth = uint8_t;
 #endif
 #ifndef MAX_TEMPLATE_CONSTANTS
-#  define MAX_TEMPLATE_CONSTANTS std::numeric_limits<template_constants>::max()
+#define MAX_TEMPLATE_CONSTANTS std::numeric_limits<template_constants>::max()
 using template_constants = uint8_t;
 #endif
 

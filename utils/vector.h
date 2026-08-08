@@ -19,7 +19,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 
+#include <stdexcept>
 #include <vector>
 #include <iterator>
 
@@ -275,7 +277,7 @@ public:
 
     bool reserve(size_t __n) noexcept {
         if (__n <= _M_cap) return true;
-        __n = std::max(__n, _M_cap * 2);
+        __n = fmax(__n, _M_cap * 2);
         auto __old_data = _M_data;
         auto __old_cap = _M_cap;
         if (__n == 0) {

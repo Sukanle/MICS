@@ -61,7 +61,7 @@ template<typename T, typename Class = void, SKL_DEFAULT_TEMPLATE_STRING(Name, ""
 struct field_traits : __base_field_traits<T, is_Kind<T>(), Class, Name> {
     using traits = __base_field_traits<T, is_Kind<T>(), Class, Name>;
     explicit field_traits() = default;
-    [[nodiscard]] Utils::string_view getName() const { return _name; }
+    [[nodiscard]] consteval Utils::string_view getName() const { return _name; }
     explicit field_traits(T &ptr, Utils::string_view name = "")
         : __base_field_traits<T, is_Kind<T>(), Class, Name>{ptr}
         , _name(name) {}
@@ -76,7 +76,7 @@ struct field_traits : __base_field_traits<T, is_Kind<T>(), Class, Name> {
             "an object constructed when passing in the second template "
             "argument to `SRef::field_traits` in order to be called; \n"
             "To fix this bug, pass in the second template variable, or "
-            "call `SRef::field_trait obj.sgetName()`.");
+            "call `SRef::field_traits obj.getName()`.");
 #endif
         return NameAccessor<Name>();
     }
