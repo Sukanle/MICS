@@ -409,7 +409,7 @@ SKL_RFD_ENUM_END()
 |----------|-------------|
 | `member_type<T Class::*>` | 从成员指针提取 `type` 和 `class_type` |
 | `make_field_getter<auto mp>()` | 从成员指针（模板参数）创建 `FieldGetter` |
-| `make_field_setter<auto mp>()` | 从成员指针（模板参数）创建 `FieldSetter` |
+| `make_field_setter<auto mp>()` | 从成员指针（模板参数）创建 `FieldSetter`（数组成员通过 `memcpy` 复制） |
 
 ---
 

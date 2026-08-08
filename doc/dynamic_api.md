@@ -409,7 +409,7 @@ SKL_RFD_ENUM_END()
 |----------|-------------|
 | `member_type<T Class::*>` | Extracts `type` and `class_type` from member pointer |
 | `make_field_getter<auto mp>()` | Creates `FieldGetter` from member pointer (template param) |
-| `make_field_setter<auto mp>()` | Creates `FieldSetter` from member pointer (template param) |
+| `make_field_setter<auto mp>()` | Creates `FieldSetter` from member pointer (template param); array members are copied via `memcpy` |
 
 ---
 

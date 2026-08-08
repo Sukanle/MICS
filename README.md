@@ -15,7 +15,7 @@ English | [中文](README_ZH.md)
 
 - **Static Reflection** — Compile-time type introspection, template metaprogramming, and zero-overhead field/method iteration via `consteval`/`constexpr`
 - **Dynamic Reflection** — Runtime type registration, type-erased field access, and method invocation with a global registry
-- **ABI-Stable Container** — Immutable, move-only `Utils::vector<T>` with fixed memory layout, cross-version binary compatibility, designed as the data carrier for dynamic reflection
+- **SKL_ABIX-Stable Container** — Immutable, move-only `Utils::vector<T>` with fixed memory layout, cross-version binary compatibility, designed as the data carrier for dynamic reflection
 - **Type Hashing** — FNV-1a based compile-time type hashing, enabling cross-boundary type identification (e.g., DLL/SO hot-reload)
 - **Functional-Type Programming** — Compile-time type list manipulation (`map`, `filter`, `fold`, `flat_map`, `unique`, etc.)
 
@@ -105,7 +105,7 @@ The original verbose macros remain available internally:
 
 ## Metadata System (`metadata.h`)
 
-The metadata system provides a stable ABI through fixed-layout structures and external string tables.
+The metadata system provides a stable SKL_ABIX through fixed-layout structures and external string tables.
 
 ### Metadata Modes
 
@@ -120,7 +120,7 @@ Default strategy: Debug → `STR`, Release → `HASH`. Override with `-DSKL_REFT
 ### Key Types
 
 ```cpp
-// Fixed ABI structure — layout never changes
+// Fixed SKL_ABIX structure — layout never changes
 struct MetaEntry {
     uint64_t id;              // FNV1a64 hash
     uint32_t flags;           // MetaFlags bitmask
@@ -171,8 +171,9 @@ Refection/
 ├── utils/                 # Shared utilities
 │   ├── hash.h             # FNV-1a hash functions, calling convention tags
 │   ├── type_hash.h        # Compile-time type → hash mapping
+│   ├── fn_hash.h          # Function-signature folding hash (compute_fn_hash)
 │   ├── string_view.h      # Lightweight string_view implementation
-│   └── vector.h           # ABI-stable immutable container (dynamic reflection data carrier)
+│   └── vector.h           # SKL_ABIX-stable immutable container (dynamic reflection data carrier)
 ├── doc/                   # API documentation
 └── HLMD/                  # Macro utility library (internal)
 ```

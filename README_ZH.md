@@ -15,7 +15,7 @@
 
 - **静态反射** — 编译期类型内省、模板元编程，通过 `consteval`/`constexpr` 实现零开销的字段/方法遍历
 - **动态反射** — 运行时类型注册、类型擦除的字段访问以及带全局注册表的方法调用
-- **ABI 稳定容器** — 不可变、仅移动的 `Utils::vector<T>`，固定内存布局，跨版本二进制兼容，专为动态反射数据载体设计
+- **SKL_ABIX 稳定容器** — 不可变、仅移动的 `Utils::vector<T>`，固定内存布局，跨版本二进制兼容，专为动态反射数据载体设计
 - **类型哈希** — 基于 FNV-1a 的编译期类型哈希，支持跨边界类型识别（如 DLL/SO 热重载）
 - **函数式类型编程** — 编译期类型列表操作（`map`、`filter`、`fold`、`flat_map`、`unique` 等）
 
@@ -105,7 +105,7 @@ field->setter(&obj, &new_value);    // 类型擦除的字段写入
 
 ## 元数据系统（`metadata.h`）
 
-元数据系统通过固定布局结构和外部字符串表提供稳定的 ABI。
+元数据系统通过固定布局结构和外部字符串表提供稳定的 SKL_ABIX。
 
 ### 元数据模式
 
@@ -120,7 +120,7 @@ field->setter(&obj, &new_value);    // 类型擦除的字段写入
 ### 核心类型
 
 ```cpp
-// 固定 ABI 结构 — 布局永远不变
+// 固定 SKL_ABIX 结构 — 布局永远不变
 struct MetaEntry {
     uint64_t id;              // FNV1a64 哈希
     uint32_t flags;           // MetaFlags 位掩码
@@ -171,8 +171,9 @@ Refection/
 ├── utils/                 # 共享工具
 │   ├── hash.h             # FNV-1a 哈希函数、调用约定标签
 │   ├── type_hash.h        # 编译期类型 → 哈希映射
+│   ├── fn_hash.h          # 函数签名折叠哈希（compute_fn_hash）
 │   ├── string_view.h      # 轻量级 string_view 实现
-│   └── vector.h           # ABI 稳定不可变容器（动态反射数据载体）
+│   └── vector.h           # SKL_ABIX 稳定不可变容器（动态反射数据载体）
 ├── doc/                   # API 文档
 └── HLMD/                  # 宏工具库（内部）
 ```

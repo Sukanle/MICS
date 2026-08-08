@@ -138,6 +138,26 @@ sv.push_back(4);  // 对 std::vector 的修改不影响原始 v
 
 ---
 
+### 1.4 `fn_hash.h` — 函数签名折叠哈希
+
+**命名空间：** `Reflect::Utils`
+
+| 符号 | 类型 | 说明 |
+|--------|------|-------------|
+| `compute_fn_hash<RetHash, ArgHashes...>()` | `constexpr hash64_t` | 将「返回类型哈希 + 参数类型哈希序列」折叠成不含调用约定的稳定函数签名哈希 |
+
+函数签名折叠哈希的唯一核心：把函数签名折成不含调用约定的稳定哈希，作为两处手写算法的单一来源（single source of truth）。`Reflect::Static::fn_traits` 与 ABIX 跨 DLL 反射层（`skl::abix::fn_sig`）共用：
+
+- 调用方把各自的编译期类型哈希作为模板参数传入（静态反射传 `type_hash_v<Ret>` / `type_hash_v<Args>`）。
+- 本函数**故意不**编码调用约定；调用约定由上层自行处理（如 ABIX 在调用后自行混入其 `cc::tag` 协议码）。
+
+**使用示例：**
+```cpp
+constexpr auto h = Utils::compute_fn_hash<Utils::type_hash_v<int>, Utils::type_hash_v<int>>();
+```
+
+---
+
 ## 2. 静态反射（`static/`）
 
 ### 2.1 `config.h` — 核心类型定义
@@ -262,22 +282,19 @@ constexpr auto n = Fp::size<Unique>;                      // 2
 | `__base_fn_traits<Signature, Class, Name>` | `name`、`is_member`、`params_count`、`hash` |
 | `fn_traits<Signature, Class, Name>` | 完整萃取，含 `fn_ptr`/`m_fn_ptr`、`modifie` 位掩码 |
 
+**`hash` 来源：** 每个 `__base_fn_traits` 的 `hash` 通过 `Reflect::Utils::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()` 计算，不含调用约定编码。
+
 **`fn_qualify` 位掩码常量：**
 
 | 常量 | 值 | 含义 |
 |----------|-------|---------|
-| `NOTHING` | `0x00` | 无修饰符 |
-| `NOEXCEPT` | `0x01` | `noexcept` |
-| `CONST` | `0x02` | `const` |
-| `VOLATILE` | `0x04` | `volatile` |
-| `CV` | `0x06` | `const volatile` |
-| `LVALUE` | `0x08` | `&`（左值引用限定） |
-| `RVALUE` | `0x10` | `&&`（右值引用限定） |
-| `CC_MASK` | `0x60` | 调用约定掩码 |
-| `CDECL` | `0x00` | `__cdecl` |
-| `STDCALL` | `0x20` | `__stdcall` |
-| `FASTCALL` | `0x40` | `__fastcall` |
-| `VECTORCALL` | `0x60` | `__vectorcall` |
+| `SREFL_NOTHING` | `0x00` | 无修饰符 |
+| `SREFL_NOEXCEPT` | `0x01` | `noexcept` |
+| `SREFL_CONST` | `0x02` | `const` |
+| `SREFL_VOLATILE` | `0x04` | `volatile` |
+| `SREFL_CV` | `0x06` | `const volatile` |
+| `SREFL_LVALUE` | `0x08` | `&`（左值引用限定） |
+| `SREFL_RVALUE` | `0x10` | `&&`（右值引用限定） |
 
 **宏辅助：**
 - `SREFL_FNT_HELP(fn, ...)` — 解析成员函数指针类型，支持可选的类上下文

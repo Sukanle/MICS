@@ -68,7 +68,7 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 ---
 
-### 1.3 `vector.h` — ABI-Stable Immutable Container
+### 1.3 `vector.h` — ABI Immutable Container
 
 **Namespace:** `Reflect::Utils`
 
@@ -134,6 +134,26 @@ for (std::size_t i = 0; i < v.size(); ++i) {
 // Convert to std::vector for external manipulation
 std::vector<int> sv = v.to_std();
 sv.push_back(4);  // modification to std::vector does not affect original v
+```
+
+---
+
+### 1.4 `fn_hash.h` — Function-Signature Folding Hash
+
+**Namespace:** `Reflect::Utils`
+
+| Symbol | Type | Description |
+|--------|------|-------------|
+| `compute_fn_hash<RetHash, ArgHashes...>()` | `constexpr hash64_t` | Fold a return-type hash plus a sequence of argument-type hashes into a stable function-signature hash |
+
+The single source of truth for folding a function signature into a hash that deliberately excludes any calling-convention encoding. Both `Reflect::Static::fn_traits` and the ABIX cross-DLL reflection layer (`skl::abix::fn_sig`) reuse it:
+
+- Callers pass their own compile-time type hashes as template arguments (`type_hash_v<Ret>` / `type_hash_v<Args>` for static reflection).
+- It never encodes the calling convention; upper layers fold it in separately (e.g. ABIX mixes its `cc::tag` protocol code after the call).
+
+**Usage Example:**
+```cpp
+constexpr auto h = Utils::compute_fn_hash<Utils::type_hash_v<int>, Utils::type_hash_v<int>>();
 ```
 
 ---
@@ -262,22 +282,19 @@ constexpr auto n = Fp::size<Unique>;                      // 2
 | `__base_fn_traits<Signature, Class, Name>` | `name`, `is_member`, `params_count`, `hash` |
 | `fn_traits<Signature, Class, Name>` | Full traits with `fn_ptr`/`m_fn_ptr`, `modifie` bitmask |
 
+**`hash` source:** Each `__base_fn_traits` computes its `hash` via `Reflect::Utils::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()`; it never encodes the calling convention.
+
 **`fn_qualify` bitmask constants:**
 
 | Constant | Value | Meaning |
 |----------|-------|---------|
-| `NOTHING` | `0x00` | No qualifiers |
-| `NOEXCEPT` | `0x01` | `noexcept` |
-| `CONST` | `0x02` | `const` |
-| `VOLATILE` | `0x04` | `volatile` |
-| `CV` | `0x06` | `const volatile` |
-| `LVALUE` | `0x08` | `&` (lvalue-ref qualified) |
-| `RVALUE` | `0x10` | `&&` (rvalue-ref qualified) |
-| `CC_MASK` | `0x60` | Calling convention mask |
-| `CDECL` | `0x00` | `__cdecl` |
-| `STDCALL` | `0x20` | `__stdcall` |
-| `FASTCALL` | `0x40` | `__fastcall` |
-| `VECTORCALL` | `0x60` | `__vectorcall` |
+| `SREFL_NOTHING` | `0x00` | No qualifiers |
+| `SREFL_NOEXCEPT` | `0x01` | `noexcept` |
+| `SREFL_CONST` | `0x02` | `const` |
+| `SREFL_VOLATILE` | `0x04` | `volatile` |
+| `SREFL_CV` | `0x06` | `const volatile` |
+| `SREFL_LVALUE` | `0x08` | `&` (lvalue-ref qualified) |
+| `SREFL_RVALUE` | `0x10` | `&&` (rvalue-ref qualified) |
 
 **Macro helpers:**
 - `SREFL_FNT_HELP(fn, ...)` — Resolves member function pointer type with optional class context
