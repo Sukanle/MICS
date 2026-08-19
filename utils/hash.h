@@ -17,6 +17,7 @@
 #define SKL_UTILS_HASH_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 namespace Reflect::Utils {
 
