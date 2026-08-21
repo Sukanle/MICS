@@ -17,6 +17,8 @@
 #define SKL_UTILS_TYPE_HASH_H
 
 #include <stdint.h>
+#include <limits.h>
+#include <math.h>
 #include <type_traits>
 
 #include "utils/hash.h"   // IWYU pragma: keep
@@ -28,10 +30,10 @@ struct type_tag {
     static constexpr bool defined = false;
 };
 
-#define STATIC_TYPE_TAG(T, tag)                                                          \
-    template<>                                                                           \
-    struct Reflect::Utils::type_tag<T> {                                                 \
-        static constexpr bool defined = true;                                            \
+#define STATIC_TYPE_TAG(T, tag)                                                            \
+    template<>                                                                             \
+    struct Reflect::Utils::type_tag<T> {                                                   \
+        static constexpr bool defined = true;                                              \
         static constexpr ::Reflect::Utils::hash64_t value = ::Reflect::Utils::cstr64(tag); \
     }
 
@@ -40,28 +42,58 @@ namespace detail {
 template<typename T>
 struct type_hash_impl;
 
+// Integral types excluding bool (handled separately) and char (character type).
+// This trait drives automatic hash generation for all integer types based on
+// sizeof + signedness, avoiding platform-dependent alias issues (long, long long, etc.).
+template<typename T>
+struct is_integral : std::integral_constant<bool, std::is_integral_v<T>
+                                                      && !std::is_same_v<std::remove_cv_t<T>, bool>
+                                                      && !std::is_same_v<std::remove_cv_t<T>, char>> {};
+
+template<typename T>
+inline constexpr bool is_integral_v = is_integral<T>::value;
+
+template<typename T, typename = std::enable_if_t<is_integral_v<T>>>
+struct integer_trait {
+    struct integer_info {
+        bool is_signed;
+        uint8_t bits;
+
+        constexpr const char *tag() const noexcept {
+            if (is_signed) {
+                if (bits == 8) return "i8";
+                if (bits == 16) return "i16";
+                if (bits == 32) return "i32";
+                if (bits == 64) return "i64";
+            } else {
+                if (bits == 8) return "u8";
+                if (bits == 16) return "u16";
+                if (bits == 32) return "u32";
+                if (bits == 64) return "u64";
+            }
+            return "??";
+        }
+    };
+
+    static constexpr integer_info info{std::is_signed_v<T>, static_cast<uint8_t>(sizeof(T) * CHAR_BIT)};
+};
+
+
 #define STATIC_DEF_TYPE_HASH(T, tag)                   \
     template<>                                         \
     struct type_hash_impl<T> {                         \
         static constexpr hash64_t value = cstr64(tag); \
     }
 
+// Basic types (not integral)
 STATIC_DEF_TYPE_HASH(void, "v");
 STATIC_DEF_TYPE_HASH(bool, "b");
 STATIC_DEF_TYPE_HASH(char, "c");
-STATIC_DEF_TYPE_HASH(int8_t, "i8");
-STATIC_DEF_TYPE_HASH(uint8_t, "u8");
-STATIC_DEF_TYPE_HASH(int16_t, "i16");
-STATIC_DEF_TYPE_HASH(uint16_t, "u16");
-STATIC_DEF_TYPE_HASH(int32_t, "i32");
-STATIC_DEF_TYPE_HASH(uint32_t, "u32");
-STATIC_DEF_TYPE_HASH(long, "l");
-STATIC_DEF_TYPE_HASH(unsigned long, "ul");
-STATIC_DEF_TYPE_HASH(int64_t, "i64");
-STATIC_DEF_TYPE_HASH(uint64_t, "u64");
 STATIC_DEF_TYPE_HASH(float, "f");
 STATIC_DEF_TYPE_HASH(double, "d");
 STATIC_DEF_TYPE_HASH(long double, "ld");
+
+// Character types
 #if __cpp_char8_t >= 201'811L
 STATIC_DEF_TYPE_HASH(char8_t, "c8");
 #endif
@@ -92,7 +124,9 @@ struct dependent_false : std::false_type {};
 template<typename T>
 struct type_hash_impl {
     static constexpr hash64_t value = []() {
-        if constexpr (type_tag<T>::defined) {
+        if constexpr (is_integral_v<T>) {
+            return cstr64(integer_trait<T>::info.tag());
+        } else if constexpr (type_tag<T>::defined) {
             return type_tag<T>::value;
         } else {
             static_assert(
