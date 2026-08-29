@@ -1,14 +1,16 @@
 # Static Reflection & Utils API Reference
 
-This document covers the compile-time static reflection system (`static/`) and shared utilities (`utils/`).
+This document covers the compile-time static reflection system (`ct/`) and shared utilities (`util/`).
+
+> **Namespace mapping:** `Reflect::Static` → `mics::ct` (alias `SRefl`), `Reflect::Utils` → `mics::util` (alias `URefl`), `Reflect::Static::Fp` → `mics::ct::fp`
 
 ---
 
-## 1. Utils (`utils/`)
+## 1. Util (`util/`)
 
 ### 1.1 `hash.h` — FNV-1a Hash Functions
 
-**Namespace:** `Reflect::Utils`
+**Namespace:** `mics::util` / `URefl`
 
 | Symbol | Type | Description |
 |--------|------|-------------|
@@ -23,7 +25,7 @@ This document covers the compile-time static reflection system (`static/`) and s
 **Calling Convention Tags:**
 
 ```cpp
-namespace Reflect::Utils::cc {
+namespace mics::util::cc {
     enum class tag : uint8_t {
         Cdecl      = 0,
         Stdcall    = 1,
@@ -35,15 +37,15 @@ namespace Reflect::Utils::cc {
 
 **Usage Example:**
 ```cpp
-constexpr auto h = Utils::cstr64("MyType");           // compile-time hash
-constexpr auto combined = Utils::mix(h, Utils::cstr64("::field")); // combine
+constexpr auto h = URefl::cstr64("MyType");           // compile-time hash
+constexpr auto combined = URefl::mix(h, URefl::cstr64("::field")); // combine
 ```
 
 ---
 
 ### 1.2 `type_hash.h` — Compile-time Type → Hash
 
-**Namespace:** `Reflect::Utils`
+**Namespace:** `mics::util`
 
 | Symbol | Type | Description |
 |--------|------|-------------|
@@ -70,9 +72,9 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 ### 1.3 `vector.h` — ABI Immutable Container
 
-**Namespace:** `Reflect::Utils`
+**Namespace:** `mics::util`
 
-`Utils::vector<T>` is an ABI-stable container designed specifically as the data carrier for dynamic reflection, with the following mandatory constraints:
+`URefl::vector<T>` is an ABI-stable container designed specifically as the data carrier for dynamic reflection, with the following mandatory constraints:
 
 | Constraint | Implementation |
 |------------|----------------|
@@ -120,11 +122,11 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 **Usage Example:**
 ```cpp
 // Build via builder
-Utils::vector_builder<int> b;
+URefl::vector_builder<int> b;
 b.push_back(1);
 b.push_back(2);
 b.push_back(3);
-Utils::vector<int> v = std::move(b).build();
+URefl::vector<int> v = std::move(b).build();
 
 // Read-only access
 for (std::size_t i = 0; i < v.size(); ++i) {
@@ -140,29 +142,29 @@ sv.push_back(4);  // modification to std::vector does not affect original v
 
 ### 1.4 `fn_hash.h` — Function-Signature Folding Hash
 
-**Namespace:** `Reflect::Utils`
+**Namespace:** `mics::util`
 
 | Symbol | Type | Description |
 |--------|------|-------------|
 | `compute_fn_hash<RetHash, ArgHashes...>()` | `constexpr hash64_t` | Fold a return-type hash plus a sequence of argument-type hashes into a stable function-signature hash |
 
-The single source of truth for folding a function signature into a hash that deliberately excludes any calling-convention encoding. Both `Reflect::Static::fn_traits` and the ABIX cross-DLL reflection layer (`skl::abix::fn_sig`) reuse it:
+The single source of truth for folding a function signature into a hash that deliberately excludes any calling-convention encoding. Both `mics::ct::fn_traits` and the ABIX cross-DLL reflection layer (`skl::abix::fn_sig`) reuse it:
 
 - Callers pass their own compile-time type hashes as template arguments (`type_hash_v<Ret>` / `type_hash_v<Args>` for static reflection).
 - It never encodes the calling convention; upper layers fold it in separately (e.g. ABIX mixes its `cc::tag` protocol code after the call).
 
 **Usage Example:**
 ```cpp
-constexpr auto h = Utils::compute_fn_hash<Utils::type_hash_v<int>, Utils::type_hash_v<int>>();
+constexpr auto h = URefl::compute_fn_hash<URefl::type_hash_v<int>, URefl::type_hash_v<int>>();
 ```
 
 ---
 
-## 2. Static Reflection (`static/`)
+## 2. Static Reflection (`ct/`)
 
 ### 2.1 `config.h` — Core Type Definitions
 
-**Namespace:** `Reflect::Static`
+**Namespace:** `mics::ct`
 
 | Symbol | Type | Description |
 |--------|------|-------------|
@@ -179,7 +181,7 @@ constexpr auto h = Utils::compute_fn_hash<Utils::type_hash_v<int>, Utils::type_h
 
 ### 2.2 `template_string.h` — Non-Type Template String
 
-**Namespace:** `Reflect::Static`
+**Namespace:** `mics::ct`
 
 Compile-time string as a non-type template parameter (C++20 `__cpp_nontype_template_args`).
 
@@ -204,7 +206,7 @@ struct my_trait {
 
 ### 2.3 `fp.h` / `base_fp.h` — Type List Functional Programming
 
-**Namespace:** `Reflect::Static::Fp`
+**Namespace:** `mics::ct::fp`
 
 A compile-time functional programming library operating on `type_list<...>`.
 
@@ -251,16 +253,16 @@ A compile-time functional programming library operating on `type_list<...>`.
 **Usage Example:**
 ```cpp
 using List = type_list<int, char, double, int>;
-using Filtered = Fp::filter<List, std::is_integral>;    // type_list<int, char, int>
-using Unique = Fp::unique<Filtered>;                      // type_list<int, char>
-constexpr auto n = Fp::size<Unique>;                      // 2
+using Filtered = fp::filter<List, std::is_integral>;    // type_list<int, char, int>
+using Unique = fp::unique<Filtered>;                      // type_list<int, char>
+constexpr auto n = fp::size<Unique>;                      // 2
 ```
 
 ---
 
 ### 2.4 `var_traits.h` — Variable / Field Traits
 
-**Namespace:** `Reflect::Static`
+**Namespace:** `mics::ct`
 
 | Symbol | Description |
 |--------|-------------|
@@ -274,7 +276,7 @@ constexpr auto n = Fp::size<Unique>;                      // 2
 
 ### 2.5 `fn_traits.h` — Function / Method Traits
 
-**Namespace:** `Reflect::Static`
+**Namespace:** `mics::ct`
 
 | Symbol | Description |
 |--------|-------------|
@@ -282,7 +284,7 @@ constexpr auto n = Fp::size<Unique>;                      // 2
 | `__base_fn_traits<Signature, Class, Name>` | `name`, `is_member`, `params_count`, `hash` |
 | `fn_traits<Signature, Class, Name>` | Full traits with `fn_ptr`/`m_fn_ptr`, `modifie` bitmask |
 
-**`hash` source:** Each `__base_fn_traits` computes its `hash` via `Reflect::Utils::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()`; it never encodes the calling convention.
+**`hash` source:** Each `__base_fn_traits` computes its `hash` via `mics::util::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()`; it never encodes the calling convention.
 
 **`fn_qualify` bitmask constants:**
 
@@ -311,7 +313,7 @@ constexpr auto h = Traits::hash;   // unique signature hash
 
 ### 2.6 `enum_traits.h` — Enum Traits
 
-**Namespace:** `Reflect::Static`
+**Namespace:** `mics::ct`
 
 | Symbol | Description |
 |--------|-------------|
@@ -336,7 +338,7 @@ static_assert(enum_traits<Color>::is_scoped);
 
 ### 2.7 `base_reflect.h` — Unified Field Traits
 
-**Namespace:** `Reflect::Static`
+**Namespace:** `mics::ct`
 
 | Symbol | Description |
 |--------|-------------|
@@ -354,7 +356,7 @@ static_assert(enum_traits<Color>::is_scoped);
 
 ### 2.8 `reflect.h` — Public API
 
-**Namespace:** `Reflect::Static`
+**Namespace:** `mics::ct`
 
 | Symbol | Description |
 |--------|-------------|
@@ -415,15 +417,18 @@ constexpr auto info = type_info<Person>();
 
 ---
 
-## 4. Global Aliases
+## 4. User Aliases
 
-Defined in `reflect.h` (root):
+Defined in `mics.h` (root):
 
 ```cpp
-namespace SRefl = Reflect::Static;
-namespace DRefl = Reflect::Dynamic;
+namespace SRefl = ::mics::ct;     // Compile-time static reflection
+namespace DRefl = ::mics::rt;     // Runtime dynamic reflection
+namespace URefl = ::mics::util;   // ABI-stable utility container
 ```
 
 These provide convenient shorthand:
 - `SRefl::type_info<T>()` — static reflection entry
 - `DRefl::Registry::instance()` — dynamic reflection entry
+- `URefl::vector<T>` — ABI-stable container
+- `URefl::string_view` — lightweight string view

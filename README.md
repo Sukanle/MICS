@@ -1,8 +1,8 @@
 <div align="center">
 
-# Reflection
+# MICS
 
-## A modern C++17 (and later) reflection library providing both compile-time (static) and runtime (dynamic) type introspection.
+## Meta Information Core System — A dual-track (compile-time + runtime) type introspection infrastructure.
 
 ![Liencese](https://img.shields.io/badge/Liencese-Apache_2.0-blue)
 ![Language](https://img.shields.io/badge/Language-C/C++-red)
@@ -11,18 +11,28 @@
 English | [中文](README_ZH.md)
 </div>
 
+MICS provides **zero-overhead compile-time static reflection** (field/method traversal, type list functional programming) and **runtime dynamic reflection** (global registry, type-erased accessors, method invokers) over a unified type metadata framework. Its underlying ABI-stable container (`URefl::vector<T>`) ensures cross-DLL/SO binary compatibility.
+
+### User Aliases
+
+| Alias | Namespace | Description |
+|-------|-----------|-------------|
+| `SRefl` | `mics::ct` | Compile-time static reflection |
+| `DRefl` | `mics::rt` | Runtime dynamic reflection |
+| `URefl` | `mics::util` | ABI-stable utility container |
+
 ## Features
 
-- **Static Reflection** — Compile-time type introspection, template metaprogramming, and zero-overhead field/method iteration via `consteval`/`constexpr`
-- **Dynamic Reflection** — Runtime type registration, type-erased field access, and method invocation with a global registry
-- **SKL_ABIX-Stable Container** — Immutable, move-only `Utils::vector<T>` with fixed memory layout, cross-version binary compatibility, designed as the data carrier for dynamic reflection
+- **Compile-time Static Reflection** (`mics::ct` / `SRefl`) — Compile-time type introspection, template metaprogramming, and zero-overhead field/method iteration via `consteval`/`constexpr`
+- **Runtime Dynamic Reflection** (`mics::rt` / `DRefl`) — Runtime type registration, type-erased field access, and method invocation with a global registry
+- **ABI-Stable Container** (`URefl::vector<T>`) — Immutable, move-only container with fixed memory layout, cross-version binary compatibility, designed as the data carrier for dynamic reflection
 - **Type Hashing** — FNV-1a based compile-time type hashing, enabling cross-boundary type identification (e.g., DLL/SO hot-reload)
 - **Functional-Type Programming** — Compile-time type list manipulation (`map`, `filter`, `fold`, `flat_map`, `unique`, etc.)
 
 ## Quick Start
 
 ```cpp
-#include "reflect.h"
+#include "mics.h"
 
 // --- Static Reflection ---
 struct Person {
@@ -56,8 +66,8 @@ field->setter(&obj, &new_value);    // type-erased field write
 ```
 
 > [!NOTE]
-> - [Static Reflection API.md](doc/static_utils_api_zh_CN.md)
-> - [Dynamic Reflection API.md](doc/dynamic_utils_api_zh_CN.md)
+> - [Static Reflection API](docs/static_utils_api.md)
+> - [Dynamic Reflection API](docs/dynamic_api.md)
 
 ## Registration Macros
 
@@ -146,36 +156,36 @@ constexpr uint32_t id32 = SKL_REFT_HASH32("Player.Health");
 ## Directory Structure
 
 ```
-Refection/
-├── reflect.h              # Main entry header (includes static + dynamic)
-├── metadata.h             # Metadata system (MetaEntry, MetaMode, SKL_REFT_HASH, StringTable)
-├── static/                # Compile-time static reflection
-│   ├── reflect.h          # Public API & field_traits, TypeInfo
-│   ├── base_reflect.h     # __base_field_traits (var/fn dispatch)
-│   ├── base_fp.h          # Low-level type list operations
-│   ├── fp.h               # Public type list API (Fp namespace)
-│   ├── var_traits.h       # Variable/field traits
-│   ├── fn_traits.h        # Function/method traits (qualifiers, hash)
-│   ├── enum_traits.h      # Enum traits & scoped enum detection
-│   ├── config.h           # type_list, template_depth, is_virtual_base_of
-│   └── template_string.h  # Non-type template parameter string support
-├── dynamic/               # Runtime dynamic reflection
-│   ├── reflect.h          # Public API, registration macros, type_id_of
-│   ├── config.h           # TypeId, Kind, FieldKind, Visibility enums
-│   ├── type_info.h        # TypeInfo: aggregate descriptor (fields/methods/bases)
-│   ├── field_info.h       # FieldInfo + FieldAccessor (getter/setter)
-│   ├── fn_info.h          # FnInfo + MethodInvoker + ParamInfo
-│   ├── enum_info.h        # EnumInfo + EnumEntry
-│   ├── any.h              # Any: type-erased value container (SBO)
-│   └── registry.h         # Registry: global singleton type registry
-├── utils/                 # Shared utilities
-│   ├── hash.h             # FNV-1a hash functions, calling convention tags
-│   ├── type_hash.h        # Compile-time type → hash mapping
-│   ├── fn_hash.h          # Function-signature folding hash (compute_fn_hash)
-│   ├── string_view.h      # Lightweight string_view implementation
-│   └── vector.h           # SKL_ABIX-stable immutable container (dynamic reflection data carrier)
-├── doc/                   # API documentation
-└── HLMD/                  # Macro utility library (internal)
+MICS/
+├── mics.h                # Main entry header (includes ct + rt)
+├── metadata.h            # Metadata system (MetaEntry, MetaMode, SKL_REFT_HASH, StringTable)
+├── ct/                   # Compile-time static reflection (mics::ct / SRefl)
+│   ├── reflect.h         # Public API & field_traits, TypeInfo
+│   ├── base_reflect.h    # __base_field_traits (var/fn dispatch)
+│   ├── base_fp.h         # Low-level type list operations
+│   ├── fp.h              # Public type list API (mics::ct::fp)
+│   ├── var_traits.h      # Variable/field traits
+│   ├── fn_traits.h       # Function/method traits (qualifiers, hash)
+│   ├── enum_traits.h     # Enum traits & scoped enum detection
+│   ├── config.h          # type_list, template_depth, is_virtual_base_of
+│   └── template_string.h # Non-type template parameter string support
+├── rt/                   # Runtime dynamic reflection (mics::rt / DRefl)
+│   ├── reflect.h         # Public API, registration macros, type_id_of
+│   ├── config.h          # TypeId, Kind, FieldKind, Visibility enums
+│   ├── type_info.h       # TypeInfo: aggregate descriptor (fields/methods/bases)
+│   ├── field_info.h      # FieldInfo + FieldAccessor (getter/setter)
+│   ├── fn_info.h         # FnInfo + MethodInvoker + ParamInfo
+│   ├── enum_info.h       # EnumInfo + EnumEntry
+│   ├── any.h             # Any: type-erased value container (SBO)
+│   └── registry.h        # Registry: global singleton type registry
+├── util/                 # Shared utilities (mics::util / URefl)
+│   ├── hash.h            # FNV-1a hash functions, calling convention tags
+│   ├── type_hash.h       # Compile-time type → hash mapping
+│   ├── fn_hash.h         # Function-signature folding hash (compute_fn_hash)
+│   ├── string_view.h     # Lightweight string_view implementation
+│   └── vector.h          # ABI-stable immutable container (dynamic reflection data carrier)
+├── doc/                  # API documentation
+└── HLMD/                 # Macro utility library (internal)
 ```
 
 ## Supported Platforms & Toolchains

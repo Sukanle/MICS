@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_STATIC_CONFIG_H_
-#define SKL_RELECT_STATIC_CONFIG_H_
+#ifndef SKL_MICS_CT_CONFIG_H_
+#define SKL_MICS_CT_CONFIG_H_
 
 #include <stdint.h>
 
 #include <type_traits>   // IWYU pragma: keep
 
-namespace Reflect::Static {
+namespace mics::ct {
 #ifndef MAX_TEMPLATE_DEPTH
 #define MAX_TEMPLATE_DEPTH std::numeric_limits<template_depth>::max()
 using template_depth = uint8_t;
@@ -75,5 +75,5 @@ struct is_type_list_of<type_list<Args...>> : std::true_type {};
 template<typename T>
 inline constexpr bool is_type_list_of_v = is_type_list_of<T>::value;
 
-}   // namespace Reflect::Static
+}   // namespace mics::ct
 #endif

@@ -1,8 +1,8 @@
 <div align="center">
 
-# Reflection
+# MICS
 
-## 一个现代 C++17「及更高版本」反射库，同时提供编译期（静态）和运行时（动态）类型内省能力。
+## 元信息核心系统（Meta Information Core System）— 双轨（编译期 + 运行时）类型内省基础设施。
 
 ![Liencese](https://img.shields.io/badge/Liencese-Apache_2.0-blue)
 ![Language](https://img.shields.io/badge/Language-C/C++-red)
@@ -11,18 +11,28 @@
 [English](README.md) | 中文 
 </div>
 
+MICS 在编译期提供零开销的静态反射（字段/方法遍历、类型列表函数式操作），在运行时提供基于全局注册表的动态类型查询（类型擦除访问器、方法调用器）。其底层以 ABI 稳定容器（`URefl::vector<T>`）承载元数据，确保跨 DLL/SO 边界二进制兼容。
+
+### 用户别名
+
+| 别名 | 命名空间 | 说明 |
+|------|----------|------|
+| `SRefl` | `mics::ct` | 编译期静态反射（Static Reflection） |
+| `DRefl` | `mics::rt` | 运行时动态反射（Dynamic Reflection） |
+| `URefl` | `mics::util` | ABI 稳定工具容器（Utility Reflection） |
+
 ## 特性
 
-- **静态反射** — 编译期类型内省、模板元编程，通过 `consteval`/`constexpr` 实现零开销的字段/方法遍历
-- **动态反射** — 运行时类型注册、类型擦除的字段访问以及带全局注册表的方法调用
-- **SKL_ABIX 稳定容器** — 不可变、仅移动的 `Utils::vector<T>`，固定内存布局，跨版本二进制兼容，专为动态反射数据载体设计
+- **编译期静态反射**（`mics::ct` / `SRefl`）— 编译期类型内省、模板元编程，通过 `consteval`/`constexpr` 实现零开销的字段/方法遍历
+- **运行时动态反射**（`mics::rt` / `DRefl`）— 运行时类型注册、类型擦除的字段访问以及带全局注册表的方法调用
+- **ABI 稳定容器**（`URefl::vector<T>`）— 不可变、仅移动容器，固定内存布局，跨版本二进制兼容，专为动态反射数据载体设计
 - **类型哈希** — 基于 FNV-1a 的编译期类型哈希，支持跨边界类型识别（如 DLL/SO 热重载）
 - **函数式类型编程** — 编译期类型列表操作（`map`、`filter`、`fold`、`flat_map`、`unique` 等）
 
 ## 快速开始
 
 ```cpp
-#include "reflect.h"
+#include "mics.h"
 
 // --- 静态反射 ---
 struct Person {
@@ -56,8 +66,8 @@ field->setter(&obj, &new_value);    // 类型擦除的字段写入
 ```
 
 > [!NOTE]
-> - [静态反射 API.md](doc/static_utils_api_zh_CN.md)
-> - [动态反射 API.md](doc/dynamic_utils_api_zh_CN.md)
+> - [静态反射 API](docs/static_utils_api_zh.md)
+> - [动态反射 API](docs/dynamic_api_zh.md)
 
 ## 注册宏
 
@@ -146,36 +156,36 @@ constexpr uint32_t id32 = SKL_REFT_HASH32("Player.Health");
 ## 目录结构
 
 ```
-Refection/
-├── reflect.h              # 主入口头文件（包含 static + dynamic）
-├── metadata.h             # 元数据系统（MetaEntry、MetaMode、SKL_REFT_HASH、StringTable）
-├── static/                # 编译期静态反射
-│   ├── reflect.h          # 公共 API 与 field_traits、TypeInfo
-│   ├── base_reflect.h     # __base_field_traits（变量/函数分发）
-│   ├── base_fp.h          # 底层类型列表操作
-│   ├── fp.h               # 公共类型列表 API（Fp 命名空间）
-│   ├── var_traits.h       # 变量/字段萃取
-│   ├── fn_traits.h        # 函数/方法萃取（修饰符、哈希）
-│   ├── enum_traits.h      # 枚举萃取与有作用域枚举检测
-│   ├── config.h           # type_list、template_depth、is_virtual_base_of
-│   └── template_string.h  # 非类型模板参数字符串支持
-├── dynamic/               # 运行时动态反射
-│   ├── reflect.h          # 公共 API、注册宏、type_id_of
-│   ├── config.h           # TypeId、Kind、FieldKind、Visibility 枚举
-│   ├── type_info.h        # TypeInfo：聚合描述符（字段/方法/基类）
-│   ├── field_info.h       # FieldInfo + FieldAccessor（getter/setter）
-│   ├── fn_info.h          # FnInfo + MethodInvoker + ParamInfo
-│   ├── enum_info.h        # EnumInfo + EnumEntry
-│   ├── any.h              # Any：类型擦除值容器（SBO 优化）
-│   └── registry.h         # Registry：全局单例类型注册表
-├── utils/                 # 共享工具
-│   ├── hash.h             # FNV-1a 哈希函数、调用约定标签
-│   ├── type_hash.h        # 编译期类型 → 哈希映射
-│   ├── fn_hash.h          # 函数签名折叠哈希（compute_fn_hash）
-│   ├── string_view.h      # 轻量级 string_view 实现
-│   └── vector.h           # SKL_ABIX 稳定不可变容器（动态反射数据载体）
-├── doc/                   # API 文档
-└── HLMD/                  # 宏工具库（内部）
+MICS/
+├── mics.h                # 主入口头文件（包含 ct + rt）
+├── metadata.h            # 元数据系统（MetaEntry、MetaMode、SKL_REFT_HASH、StringTable）
+├── ct/                   # 编译期静态反射（mics::ct / SRefl）
+│   ├── reflect.h         # 公共 API 与 field_traits、TypeInfo
+│   ├── base_reflect.h    # __base_field_traits（变量/函数分发）
+│   ├── base_fp.h         # 底层类型列表操作
+│   ├── fp.h              # 公共类型列表 API（mics::ct::fp）
+│   ├── var_traits.h      # 变量/字段萃取
+│   ├── fn_traits.h       # 函数/方法萃取（修饰符、哈希）
+│   ├── enum_traits.h     # 枚举萃取与有作用域枚举检测
+│   ├── config.h          # type_list、template_depth、is_virtual_base_of
+│   └── template_string.h # 非类型模板参数字符串支持
+├── rt/                   # 运行时动态反射（mics::rt / DRefl）
+│   ├── reflect.h         # 公共 API、注册宏、type_id_of
+│   ├── config.h          # TypeId、Kind、FieldKind、Visibility 枚举
+│   ├── type_info.h       # TypeInfo：聚合描述符（字段/方法/基类）
+│   ├── field_info.h      # FieldInfo + FieldAccessor（getter/setter）
+│   ├── fn_info.h         # FnInfo + MethodInvoker + ParamInfo
+│   ├── enum_info.h       # EnumInfo + EnumEntry
+│   ├── any.h             # Any：类型擦除值容器（SBO 优化）
+│   └── registry.h        # Registry：全局单例类型注册表
+├── util/                 # 共享工具（mics::util / URefl）
+│   ├── hash.h            # FNV-1a 哈希函数、调用约定标签
+│   ├── type_hash.h       # 编译期类型 → 哈希映射
+│   ├── fn_hash.h         # 函数签名折叠哈希（compute_fn_hash）
+│   ├── string_view.h     # 轻量级 string_view 实现
+│   └── vector.h          # ABI 稳定不可变容器（动态反射数据载体）
+├── doc/                  # API 文档
+└── HLMD/                 # 宏工具库（内部）
 ```
 
 ## 支持的平台与工具链

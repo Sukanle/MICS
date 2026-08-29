@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_DYNAMIC_H_
-#define SKL_RELECT_DYNAMIC_H_
+#ifndef SKL_MICS_RT_REFLECT_H_
+#define SKL_MICS_RT_REFLECT_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "utils/type_hash.h"   // IWYU pragma: keep
 
-#include "dynamic/any.h"          // IWYU pragma: keep
-#include "dynamic/config.h"       // IWYU pragma: keep
-#include "dynamic/registry.h"     // IWYU pragma: keep
-#include "dynamic/fn_info.h"      // IWYU pragma: keep
-#include "dynamic/enum_info.h"    // IWYU pragma: keep
-#include "dynamic/type_info.h"    // IWYU pragma: keep
-#include "dynamic/field_info.h"   // IWYU pragma: keep
+#include "rt/any.h"          // IWYU pragma: keep
+#include "rt/config.h"       // IWYU pragma: keep
+#include "rt/registry.h"     // IWYU pragma: keep
+#include "rt/fn_info.h"      // IWYU pragma: keep
+#include "rt/enum_info.h"    // IWYU pragma: keep
+#include "rt/type_info.h"    // IWYU pragma: keep
+#include "rt/field_info.h"   // IWYU pragma: keep
 
-namespace Reflect::Dynamic {
+namespace mics::rt {
 
 template<typename T>
 constexpr TypeId type_id_of() noexcept {
-    return Utils::type_hash<T>();
+    return mics::util::type_hash<T>();
 }
 
 namespace detail {
@@ -74,5 +74,5 @@ FieldSetter make_field_setter() noexcept {
 }
 
 }   // namespace detail
-}   // namespace Reflect::Dynamic
+}   // namespace mics::rt
 #endif

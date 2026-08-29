@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef SKL_REFLECT_METADATA_H
-#define SKL_REFLECT_METADATA_H
+#ifndef SKL_MICS_METADATA_H
+#define SKL_MICS_METADATA_H
 
 #include <stdint.h>
 
-namespace Reflect {
+namespace mics {
 
 #define SKL_REFT_MODE_HASH 0
 #define SKL_REFT_MODE_STR 1
@@ -115,8 +115,8 @@ inline const char *meta_string_lookup_by_hash(const MetaStringTable *table, uint
     return nullptr;
 }
 
-#define SKL_REFT_HASH(str) ::Reflect::Utils::hash_cstr(str)
-#define SKL_REFT_HASH32(str) ::Reflect::Utils::hash_cstr32(str)
+#define SKL_REFT_HASH(str) ::mics::util::hash_cstr(str)
+#define SKL_REFT_HASH32(str) ::mics::util::hash_cstr32(str)
 
 #define SKL_REFT_META_STRING 1
 
@@ -134,5 +134,5 @@ constexpr const char *meta_string_or_null(const char *str, int mode_override) no
     return meta_should_store_string(mode_override) ? str : nullptr;
 }
 
-}   // namespace Reflect
-#endif   // SKL_REFLECT_METADATA_H
+}   // namespace mics
+#endif   // SKL_MICS_METADATA_H

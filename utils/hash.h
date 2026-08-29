@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-namespace Reflect::Utils {
+namespace mics::util {
 
 using hash64_t = uint64_t;
 using hash32_t = uint32_t;
@@ -62,6 +62,6 @@ enum class tag : uint8_t {
 };
 }   // namespace cc
 
-}   // namespace Reflect::Utils
+}   // namespace mics::util
 
 #endif

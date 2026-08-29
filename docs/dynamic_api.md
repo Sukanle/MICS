@@ -1,6 +1,6 @@
 # Dynamic Reflection API Reference
 
-This document covers the runtime dynamic reflection system (`dynamic/`).
+This document covers the runtime dynamic reflection system (`rt/`).
 
 ---
 
@@ -39,7 +39,7 @@ This document covers the runtime dynamic reflection system (`dynamic/`).
 
 ## 1. `config.h` — Core Type Definitions
 
-**Namespace:** `Reflect::Dynamic`
+**Namespace:** `mics::rt` / `DRefl`
 
 ### Type Aliases
 
@@ -81,7 +81,7 @@ This document covers the runtime dynamic reflection system (`dynamic/`).
 
 ## 2. `field_info.h` — Field Descriptors & Accessors
 
-**Namespace:** `Reflect::Dynamic`
+**Namespace:** `mics::rt` / `DRefl`
 
 ### `FieldInfo`
 
@@ -124,7 +124,7 @@ if (field && field->getter) {
 
 ## 3. `fn_info.h` — Method Descriptors & Invokers
 
-**Namespace:** `Reflect::Dynamic`
+**Namespace:** `mics::rt` / `DRefl`
 
 ### `ParamInfo`
 
@@ -139,7 +139,7 @@ if (field && field->getter) {
 |--------|------|-------------|
 | `name` | `const char*` | Method name |
 | `return_type_id` | `TypeId` | Hash of return type |
-| `params` | `Utils::vector<ParamInfo>` | Parameter list (ABI-stable, immutable container) |
+| `params` | `URefl::vector<ParamInfo>` | Parameter list (ABI-stable, immutable container) |
 | `invoker` | `MethodInvoker` | `void(*)(void* obj, void** args, void* result)` |
 | `visibility` | `Visibility` | Access level |
 | `is_const` | `bool` | Whether the method is `const`-qualified |
@@ -170,13 +170,13 @@ if (method && method->invoker) {
 
 ## 4. `enum_info.h` — Enum Descriptors
 
-**Namespace:** `Reflect::Dynamic`
+**Namespace:** `mics::rt` / `DRefl`
 
 ### `EnumEntry`
 
 | Member | Type | Description |
 |--------|------|-------------|
-| `name` | `Utils::string_view` | Enum value name |
+| `name` | `URefl::string_view` | Enum value name |
 | `value` | `int64_t` | Enum value (as signed 64-bit integer) |
 
 ### `EnumInfo`
@@ -186,7 +186,7 @@ if (method && method->invoker) {
 | `name` | `const char*` | Enum type name |
 | `type_id` | `TypeId` | Hash of the enum type |
 | `underlying_type_id` | `TypeId` | Hash of the underlying integer type |
-| `entries` | `Utils::vector<EnumEntry>` | All enum value entries (ABI-stable, immutable container) |
+| `entries` | `URefl::vector<EnumEntry>` | All enum value entries (ABI-stable, immutable container) |
 | `is_scoped` | `bool` | Whether it's `enum class` (scoped) |
 
 **Methods:**
@@ -211,7 +211,7 @@ if (ei) {
 
 ## 5. `type_info.h` — Type Descriptor
 
-**Namespace:** `Reflect::Dynamic`
+**Namespace:** `mics::rt` / `DRefl`
 
 ### `BaseInfo`
 
@@ -229,9 +229,9 @@ if (ei) {
 | `type_id` | `TypeId` | Unique hash identifier |
 | `kind` | `Kind` | Class / Struct / Enum / Primitive / Pointer / Reference |
 | `size` | `size_t` | `sizeof(T)` |
-| `bases` | `Utils::vector<BaseInfo>` | Direct base classes (ABI-stable, immutable container) |
-| `fields` | `Utils::vector<FieldAccessor>` | Registered fields (ABI-stable, immutable container) |
-| `methods` | `Utils::vector<FnInfo>` | Registered methods (ABI-stable, immutable container) |
+| `bases` | `URefl::vector<BaseInfo>` | Direct base classes (ABI-stable, immutable container) |
+| `fields` | `URefl::vector<FieldAccessor>` | Registered fields (ABI-stable, immutable container) |
+| `methods` | `URefl::vector<FnInfo>` | Registered methods (ABI-stable, immutable container) |
 | `enum_info` | `const EnumInfo*` | Pointer to enum info (non-null only when `kind == Enum`) |
 
 **Methods:**
@@ -258,7 +258,7 @@ if (ti) {
 
 ## 6. `any.h` — Type-Erased Value Container
 
-**Namespace:** `Reflect::Dynamic`
+**Namespace:** `mics::rt` / `DRefl`
 
 `Any` is a lightweight type-erased value container similar to `std::any`, optimized for reflection use cases.
 
@@ -300,7 +300,7 @@ auto tid = a.type_id();             // type_hash<int>()
 
 ## 7. `registry.h` — Global Type Registry
 
-**Namespace:** `Reflect::Dynamic`
+**Namespace:** `mics::rt` / `DRefl`
 
 `Registry` is a singleton that collects all statically-registered `TypeInfo` instances.
 
@@ -338,7 +338,7 @@ reg.for_each([](const TypeInfo *ti) {
 
 ## 8. `reflect.h` — Registration Macros & Public API
 
-**Namespace:** `Reflect::Dynamic`
+**Namespace:** `mics::rt` / `DRefl`
 
 ### `type_id_of<T>()`
 
@@ -347,7 +347,7 @@ template<typename T>
 constexpr TypeId type_id_of() noexcept;
 ```
 
-Returns the compile-time `TypeId` hash for type `T`. Delegates to `Utils::type_hash<T>()`.
+Returns the compile-time `TypeId` hash for type `T`. Delegates to `URefl::type_hash<T>()`.
 
 ### Registration Macros
 
@@ -401,7 +401,7 @@ SKL_RFD_ENUM_END()
 | `SKL_RFD_ENUM_VALUE(value, name)` | Register an enum value entry |
 | `SKL_RFD_ENUM_END()` | End enum registration, finalizes registration |
 
-> **Note:** All registration macros internally use `Utils::vector_builder` to construct data. After registration completes, data is converted to immutable `Utils::vector`, ensuring ABI stability.
+> **Note:** All registration macros internally use `URefl::vector_builder` to construct data. After registration completes, data is converted to immutable `URefl::vector`, ensuring ABI stability.
 
 ### Internal Helpers (`detail` namespace)
 
@@ -416,7 +416,7 @@ SKL_RFD_ENUM_END()
 ## 9. Complete Usage Example
 
 ```cpp
-#include "reflect.h"
+#include "mics.h"
 
 // ============================================================
 // Define a class
@@ -458,7 +458,7 @@ SKL_RFD_ENUM_END()
 // Runtime usage
 // ============================================================
 void runtime_example() {
-    using namespace Reflect::Dynamic;
+    using namespace DRefl;
 
     // --- Query type info ---
     auto *ti = Registry::instance().find_by_name("Player");
@@ -504,9 +504,9 @@ void runtime_example() {
 ## 10. Design Notes
 
 1. **Static initialization:** Registration happens via global object constructors before `main()`. The `static bool` guard prevents duplicate registration.
-2. **Type ID consistency:** `TypeId` uses `Utils::type_hash<T>()`, ensuring the same hash across static and dynamic reflection.
+2. **Type ID consistency:** `TypeId` uses `URefl::type_hash<T>()`, ensuring the same hash across static and dynamic reflection.
 3. **Field accessor design:** `FieldGetter`/`FieldSetter` use non-capturing lambdas converted to function pointers. Member pointers are passed as template parameters (`template<auto mp>`) to enable this.
 4. **Thread safety:** The `Registry` is not thread-safe for concurrent registration. All registration should happen during static initialization (single-threaded).
 5. **SBO threshold:** The `Any` class uses a 16-byte inline buffer. Types larger than 16 bytes or non-trivially-copyable types are heap-allocated.
-6. **ABI-stable container:** All reflection data (`bases`, `fields`, `methods`, `params`, `entries`) is stored in `Utils::vector<T>`. This container is immutable, move-only, uses `malloc`/`free` internally, and has a fixed `sizeof` of 24 bytes (64-bit), ensuring cross-version ABI compatibility. For external manipulation, call `.to_std()` to convert to `std::vector`.
+6. **ABI-stable container:** All reflection data (`bases`, `fields`, `methods`, `params`, `entries`) is stored in `URefl::vector<T>`. This container is immutable, move-only, uses `malloc`/`free` internally, and has a fixed `sizeof` of 24 bytes (64-bit), ensuring cross-version ABI compatibility. For external manipulation, call `.to_std()` to convert to `std::vector`.
 7. **Registration callback interface:** External modules can inject reflection data via `Registry::register_callback()`. The callback receives a `Registry&` reference and can call `register_type()` within it. The system safely takes ownership of the data after the callback returns.

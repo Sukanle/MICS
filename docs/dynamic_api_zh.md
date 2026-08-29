@@ -1,6 +1,6 @@
 # 动态反射 API 参考
 
-本文档涵盖运行时动态反射系统（`dynamic/`）。
+本文档涵盖运行时动态反射系统（`rt/`）。
 
 ---
 
@@ -39,7 +39,7 @@
 
 ## 1. `config.h` — 核心类型定义
 
-**命名空间：** `Reflect::Dynamic`
+**命名空间：** `mics::rt` / `DRefl`
 
 ### 类型别名
 
@@ -81,7 +81,7 @@
 
 ## 2. `field_info.h` — 字段描述符与访问器
 
-**命名空间：** `Reflect::Dynamic`
+**命名空间：** `mics::rt` / `DRefl`
 
 ### `FieldInfo`
 
@@ -124,7 +124,7 @@ if (field && field->getter) {
 
 ## 3. `fn_info.h` — 方法描述符与调用器
 
-**命名空间：** `Reflect::Dynamic`
+**命名空间：** `mics::rt` / `DRefl`
 
 ### `ParamInfo`
 
@@ -139,7 +139,7 @@ if (field && field->getter) {
 |--------|------|-------------|
 | `name` | `const char*` | 方法名称 |
 | `return_type_id` | `TypeId` | 返回类型的哈希值 |
-| `params` | `Utils::vector<ParamInfo>` | 参数列表（ABI 稳定、不可变容器） |
+| `params` | `URefl::vector<ParamInfo>` | 参数列表（ABI 稳定、不可变容器） |
 | `invoker` | `MethodInvoker` | `void(*)(void* obj, void** args, void* result)` |
 | `visibility` | `Visibility` | 访问级别 |
 | `is_const` | `bool` | 方法是否为 `const` 限定 |
@@ -170,13 +170,13 @@ if (method && method->invoker) {
 
 ## 4. `enum_info.h` — 枚举描述符
 
-**命名空间：** `Reflect::Dynamic`
+**命名空间：** `mics::rt` / `DRefl`
 
 ### `EnumEntry`
 
 | 成员 | 类型 | 说明 |
 |--------|------|-------------|
-| `name` | `Utils::string_view` | 枚举值名称 |
+| `name` | `URefl::string_view` | 枚举值名称 |
 | `value` | `int64_t` | 枚举值（有符号 64 位整数） |
 
 ### `EnumInfo`
@@ -186,7 +186,7 @@ if (method && method->invoker) {
 | `name` | `const char*` | 枚举类型名称 |
 | `type_id` | `TypeId` | 枚举类型的哈希值 |
 | `underlying_type_id` | `TypeId` | 底层整数类型的哈希值 |
-| `entries` | `Utils::vector<EnumEntry>` | 所有枚举值条目（ABI 稳定、不可变容器） |
+| `entries` | `URefl::vector<EnumEntry>` | 所有枚举值条目（ABI 稳定、不可变容器） |
 | `is_scoped` | `bool` | 是否为 `enum class`（有作用域） |
 
 **方法：**
@@ -211,7 +211,7 @@ if (ei) {
 
 ## 5. `type_info.h` — 类型描述符
 
-**命名空间：** `Reflect::Dynamic`
+**命名空间：** `mics::rt` / `DRefl`
 
 ### `BaseInfo`
 
@@ -229,9 +229,9 @@ if (ei) {
 | `type_id` | `TypeId` | 唯一哈希标识符 |
 | `kind` | `Kind` | Class / Struct / Enum / Primitive / Pointer / Reference |
 | `size` | `size_t` | `sizeof(T)` |
-| `bases` | `Utils::vector<BaseInfo>` | 直接基类（ABI 稳定、不可变容器） |
-| `fields` | `Utils::vector<FieldAccessor>` | 已注册的字段（ABI 稳定、不可变容器） |
-| `methods` | `Utils::vector<FnInfo>` | 已注册的方法（ABI 稳定、不可变容器） |
+| `bases` | `URefl::vector<BaseInfo>` | 直接基类（ABI 稳定、不可变容器） |
+| `fields` | `URefl::vector<FieldAccessor>` | 已注册的字段（ABI 稳定、不可变容器） |
+| `methods` | `URefl::vector<FnInfo>` | 已注册的方法（ABI 稳定、不可变容器） |
 | `enum_info` | `const EnumInfo*` | 指向枚举信息的指针（仅当 `kind == Enum` 时非空） |
 
 **方法：**
@@ -258,7 +258,7 @@ if (ti) {
 
 ## 6. `any.h` — 类型擦除值容器
 
-**命名空间：** `Reflect::Dynamic`
+**命名空间：** `mics::rt` / `DRefl`
 
 `Any` 是一个轻量级类型擦除值容器，类似于 `std::any`，针对反射场景进行了优化。
 
@@ -300,7 +300,7 @@ auto tid = a.type_id();             // type_hash<int>()
 
 ## 7. `registry.h` — 全局类型注册表
 
-**命名空间：** `Reflect::Dynamic`
+**命名空间：** `mics::rt` / `DRefl`
 
 `Registry` 是一个单例，收集所有静态注册的 `TypeInfo` 实例。
 
@@ -338,7 +338,7 @@ reg.for_each([](const TypeInfo *ti) {
 
 ## 8. `reflect.h` — 注册宏与公共 API
 
-**命名空间：** `Reflect::Dynamic`
+**命名空间：** `mics::rt` / `DRefl`
 
 ### `type_id_of<T>()`
 
@@ -347,7 +347,7 @@ template<typename T>
 constexpr TypeId type_id_of() noexcept;
 ```
 
-返回类型 `T` 的编译期 `TypeId` 哈希值。委托给 `Utils::type_hash<T>()`。
+返回类型 `T` 的编译期 `TypeId` 哈希值。委托给 `URefl::type_hash<T>()`。
 
 ### 注册宏
 
@@ -401,7 +401,7 @@ SKL_RFD_ENUM_END()
 | `SKL_RFD_ENUM_VALUE(value, name)` | 注册一个枚举值条目 |
 | `SKL_RFD_ENUM_END()` | 结束枚举注册，完成注册 |
 
-> **注意：** 所有注册宏内部使用 `Utils::vector_builder` 构建数据，注册完成后数据转为不可变的 `Utils::vector`，确保 ABI 稳定。
+> **注意：** 所有注册宏内部使用 `URefl::vector_builder` 构建数据，注册完成后数据转为不可变的 `URefl::vector`，确保 ABI 稳定。
 
 ### 内部辅助函数（`detail` 命名空间）
 
@@ -416,7 +416,7 @@ SKL_RFD_ENUM_END()
 ## 9. 完整使用示例
 
 ```cpp
-#include "reflect.h"
+#include "mics.h"
 
 // ============================================================
 // 定义一个类
@@ -458,7 +458,7 @@ SKL_RFD_ENUM_END()
 // 运行时使用
 // ============================================================
 void runtime_example() {
-    using namespace Reflect::Dynamic;
+    using namespace DRefl;
 
     // --- 查询类型信息 ---
     auto *ti = Registry::instance().find_by_name("Player");
@@ -504,9 +504,9 @@ void runtime_example() {
 ## 10. 设计要点
 
 1. **静态初始化：** 注册通过全局对象构造函数在 `main()` 之前完成。`static bool` 守卫防止重复注册。
-2. **类型 ID 一致性：** `TypeId` 使用 `Utils::type_hash<T>()`，确保静态和动态反射使用相同的哈希值。
+2. **类型 ID 一致性：** `TypeId` 使用 `URefl::type_hash<T>()`，确保静态和动态反射使用相同的哈希值。
 3. **字段访问器设计：** `FieldGetter`/`FieldSetter` 使用转换为函数指针的非捕获 lambda。成员指针作为模板参数（`template<auto mp>`）传递以实现此功能。
 4. **线程安全：** `Registry` 在并发注册时不是线程安全的。所有注册应在静态初始化期间（单线程）完成。
 5. **SBO 阈值：** `Any` 类使用 16 字节的内联缓冲区。大于 16 字节或非平凡可拷贝的类型将进行堆分配。
-6. **ABI 稳定容器：** 所有反射数据（`bases`、`fields`、`methods`、`params`、`entries`）使用 `Utils::vector<T>` 存储。该容器为不可变、仅移动类型，内部使用 `malloc`/`free` 管理内存，`sizeof` 固定为 24 字节（64 位），确保跨版本 ABI 兼容。若需外部操作，调用 `.to_std()` 转换为 `std::vector`。
+6. **ABI 稳定容器：** 所有反射数据（`bases`、`fields`、`methods`、`params`、`entries`）使用 `URefl::vector<T>` 存储。该容器为不可变、仅移动类型，内部使用 `malloc`/`free` 管理内存，`sizeof` 固定为 24 字节（64 位），确保跨版本 ABI 兼容。若需外部操作，调用 `.to_std()` 转换为 `std::vector`。
 7. **注册回调接口：** 外部模块可通过 `Registry::register_callback()` 注入反射数据。回调接收 `Registry&` 引用，可在其中调用 `register_type()` 注册类型。系统在回调返回后安全接管数据所有权。

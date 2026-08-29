@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_REFLECT_DYNAMIC_FN_INFO_H
-#define SKL_REFLECT_DYNAMIC_FN_INFO_H
+#ifndef SKL_MICS_RT_FN_INFO_H
+#define SKL_MICS_RT_FN_INFO_H
 
 #include <stdint.h>
 
 #include "utils/vector.h"     // IWYU pragma: keep
-#include "dynamic/config.h"   // IWYU pragma: keep
+#include "rt/config.h"   // IWYU pragma: keep
 
-namespace Reflect::Dynamic {
+namespace mics::rt {
 
 using MethodInvoker = void (*)(void *obj, void **args, void *result);
 
@@ -33,7 +33,7 @@ struct ParamInfo {
 struct FnInfo {
     const char *name;
     TypeId return_type_id;
-    Utils::vector<ParamInfo> params;
+    mics::util::vector<ParamInfo> params;
     MethodInvoker invoker;
     Visibility visibility;
     bool is_const;
@@ -42,13 +42,13 @@ struct FnInfo {
     FnInfo() noexcept
         : name(nullptr)
         , return_type_id(INVALID_TYPE_ID)
-        , params(Utils::vector_empty)
+        , params(mics::util::vector_empty)
         , invoker(nullptr)
         , visibility(Visibility::Public)
         , is_const(false)
         , is_static(false) {}
 
-    FnInfo(const char *n, TypeId ret_tid, Utils::vector<ParamInfo> p, MethodInvoker inv,
+    FnInfo(const char *n, TypeId ret_tid, mics::util::vector<ParamInfo> p, MethodInvoker inv,
         Visibility vis = Visibility::Public, bool cnst = false, bool st = false) noexcept
         : name(n)
         , return_type_id(ret_tid)
@@ -59,5 +59,5 @@ struct FnInfo {
         , is_static(st) {}
 };
 
-}   // namespace Reflect::Dynamic
+}   // namespace mics::rt
 #endif

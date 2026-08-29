@@ -1,14 +1,16 @@
 # 静态反射与工具 API 参考
 
-本文档涵盖编译期静态反射系统（`static/`）和共享工具（`utils/`）。
+本文档涵盖编译期静态反射系统（`ct/`）和共享工具（`util/`）。
+
+> **命名空间映射：** `Reflect::Static` → `mics::ct`（别名 `SRefl`），`Reflect::Utils` → `mics::util`（别名 `URefl`），`Reflect::Static::Fp` → `mics::ct::fp`
 
 ---
 
-## 1. 工具库（`utils/`）
+## 1. 工具库（`util/`）
 
 ### 1.1 `hash.h` — FNV-1a 哈希函数
 
-**命名空间：** `Reflect::Utils`
+**命名空间：** `mics::util` / `URefl`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
@@ -23,7 +25,7 @@
 **调用约定标签：**
 
 ```cpp
-namespace Reflect::Utils::cc {
+namespace mics::util::cc {
     enum class tag : uint8_t {
         Cdecl      = 0,
         Stdcall    = 1,
@@ -35,15 +37,15 @@ namespace Reflect::Utils::cc {
 
 **使用示例：**
 ```cpp
-constexpr auto h = Utils::cstr64("MyType");           // 编译期哈希
-constexpr auto combined = Utils::mix(h, Utils::cstr64("::field")); // 组合哈希
+constexpr auto h = URefl::cstr64("MyType");           // 编译期哈希
+constexpr auto combined = URefl::mix(h, URefl::cstr64("::field")); // 组合哈希
 ```
 
 ---
 
 ### 1.2 `type_hash.h` — 编译期类型 → 哈希映射
 
-**命名空间：** `Reflect::Utils`
+**命名空间：** `mics::util`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
@@ -70,9 +72,9 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 ### 1.3 `vector.h` — ABI 稳定不可变容器
 
-**命名空间：** `Reflect::Utils`
+**命名空间：** `mics::util`
 
-`Utils::vector<T>` 是专为动态反射数据载体设计的 ABI 稳定容器，具有以下强制约束：
+`URefl::vector<T>` 是专为动态反射数据载体设计的 ABI 稳定容器，具有以下强制约束：
 
 | 约束 | 实现 |
 |------|------|
@@ -120,11 +122,11 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 **使用示例：**
 ```cpp
 // 通过 builder 构建
-Utils::vector_builder<int> b;
+URefl::vector_builder<int> b;
 b.push_back(1);
 b.push_back(2);
 b.push_back(3);
-Utils::vector<int> v = std::move(b).build();
+URefl::vector<int> v = std::move(b).build();
 
 // 只读访问
 for (std::size_t i = 0; i < v.size(); ++i) {
@@ -140,29 +142,29 @@ sv.push_back(4);  // 对 std::vector 的修改不影响原始 v
 
 ### 1.4 `fn_hash.h` — 函数签名折叠哈希
 
-**命名空间：** `Reflect::Utils`
+**命名空间：** `mics::util`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
 | `compute_fn_hash<RetHash, ArgHashes...>()` | `constexpr hash64_t` | 将「返回类型哈希 + 参数类型哈希序列」折叠成不含调用约定的稳定函数签名哈希 |
 
-函数签名折叠哈希的唯一核心：把函数签名折成不含调用约定的稳定哈希，作为两处手写算法的单一来源（single source of truth）。`Reflect::Static::fn_traits` 与 ABIX 跨 DLL 反射层（`skl::abix::fn_sig`）共用：
+函数签名折叠哈希的唯一核心：把函数签名折成不含调用约定的稳定哈希，作为两处手写算法的单一来源（single source of truth）。`mics::ct::fn_traits` 与 ABIX 跨 DLL 反射层（`skl::abix::fn_sig`）共用：
 
 - 调用方把各自的编译期类型哈希作为模板参数传入（静态反射传 `type_hash_v<Ret>` / `type_hash_v<Args>`）。
 - 本函数**故意不**编码调用约定；调用约定由上层自行处理（如 ABIX 在调用后自行混入其 `cc::tag` 协议码）。
 
 **使用示例：**
 ```cpp
-constexpr auto h = Utils::compute_fn_hash<Utils::type_hash_v<int>, Utils::type_hash_v<int>>();
+constexpr auto h = URefl::compute_fn_hash<URefl::type_hash_v<int>, URefl::type_hash_v<int>>();
 ```
 
 ---
 
-## 2. 静态反射（`static/`）
+## 2. 静态反射（`ct/`）
 
 ### 2.1 `config.h` — 核心类型定义
 
-**命名空间：** `Reflect::Static`
+**命名空间：** `mics::ct` / `SRefl`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
@@ -179,7 +181,7 @@ constexpr auto h = Utils::compute_fn_hash<Utils::type_hash_v<int>, Utils::type_h
 
 ### 2.2 `template_string.h` — 非类型模板字符串
 
-**命名空间：** `Reflect::Static`
+**命名空间：** `mics::ct`
 
 编译期字符串作为非类型模板参数（C++20 `__cpp_nontype_template_args`）。
 
@@ -204,7 +206,7 @@ struct my_trait {
 
 ### 2.3 `fp.h` / `base_fp.h` — 类型列表函数式编程
 
-**命名空间：** `Reflect::Static::Fp`
+**命名空间：** `mics::ct::fp`
 
 一个编译期函数式编程库，操作对象为 `type_list<...>`。
 
@@ -251,16 +253,16 @@ struct my_trait {
 **使用示例：**
 ```cpp
 using List = type_list<int, char, double, int>;
-using Filtered = Fp::filter<List, std::is_integral>;    // type_list<int, char, int>
-using Unique = Fp::unique<Filtered>;                      // type_list<int, char>
-constexpr auto n = Fp::size<Unique>;                      // 2
+using Filtered = fp::filter<List, std::is_integral>;    // type_list<int, char, int>
+using Unique = fp::unique<Filtered>;                      // type_list<int, char, int>
+constexpr auto n = fp::size<Unique>;                      // 2
 ```
 
 ---
 
 ### 2.4 `var_traits.h` — 变量/字段萃取
 
-**命名空间：** `Reflect::Static`
+**命名空间：** `mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -274,7 +276,7 @@ constexpr auto n = Fp::size<Unique>;                      // 2
 
 ### 2.5 `fn_traits.h` — 函数/方法萃取
 
-**命名空间：** `Reflect::Static`
+**命名空间：** `mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -282,7 +284,7 @@ constexpr auto n = Fp::size<Unique>;                      // 2
 | `__base_fn_traits<Signature, Class, Name>` | `name`、`is_member`、`params_count`、`hash` |
 | `fn_traits<Signature, Class, Name>` | 完整萃取，含 `fn_ptr`/`m_fn_ptr`、`modifie` 位掩码 |
 
-**`hash` 来源：** 每个 `__base_fn_traits` 的 `hash` 通过 `Reflect::Utils::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()` 计算，不含调用约定编码。
+**`hash` 来源：** 每个 `__base_fn_traits` 的 `hash` 通过 `mics::util::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()` 计算，不含调用约定编码。
 
 **`fn_qualify` 位掩码常量：**
 
@@ -311,7 +313,7 @@ constexpr auto h = Traits::hash;   // 唯一的签名哈希值
 
 ### 2.6 `enum_traits.h` — 枚举萃取
 
-**命名空间：** `Reflect::Static`
+**命名空间：** `mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -336,7 +338,7 @@ static_assert(enum_traits<Color>::is_scoped);
 
 ### 2.7 `base_reflect.h` — 统一字段萃取
 
-**命名空间：** `Reflect::Static`
+**命名空间：** `mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -354,7 +356,7 @@ static_assert(enum_traits<Color>::is_scoped);
 
 ### 2.8 `reflect.h` — 公共 API
 
-**命名空间：** `Reflect::Static`
+**命名空间：** `mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -417,13 +419,16 @@ constexpr auto info = type_info<Person>();
 
 ## 4. 全局别名
 
-在 `reflect.h`（根目录）中定义：
+在根目录 `mics.h` 中定义：
 
 ```cpp
-namespace SRefl = Reflect::Static;
-namespace DRefl = Reflect::Dynamic;
+namespace SRefl = ::mics::ct;     // 编译期静态反射
+namespace DRefl = ::mics::rt;     // 运行时动态反射
+namespace URefl = ::mics::util;   // ABI 稳定工具容器
 ```
 
 这些提供了便捷的简写：
 - `SRefl::type_info<T>()` — 静态反射入口
 - `DRefl::Registry::instance()` — 动态反射入口
+- `URefl::vector<T>` — ABI 稳定容器
+- `URefl::string_view` — 轻量字符串视图

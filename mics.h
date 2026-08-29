@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_REFLECT_H_
-#define SKL_REFLECT_H_
+#ifndef SKL_MICS_H_
+#define SKL_MICS_H_
 
 #include "HLMD/HLMD.h"   // IWYU pragma: keep
 
@@ -24,12 +24,12 @@
 #include "utils/type_hash.h"     // IWYU pragma: keep
 #include "utils/string_view.h"   // IWYU pragma: keep
 
-#include "static/reflect.h"    // IWYU pragma: keep
-#include "dynamic/reflect.h"   // IWYU pragma: keep
+#include "ct/reflect.h"    // IWYU pragma: keep
+#include "rt/reflect.h"   // IWYU pragma: keep
 
-namespace SRefl = ::Reflect::Static;    // NOLINT
-namespace DRefl = ::Reflect::Dynamic;   // NOLINT
-namespace URefl = ::Reflect::Utils;     // NOLINT
+namespace SRefl = ::mics::ct;    // NOLINT
+namespace DRefl = ::mics::rt;   // NOLINT
+namespace URefl = ::mics::util;     // NOLINT
 
 #define SKL_RFS_MAKE_FIELD_TRAITS(type, VAR) SKL_RFS_MAKE_##type##_FIELD_TRAITS(VAR)
 #define SKL_RFS_REGISTER_BEGIN(TYPE, ...)                             \

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_REFLECT_DYNAMIC_CONFIG_H
-#define SKL_REFLECT_DYNAMIC_CONFIG_H
+#ifndef SKL_MICS_RT_CONFIG_H
+#define SKL_MICS_RT_CONFIG_H
 
 #include <stdint.h>
 
-namespace Reflect::Dynamic {
+namespace mics::rt {
 
 using TypeId = uint64_t;
 using FieldId = uint32_t;
@@ -48,5 +48,5 @@ enum class Visibility : uint8_t {
     Private,
 };
 
-}   // namespace Reflect::Dynamic
+}   // namespace mics::rt
 #endif

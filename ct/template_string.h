@@ -27,7 +27,7 @@
 #  define SKL_TEMPLATE_STRING_SUPPORTED 0
 #endif
 
-namespace Reflect::Static {
+namespace mics::ct {
 #define DEF2STR(macro_define) #macro_define
 #define NUM2STR(num_define) DEF2STR(num_define)
 
@@ -46,8 +46,8 @@ struct template_string {
     char _data[N];
 };
 #  define SKL_DEFAULT_TEMPLATE_STRING(name, str) \
-      Reflect::Static::template_string name = Reflect::Static::template_string { str }
-#  define SKL_NORMAL_TEMPLATE_STRING(name) Reflect::Static::template_string name
+      mics::ct::template_string name = mics::ct::template_string { str }
+#  define SKL_NORMAL_TEMPLATE_STRING(name) mics::ct::template_string name
 #  define SKL_MAKE_TEMPLATE_STRING(str) , str
 template<template_string Name>
 consteval auto NameAccessor() {
@@ -62,4 +62,4 @@ consteval const char *NameAccessor() {
     return Name;
 }
 #endif
-}   // namespace Reflect::Static
+}   // namespace mics::ct

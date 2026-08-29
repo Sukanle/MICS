@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_DYNAMIC_ANY_H
-#define SKL_RELECT_DYNAMIC_ANY_H
+#ifndef SKL_MICS_RT_ANY_H
+#define SKL_MICS_RT_ANY_H
 
 #include <stdint.h>
 #include <string.h>
@@ -24,9 +24,9 @@
 
 #include "utils/type_hash.h"   // IWYU pragma: keep
 
-#include "dynamic/config.h"   // IWYU pragma: keep
+#include "rt/config.h"   // IWYU pragma: keep
 
-namespace Reflect::Dynamic {
+namespace mics::rt {
 
 class Any {
     static constexpr size_t SBO_SIZE = 16;
@@ -106,7 +106,7 @@ public:
 
     template<typename T>
     static TypeId type_id_of() noexcept {
-        return Utils::type_hash<T>();
+        return mics::util::type_hash<T>();
     }
 
 private:
@@ -162,5 +162,5 @@ private:
     };
 };
 
-}   // namespace Reflect::Dynamic
+}   // namespace mics::rt
 #endif

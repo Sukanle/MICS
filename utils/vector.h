@@ -25,7 +25,7 @@
 #include <vector>
 #include <iterator>
 
-namespace Reflect::Utils {
+namespace mics::util {
 
 template<typename T, typename... Args>
 T *construct_at(T *p, Args &&...args) noexcept(std::is_nothrow_constructible_v<T, Args...>) {
@@ -392,5 +392,5 @@ vector<_Tp> make_vector(std::vector<_Tp> &&__src) noexcept {
     return std::move(__b).build();
 }
 
-}   // namespace Reflect::Utils
+}   // namespace mics::util
 #endif

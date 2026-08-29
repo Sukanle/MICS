@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_DYNAMIC_REGISTRY_H
-#define SKL_RELECT_DYNAMIC_REGISTRY_H
+#ifndef SKL_MICS_RT_REGISTRY_H
+#define SKL_MICS_RT_REGISTRY_H
 
 #include <stdint.h>
 
 #include <vector>
 
 #include "utils/string_view.h"   // IWYU pragma: keep
-#include "dynamic/type_info.h"   // IWYU pragma: keep
+#include "rt/type_info.h"   // IWYU pragma: keep
 
-namespace Reflect::Dynamic {
+namespace mics::rt {
 
 class Registry;
 using RegistrationCallback = void (*)(Registry &);
@@ -63,7 +63,7 @@ public:
     const TypeInfo *find_by_name(const char *name) const noexcept {
         if (!name) return nullptr;
         for (auto *t : _types) {
-            if (t->name && Utils::string_view(t->name) == name) return t;
+            if (t->name && mics::util::string_view(t->name) == name) return t;
         }
         return nullptr;
     }
@@ -89,5 +89,5 @@ private:
     std::vector<RegistrationCallback> _callbacks;
 };
 
-}   // namespace Reflect::Dynamic
+}   // namespace mics::rt
 #endif

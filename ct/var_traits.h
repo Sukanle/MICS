@@ -15,9 +15,9 @@
  */
 #pragma once
 
-#include "static/template_string.h"   // IWYU pragma: keep
+#include "ct/template_string.h"   // IWYU pragma: keep
 
-namespace Reflect::Static {
+namespace mics::ct {
 
 template<typename T>
 struct var_type {
@@ -48,4 +48,4 @@ struct var_traits<T Class::*, Name> : __base_var_traits<T Class::*, Name> {
     static constexpr bool is_member = false;
 };
 
-}   // namespace Reflect::Static
+}   // namespace mics::ct

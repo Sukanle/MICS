@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_STATIC_ENUM_TRAITS_H_
-#define SKL_RELECT_STATIC_ENUM_TRAITS_H_
+#ifndef SKL_MICS_CT_ENUM_TRAITS_H_
+#define SKL_MICS_CT_ENUM_TRAITS_H_
 
 #include <type_traits>
 
 #include "utils/string_view.h"   // IWYU pragma: keep
 
-namespace Reflect::Static {
+namespace mics::ct {
 template<typename E>
 struct is_scoped_enum
     : std::integral_constant<bool, !std::is_convertible_v<E, typename std::underlying_type_t<E>> && std::is_enum_v<E>> {
@@ -44,10 +44,10 @@ template<typename E>
 struct enum_traits : enum_type<E, void> {
     struct Entry {
         E value;
-        Utils::string_view name;
+        mics::util::string_view name;
     };
     static constexpr bool is_scoped = is_scoped_enum_v<E>;
     explicit constexpr enum_traits() = default;
 };
-}   // namespace Reflect::Static
+}   // namespace mics::ct
 #endif

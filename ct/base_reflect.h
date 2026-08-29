@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_STATIC_BASE_REFLECT_H_
-#define SKL_RELECT_STATIC_BASE_REFLECT_H_
+#ifndef SKL_MICS_CT_BASE_REFLECT_H_
+#define SKL_MICS_CT_BASE_REFLECT_H_
 
-#include "static/enum_traits.h"   // IWYU pragma: keep
-#include "static/fn_traits.h"     // IWYU pragma: keep
-#include "static/var_traits.h"    // IWYU pragma: keep
+#include "ct/enum_traits.h"   // IWYU pragma: keep
+#include "ct/fn_traits.h"     // IWYU pragma: keep
+#include "ct/var_traits.h"    // IWYU pragma: keep
 
-namespace Reflect::Static {
+namespace mics::ct {
 enum class Kind : uint8_t {
     FreeOrStatic_Var,
     FreeOrStatic_Fn,
@@ -101,5 +101,5 @@ struct __base_field_traits<T, Kind::NonStaticMem_Fn, Class, Name> : fn_traits<T,
 
     typename traits::m_fn_ptr _ptr;
 };
-}   // namespace Reflect::Static
+}   // namespace mics::ct
 #endif

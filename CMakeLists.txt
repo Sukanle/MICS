@@ -1,4 +1,4 @@
-# CMakeLists.txt - Reflect Library Test Suite
+# CMakeLists.txt - MICS Library Test Suite
 #
 # Usage:
 #   cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
@@ -10,7 +10,7 @@
 #   -DCMAKE_CXX_STANDARD=17|20   Override C++ standard (default: 17)
 
 cmake_minimum_required(VERSION 3.20)
-project(ReflectTest LANGUAGES CXX)
+project(MICSTest LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)

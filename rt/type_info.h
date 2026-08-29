@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_DYNAMIC_TYPE_INFO_H
-#define SKL_RELECT_DYNAMIC_TYPE_INFO_H
+#ifndef SKL_MICS_RT_TYPE_INFO_H
+#define SKL_MICS_RT_TYPE_INFO_H
 
 #include <stdint.h>
 
 #include "utils/string_view.h"   // IWYU pragma: keep
 #include "utils/vector.h"        // IWYU pragma: keep
 
-#include "dynamic/config.h"       // IWYU pragma: keep
-#include "dynamic/fn_info.h"      // IWYU pragma: keep
-#include "dynamic/enum_info.h"    // IWYU pragma: keep
-#include "dynamic/field_info.h"   // IWYU pragma: keep
+#include "rt/config.h"       // IWYU pragma: keep
+#include "rt/fn_info.h"      // IWYU pragma: keep
+#include "rt/enum_info.h"    // IWYU pragma: keep
+#include "rt/field_info.h"   // IWYU pragma: keep
 
-namespace Reflect::Dynamic {
+namespace mics::rt {
 
 struct BaseInfo {
     TypeId type_id;
@@ -39,9 +39,9 @@ struct TypeInfo {
     TypeId type_id;
     Kind kind;
     size_t size;
-    Utils::vector<BaseInfo> bases;
-    Utils::vector<FieldAccessor> fields;
-    Utils::vector<FnInfo> methods;
+    mics::util::vector<BaseInfo> bases;
+    mics::util::vector<FieldAccessor> fields;
+    mics::util::vector<FnInfo> methods;
     const EnumInfo *enum_info;
 
     TypeInfo() noexcept
@@ -49,21 +49,21 @@ struct TypeInfo {
         , type_id(INVALID_TYPE_ID)
         , kind(Kind::Struct)
         , size(0)
-        , bases(Utils::vector_empty)
-        , fields(Utils::vector_empty)
-        , methods(Utils::vector_empty)
+        , bases(mics::util::vector_empty)
+        , fields(mics::util::vector_empty)
+        , methods(mics::util::vector_empty)
         , enum_info(nullptr) {}
 
     const FieldAccessor *find_field(const char *field_name) const noexcept {
         for (auto &f : fields) {
-            if (f.info.name && Utils::string_view(f.info.name) == field_name) return &f;
+            if (f.info.name && mics::util::string_view(f.info.name) == field_name) return &f;
         }
         return nullptr;
     }
 
     const FnInfo *find_method(const char *method_name) const noexcept {
         for (auto &m : methods) {
-            if (m.name && Utils::string_view(m.name) == method_name) return &m;
+            if (m.name && mics::util::string_view(m.name) == method_name) return &m;
         }
         return nullptr;
     }
@@ -76,5 +76,5 @@ struct TypeInfo {
     }
 };
 
-}   // namespace Reflect::Dynamic
+}   // namespace mics::rt
 #endif

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_DYNAMIC_FIELD_INFO_H
-#define SKL_RELECT_DYNAMIC_FIELD_INFO_H
+#ifndef SKL_MICS_RT_FIELD_INFO_H
+#define SKL_MICS_RT_FIELD_INFO_H
 
 #include <stdint.h>
 
-#include "dynamic/config.h"   // IWYU pragma: keep
+#include "rt/config.h"   // IWYU pragma: keep
 
-namespace Reflect::Dynamic {
+namespace mics::rt {
 
 struct FieldInfo {
     const char *name;
@@ -70,5 +70,5 @@ struct FieldAccessor {
         , setter(s) {}
 };
 
-}   // namespace Reflect::Dynamic
+}   // namespace mics::rt
 #endif

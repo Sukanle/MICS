@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_REFLECT_DYNAMIC_ENUM_INFO_H
-#define SKL_REFLECT_DYNAMIC_ENUM_INFO_H
+#ifndef SKL_MICS_RT_ENUM_INFO_H
+#define SKL_MICS_RT_ENUM_INFO_H
 
 #include <stdint.h>
 
@@ -23,30 +23,30 @@
 #include "utils/string_view.h"   // IWYU pragma: keep
 #include "utils/vector.h"        // IWYU pragma: keep
 
-#include "dynamic/config.h"   // IWYU pragma: keep
+#include "rt/config.h"   // IWYU pragma: keep
 
-namespace Reflect::Dynamic {
+namespace mics::rt {
 
 struct EnumEntry {
     int64_t value;
-    Utils::string_view name;
+    mics::util::string_view name;
 };
 
 struct EnumInfo {
     const char *name;
     TypeId type_id;
     TypeId underlying_type_id;
-    Utils::vector<EnumEntry> entries;
+    mics::util::vector<EnumEntry> entries;
     bool is_scoped;
 
     EnumInfo() noexcept
         : name(nullptr)
         , type_id(INVALID_TYPE_ID)
         , underlying_type_id(INVALID_TYPE_ID)
-        , entries(Utils::vector_empty)
+        , entries(mics::util::vector_empty)
         , is_scoped(false) {}
 
-    EnumInfo(const char *n, TypeId tid, TypeId utid, Utils::vector<EnumEntry> e, bool scoped = false) noexcept
+    EnumInfo(const char *n, TypeId tid, TypeId utid, mics::util::vector<EnumEntry> e, bool scoped = false) noexcept
         : name(n)
         , type_id(tid)
         , underlying_type_id(utid)
@@ -71,5 +71,5 @@ struct EnumInfo {
     }
 };
 
-}   // namespace Reflect::Dynamic
+}   // namespace mics::rt
 #endif

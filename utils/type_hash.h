@@ -23,7 +23,7 @@
 
 #include "utils/hash.h"   // IWYU pragma: keep
 
-namespace Reflect::Utils {
+namespace mics::util {
 
 template<typename T>
 struct type_tag {
@@ -32,9 +32,9 @@ struct type_tag {
 
 #define STATIC_TYPE_TAG(T, tag)                                                            \
     template<>                                                                             \
-    struct Reflect::Utils::type_tag<T> {                                                   \
+    struct mics::util::type_tag<T> {                                                      \
         static constexpr bool defined = true;                                              \
-        static constexpr ::Reflect::Utils::hash64_t value = ::Reflect::Utils::cstr64(tag); \
+        static constexpr ::mics::util::hash64_t value = ::mics::util::cstr64(tag);       \
     }
 
 namespace detail {
@@ -147,6 +147,6 @@ constexpr hash64_t type_hash() noexcept {
 template<typename T>
 inline constexpr hash64_t type_hash_v = type_hash<T>();
 
-}   // namespace Reflect::Utils
+}   // namespace mics::util
 
 #endif

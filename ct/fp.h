@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_STATIC_FP_H_
-#define SKL_RELECT_STATIC_FP_H_
+#ifndef SKL_MICS_CT_FP_H_
+#define SKL_MICS_CT_FP_H_
 
-#include "static/base_fp.h"   // IWYU pragma: keep
+#include "ct/base_fp.h"   // IWYU pragma: keep
 
-namespace Reflect::Static::Fp {
+namespace mics::ct::fp {
 
 template<typename TypeList, template_constants N>
 using nth = typename base_nth<TypeList, N>::type;
@@ -68,5 +68,5 @@ using remove = typename base_remove<TypeList, Target>::type;
 
 template<typename List, typename Init, template<typename, typename> class Func>
 using fold = typename base_fold<List, Init, Func>::type;
-}   // namespace Reflect::Static::Fp
+}   // namespace mics::ct::fp
 #endif

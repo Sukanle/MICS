@@ -15,7 +15,7 @@
  */
 
 // =============================================================================
-// Reflect Library — Catch2 Test Suite
+// MICS Library — Catch2 Test Suite
 // =============================================================================
 // Covers:
 //   - Static class reflection (fields, methods, custom template names)
@@ -24,7 +24,7 @@
 //   - Dynamic enum reflection (SKL_RFD_ENUM_BEGIN / SKL_RFD_ENUM_VALUE)
 // =============================================================================
 
-#include "reflect.h"
+#include "mics.h"
 
 #include <cstdio>
 #include <string>

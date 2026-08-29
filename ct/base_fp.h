@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_RELECT_STATIC_BASE_FP_H_
-#define SKL_RELECT_STATIC_BASE_FP_H_
+#ifndef SKL_MICS_CT_BASE_FP_H_
+#define SKL_MICS_CT_BASE_FP_H_
 
 #include <type_traits>
 
-#include "static/config.h"   // IWYU pragma: keep
+#include "ct/config.h"   // IWYU pragma: keep
 
-namespace Reflect::Static::Fp {
+namespace mics::ct::fp {
 template<typename T, template_constants N>
 struct base_nth;
 template<typename T, typename... Remains>
@@ -225,5 +225,5 @@ struct base_fold<type_list<Head, Tail...>, Init, Func> {
     using current = typename Func<Init, Head>::type;
     using type = typename base_fold<type_list<Tail...>, current, Func>::type;
 };
-}   // namespace Reflect::Static::Fp
+}   // namespace mics::ct::fp
 #endif
