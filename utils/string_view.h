@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-namespace mics::util {
+namespace mics::utils {
 
 class string_view {
 public:
@@ -58,5 +58,5 @@ private:
         return len;
     }
 };
-}   // namespace mics::util
+}   // namespace mics::utils
 #endif

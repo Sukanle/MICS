@@ -63,7 +63,7 @@ public:
     const TypeInfo *find_by_name(const char *name) const noexcept {
         if (!name) return nullptr;
         for (auto *t : _types) {
-            if (t->name && mics::util::string_view(t->name) == name) return t;
+            if (t->name && mics::utils::string_view(t->name) == name) return t;
         }
         return nullptr;
     }

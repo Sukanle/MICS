@@ -52,7 +52,7 @@ template<typename T>
 using ref_combinations_t = typename ref_combinations<T>::type;
 
 #if !SKL_TEMPLATE_STRING_SUPPORTED
-constexpr mics::util::string_view strip_prefix(mics::util::string_view name, mics::util::string_view prefix = "&class_t::") noexcept {
+constexpr mics::utils::string_view strip_prefix(mics::utils::string_view name, mics::utils::string_view prefix = "&class_t::") noexcept {
     return name.substr(prefix.size());
 }
 #endif
@@ -61,15 +61,15 @@ template<typename T, typename Class = void, SKL_DEFAULT_TEMPLATE_STRING(Name, ""
 struct field_traits : __base_field_traits<T, is_Kind<T>(), Class, Name> {
     using traits = __base_field_traits<T, is_Kind<T>(), Class, Name>;
     explicit field_traits() = default;
-    [[nodiscard]] consteval mics::util::string_view getName() const { return _name; }
-    explicit field_traits(T &ptr, mics::util::string_view name = "")
+    [[nodiscard]] consteval mics::utils::string_view getName() const { return _name; }
+    explicit field_traits(T &ptr, mics::utils::string_view name = "")
         : __base_field_traits<T, is_Kind<T>(), Class, Name>{ptr}
         , _name(name) {}
-    explicit consteval field_traits(T &&ptr, mics::util::string_view name = "")
+    explicit consteval field_traits(T &&ptr, mics::utils::string_view name = "")
         : __base_field_traits<T, is_Kind<T>(), Class, Name>{std::move(ptr)}
         , _name(name) {}
 
-    [[nodiscard]] static consteval mics::util::string_view from_TempName() {
+    [[nodiscard]] static consteval mics::utils::string_view from_TempName() {
 #if !SKL_TEMPLATE_STRING_SUPPORTED
         static_assert(Name != nullptr,
             "This function [SRef::field_traits::from_TempName] must be "
@@ -82,7 +82,7 @@ struct field_traits : __base_field_traits<T, is_Kind<T>(), Class, Name> {
     }
 
 private:
-    mics::util::string_view _name;
+    mics::utils::string_view _name;
 };
 
 template<typename T>

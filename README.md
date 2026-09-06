@@ -19,7 +19,7 @@ MICS provides **zero-overhead compile-time static reflection** (field/method tra
 |-------|-----------|-------------|
 | `SRefl` | `mics::ct` | Compile-time static reflection |
 | `DRefl` | `mics::rt` | Runtime dynamic reflection |
-| `URefl` | `mics::util` | ABI-stable utility container |
+| `URefl` | `mics::utils` | ABI-stable utility container |
 
 ## Features
 
@@ -178,7 +178,7 @@ MICS/
 │   ├── enum_info.h       # EnumInfo + EnumEntry
 │   ├── any.h             # Any: type-erased value container (SBO)
 │   └── registry.h        # Registry: global singleton type registry
-├── util/                 # Shared utilities (mics::util / URefl)
+├── utils/                 # Shared utilities (mics::utils / URefl)
 │   ├── hash.h            # FNV-1a hash functions, calling convention tags
 │   ├── type_hash.h       # Compile-time type → hash mapping
 │   ├── fn_hash.h         # Function-signature folding hash (compute_fn_hash)

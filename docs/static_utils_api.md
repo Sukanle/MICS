@@ -1,16 +1,16 @@
 # Static Reflection & Utils API Reference
 
-This document covers the compile-time static reflection system (`ct/`) and shared utilities (`util/`).
+This document covers the compile-time static reflection system (`ct/`) and shared utilities (`utils/`).
 
-> **Namespace mapping:** `Reflect::Static` → `mics::ct` (alias `SRefl`), `Reflect::Utils` → `mics::util` (alias `URefl`), `Reflect::Static::Fp` → `mics::ct::fp`
+> **Namespace mapping:** `Reflect::Static` → `mics::ct` (alias `SRefl`), `Reflect::Utils` → `mics::utils` (alias `URefl`), `Reflect::Static::Fp` → `mics::ct::fp`
 
 ---
 
-## 1. Util (`util/`)
+## 1. utils (`utils/`)
 
 ### 1.1 `hash.h` — FNV-1a Hash Functions
 
-**Namespace:** `mics::util` / `URefl`
+**Namespace:** `mics::utils` / `URefl`
 
 | Symbol | Type | Description |
 |--------|------|-------------|
@@ -25,7 +25,7 @@ This document covers the compile-time static reflection system (`ct/`) and share
 **Calling Convention Tags:**
 
 ```cpp
-namespace mics::util::cc {
+namespace mics::utils::cc {
     enum class tag : uint8_t {
         Cdecl      = 0,
         Stdcall    = 1,
@@ -45,7 +45,7 @@ constexpr auto combined = URefl::mix(h, URefl::cstr64("::field")); // combine
 
 ### 1.2 `type_hash.h` — Compile-time Type → Hash
 
-**Namespace:** `mics::util`
+**Namespace:** `mics::utils`
 
 | Symbol | Type | Description |
 |--------|------|-------------|
@@ -72,7 +72,7 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 ### 1.3 `vector.h` — ABI Immutable Container
 
-**Namespace:** `mics::util`
+**Namespace:** `mics::utils`
 
 `URefl::vector<T>` is an ABI-stable container designed specifically as the data carrier for dynamic reflection, with the following mandatory constraints:
 
@@ -142,7 +142,7 @@ sv.push_back(4);  // modification to std::vector does not affect original v
 
 ### 1.4 `fn_hash.h` — Function-Signature Folding Hash
 
-**Namespace:** `mics::util`
+**Namespace:** `mics::utils`
 
 | Symbol | Type | Description |
 |--------|------|-------------|
@@ -284,7 +284,7 @@ constexpr auto n = fp::size<Unique>;                      // 2
 | `__base_fn_traits<Signature, Class, Name>` | `name`, `is_member`, `params_count`, `hash` |
 | `fn_traits<Signature, Class, Name>` | Full traits with `fn_ptr`/`m_fn_ptr`, `modifie` bitmask |
 
-**`hash` source:** Each `__base_fn_traits` computes its `hash` via `mics::util::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()`; it never encodes the calling convention.
+**`hash` source:** Each `__base_fn_traits` computes its `hash` via `mics::utils::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()`; it never encodes the calling convention.
 
 **`fn_qualify` bitmask constants:**
 
@@ -424,7 +424,7 @@ Defined in `mics.h` (root):
 ```cpp
 namespace SRefl = ::mics::ct;     // Compile-time static reflection
 namespace DRefl = ::mics::rt;     // Runtime dynamic reflection
-namespace URefl = ::mics::util;   // ABI-stable utility container
+namespace URefl = ::mics::utils;   // ABI-stable utility container
 ```
 
 These provide convenient shorthand:

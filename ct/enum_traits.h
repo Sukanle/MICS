@@ -44,7 +44,7 @@ template<typename E>
 struct enum_traits : enum_type<E, void> {
     struct Entry {
         E value;
-        mics::util::string_view name;
+        mics::utils::string_view name;
     };
     static constexpr bool is_scoped = is_scoped_enum_v<E>;
     explicit constexpr enum_traits() = default;

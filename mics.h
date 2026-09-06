@@ -29,7 +29,7 @@
 
 namespace SRefl = ::mics::ct;    // NOLINT
 namespace DRefl = ::mics::rt;   // NOLINT
-namespace URefl = ::mics::util;     // NOLINT
+namespace URefl = ::mics::utils;     // NOLINT
 
 #define SKL_RFS_MAKE_FIELD_TRAITS(type, VAR) SKL_RFS_MAKE_##type##_FIELD_TRAITS(VAR)
 #define SKL_RFS_REGISTER_BEGIN(TYPE, ...)                             \

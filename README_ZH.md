@@ -19,7 +19,7 @@ MICS 在编译期提供零开销的静态反射（字段/方法遍历、类型�
 |------|----------|------|
 | `SRefl` | `mics::ct` | 编译期静态反射（Static Reflection） |
 | `DRefl` | `mics::rt` | 运行时动态反射（Dynamic Reflection） |
-| `URefl` | `mics::util` | ABI 稳定工具容器（Utility Reflection） |
+| `URefl` | `mics::utils` | ABI 稳定工具容器（Utility Reflection） |
 
 ## 特性
 
@@ -178,7 +178,7 @@ MICS/
 │   ├── enum_info.h       # EnumInfo + EnumEntry
 │   ├── any.h             # Any：类型擦除值容器（SBO 优化）
 │   └── registry.h        # Registry：全局单例类型注册表
-├── util/                 # 共享工具（mics::util / URefl）
+├── utils/                 # 共享工具（mics::utils / URefl）
 │   ├── hash.h            # FNV-1a 哈希函数、调用约定标签
 │   ├── type_hash.h       # 编译期类型 → 哈希映射
 │   ├── fn_hash.h         # 函数签名折叠哈希（compute_fn_hash）

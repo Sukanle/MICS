@@ -21,7 +21,7 @@
 #include "utils/hash.h"        // IWYU pragma: keep
 #include "utils/type_hash.h"   // IWYU pragma: keep
 
-namespace mics::util {
+namespace mics::utils {
 
 template<hash64_t RetHash, hash64_t... ArgHashes>
 constexpr hash64_t compute_fn_hash() noexcept {
@@ -35,6 +35,6 @@ constexpr hash64_t compute_fn_hash() noexcept {
     return h;
 }
 
-}   // namespace mics::util
+}   // namespace mics::utils
 
 #endif   // SKL_UTILS_FN_HASH_H

@@ -33,7 +33,7 @@ namespace mics::rt {
 
 template<typename T>
 constexpr TypeId type_id_of() noexcept {
-    return mics::util::type_hash<T>();
+    return mics::utils::type_hash<T>();
 }
 
 namespace detail {

@@ -115,8 +115,8 @@ inline const char *meta_string_lookup_by_hash(const MetaStringTable *table, uint
     return nullptr;
 }
 
-#define SKL_REFT_HASH(str) ::mics::util::hash_cstr(str)
-#define SKL_REFT_HASH32(str) ::mics::util::hash_cstr32(str)
+#define SKL_REFT_HASH(str) ::mics::utils::hash_cstr(str)
+#define SKL_REFT_HASH32(str) ::mics::utils::hash_cstr32(str)
 
 #define SKL_REFT_META_STRING 1
 

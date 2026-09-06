@@ -39,9 +39,9 @@ struct TypeInfo {
     TypeId type_id;
     Kind kind;
     size_t size;
-    mics::util::vector<BaseInfo> bases;
-    mics::util::vector<FieldAccessor> fields;
-    mics::util::vector<FnInfo> methods;
+    mics::utils::vector<BaseInfo> bases;
+    mics::utils::vector<FieldAccessor> fields;
+    mics::utils::vector<FnInfo> methods;
     const EnumInfo *enum_info;
 
     TypeInfo() noexcept
@@ -49,21 +49,21 @@ struct TypeInfo {
         , type_id(INVALID_TYPE_ID)
         , kind(Kind::Struct)
         , size(0)
-        , bases(mics::util::vector_empty)
-        , fields(mics::util::vector_empty)
-        , methods(mics::util::vector_empty)
+        , bases(mics::utils::vector_empty)
+        , fields(mics::utils::vector_empty)
+        , methods(mics::utils::vector_empty)
         , enum_info(nullptr) {}
 
     const FieldAccessor *find_field(const char *field_name) const noexcept {
         for (auto &f : fields) {
-            if (f.info.name && mics::util::string_view(f.info.name) == field_name) return &f;
+            if (f.info.name && mics::utils::string_view(f.info.name) == field_name) return &f;
         }
         return nullptr;
     }
 
     const FnInfo *find_method(const char *method_name) const noexcept {
         for (auto &m : methods) {
-            if (m.name && mics::util::string_view(m.name) == method_name) return &m;
+            if (m.name && mics::utils::string_view(m.name) == method_name) return &m;
         }
         return nullptr;
     }

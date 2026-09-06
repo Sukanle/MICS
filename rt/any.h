@@ -106,7 +106,7 @@ public:
 
     template<typename T>
     static TypeId type_id_of() noexcept {
-        return mics::util::type_hash<T>();
+        return mics::utils::type_hash<T>();
     }
 
 private:
