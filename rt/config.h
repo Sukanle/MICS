@@ -20,11 +20,22 @@
 
 namespace mics::rt {
 
-using TypeId = uint64_t;
+// Type identity is a canonical two-word value. It must not be truncated to
+// one word when crossing the runtime/ABIX metadata boundary.
+struct TypeId {
+    uint64_t lo = 0;
+    uint64_t hi = 0;
+
+    constexpr bool operator==(TypeId other) const noexcept {
+        return lo == other.lo && hi == other.hi;
+    }
+    constexpr bool operator!=(TypeId other) const noexcept { return !(*this == other); }
+};
+
 using FieldId = uint32_t;
 using MethodId = uint32_t;
 
-constexpr TypeId INVALID_TYPE_ID = 0;
+constexpr TypeId INVALID_TYPE_ID{};
 
 enum class Kind : uint8_t {
     Class,

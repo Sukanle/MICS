@@ -22,6 +22,7 @@
 #include <type_traits>
 
 #include "utils/hash.h"   // IWYU pragma: keep
+#include "rt/config.h"    // IWYU pragma: keep
 
 namespace mics::utils {
 
@@ -142,6 +143,16 @@ template<typename T>
 constexpr hash64_t type_hash() noexcept {
     using U = std::conditional_t<std::is_reference_v<T>, T, std::remove_cv_t<T>>;
     return detail::type_hash_impl<U>::value;
+}
+
+// The low word preserves the established type hash. The high word is a
+// deterministic second domain, so runtime TypeId remains 128-bit without
+// changing the existing hash64 API used by function and string metadata.
+template<typename T>
+constexpr ::mics::rt::TypeId type_hash128() noexcept {
+    const hash64_t low = type_hash<T>();
+    const hash64_t high = mix(cstr64("abix.type"), low);
+    return {low, high};
 }
 
 template<typename T>
