@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <limits.h>
 #include <math.h>
+
+#include <limits>
 #include <type_traits>
 
 #include "utils/hash.h"   // IWYU pragma: keep
@@ -90,9 +92,36 @@ struct integer_trait {
 STATIC_DEF_TYPE_HASH(void, "v");
 STATIC_DEF_TYPE_HASH(bool, "b");
 STATIC_DEF_TYPE_HASH(char, "c");
-STATIC_DEF_TYPE_HASH(float, "f");
-STATIC_DEF_TYPE_HASH(double, "d");
-STATIC_DEF_TYPE_HASH(long double, "ld");
+
+// Floating-point types are identified by their *format*, not their spelling.
+// On most targets `float`/`double`/`long double` are 32/64/80(+)-bit IEEE and
+// stay distinct; but on a target such as AVR, where `double` is 32-bit, a
+// `double` and a `float` are the same ABI and must share an identity. The tag
+// is therefore a function of the type's IEEE/format semantics: `is_iec559`
+// plus the mantissa width (`digits`) and storage width (`sizeof`). Distinct
+// formats that happen to share a storage size — notably x87 80-bit extended
+// (`digits == 64`, 16 bytes) versus IEEE binary128 (`digits == 113`, 16 bytes)
+// — always stay distinct.
+template<typename T>
+constexpr const char *float_format_tag() noexcept {
+    constexpr int digits = std::numeric_limits<T>::digits;
+    constexpr bool iec = std::numeric_limits<T>::is_iec559;
+    if (!iec) return "fp:non_ieee";
+    if (digits == 10) return "fp:bf16";
+    if (digits == 11) return "fp:ieee16";
+    if (digits == 24) return "fp:ieee32";
+    if (digits == 53) return "fp:ieee64";
+    if (digits == 64) return "fp:x87_80";
+    if (digits == 113) return "fp:ieee128";
+    return "fp:other";
+}
+
+// All floating-point types (`float`, `double`, `long double`) share one
+// format-driven identity path.
+template<typename T>
+struct is_float_type : std::integral_constant<bool, std::is_floating_point_v<T>> {};
+template<typename T>
+inline constexpr bool is_float_type_v = is_float_type<T>::value;
 
 // Character types
 #if __cpp_char8_t >= 201'811L
@@ -127,6 +156,10 @@ struct type_hash_impl {
     static constexpr hash64_t value = []() {
         if constexpr (is_integral_v<T>) {
             return cstr64(integer_trait<T>::info.tag());
+        } else if constexpr (is_float_type_v<T>) {
+            // `float` / `double` / `long double` collapse onto their format, so
+            // a target where `double == float` gives them one identity.
+            return mix(cstr64(float_format_tag<T>()), static_cast<uint64_t>(sizeof(T) * CHAR_BIT));
         } else if constexpr (type_tag<T>::defined) {
             return type_tag<T>::value;
         } else {
