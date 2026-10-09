@@ -16,7 +16,6 @@
 #ifndef SKL_MICS_RT_ANY_H
 #define SKL_MICS_RT_ANY_H
 
-#include <stdint.h>
 #include <string.h>
 
 #include <utility>

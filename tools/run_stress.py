@@ -127,7 +127,9 @@ def build_trend_svg(report_dir: Path, svg_path: Path, aggregate_csv_path: Path) 
 
     with aggregate_csv_path.open("w", encoding="utf-8", newline="") as fp:
         writer = csv.writer(fp)
-        writer.writerow(["timestamp", "build_ns", "build_ms", "dump_runtime_metadata", "run_exit"])
+        writer.writerow(
+            ["timestamp", "build_ns", "build_ms", "dump_runtime_metadata", "run_exit"]
+        )
         for p in points:
             writer.writerow(
                 [
@@ -179,7 +181,10 @@ def build_trend_svg(report_dir: Path, svg_path: Path, aggregate_csv_path: Path) 
     def polyline(series: list[dict[str, object]], color: str) -> str:
         if not series:
             return ""
-        coords = " ".join(f"{sx(p['datetime'].timestamp()):.2f},{sy(float(p['build_ms'])):.2f}" for p in series)
+        coords = " ".join(
+            f"{sx(p['datetime'].timestamp()):.2f},{sy(float(p['build_ms'])):.2f}"
+            for p in series
+        )
         return f'<polyline fill="none" stroke="{color}" stroke-width="2" points="{coords}" />'
 
     def points_svg(series: list[dict[str, object]], color: str) -> str:
@@ -187,7 +192,9 @@ def build_trend_svg(report_dir: Path, svg_path: Path, aggregate_csv_path: Path) 
         for p in series:
             cx = sx(p["datetime"].timestamp())
             cy = sy(float(p["build_ms"]))
-            chunks.append(f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="3.5" fill="{color}" />')
+            chunks.append(
+                f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="3.5" fill="{color}" />'
+            )
         return "\n".join(chunks)
 
     y_ticks = 6
@@ -197,12 +204,20 @@ def build_trend_svg(report_dir: Path, svg_path: Path, aggregate_csv_path: Path) 
         ratio = i / y_ticks
         y_val = max_y - (max_y - min_y) * ratio
         y_pos = margin_top + plot_h * ratio
-        y_grid.append(f'<line x1="{margin_left}" y1="{y_pos:.2f}" x2="{width - margin_right}" y2="{y_pos:.2f}" stroke="#ececec"/>')
-        y_labels.append(f'<text x="{margin_left - 10}" y="{y_pos + 4:.2f}" text-anchor="end" font-size="12" fill="#444">{y_val:.3f}</text>')
+        y_grid.append(
+            f'<line x1="{margin_left}" y1="{y_pos:.2f}" x2="{width - margin_right}" y2="{y_pos:.2f}" stroke="#ececec"/>'
+        )
+        y_labels.append(
+            f'<text x="{margin_left - 10}" y="{y_pos + 4:.2f}" text-anchor="end" font-size="12" fill="#444">{y_val:.3f}</text>'
+        )
 
     x_labels: list[str] = []
     for idx, p in enumerate(points):
-        if len(points) > 12 and idx % max(1, len(points) // 12) != 0 and idx != len(points) - 1:
+        if (
+            len(points) > 12
+            and idx % max(1, len(points) // 12) != 0
+            and idx != len(points) - 1
+        ):
             continue
         x_pos = sx(p["datetime"].timestamp())
         x_labels.append(
@@ -213,15 +228,15 @@ def build_trend_svg(report_dir: Path, svg_path: Path, aggregate_csv_path: Path) 
 <rect x="0" y="0" width="{width}" height="{height}" fill="#ffffff"/>
 <text x="{margin_left}" y="28" font-size="20" font-weight="bold" fill="#222">Build Time Trend (ms)</text>
 <text x="{margin_left}" y="46" font-size="12" fill="#666">Only build time is used as evaluation metric; grouped by runtime metadata dump flag.</text>
-{''.join(y_grid)}
+{"".join(y_grid)}
 <line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{height - margin_bottom}" stroke="#333"/>
 <line x1="{margin_left}" y1="{height - margin_bottom}" x2="{width - margin_right}" y2="{height - margin_bottom}" stroke="#333"/>
-{''.join(y_labels)}
-{''.join(x_labels)}
-{polyline(series_off, '#1f77b4')}
-{polyline(series_on, '#d62728')}
-{points_svg(series_off, '#1f77b4')}
-{points_svg(series_on, '#d62728')}
+{"".join(y_labels)}
+{"".join(x_labels)}
+{polyline(series_off, "#1f77b4")}
+{polyline(series_on, "#d62728")}
+{points_svg(series_off, "#1f77b4")}
+{points_svg(series_on, "#d62728")}
 <rect x="{width - 300}" y="22" width="12" height="12" fill="#1f77b4"/><text x="{width - 282}" y="32" font-size="12" fill="#333">dump_runtime_metadata=0</text>
 <rect x="{width - 300}" y="42" width="12" height="12" fill="#d62728"/><text x="{width - 282}" y="52" font-size="12" fill="#333">dump_runtime_metadata=1</text>
 <text x="{width / 2:.2f}" y="{height - 12}" text-anchor="middle" font-size="12" fill="#555">timestamp</text>
@@ -233,11 +248,20 @@ def build_trend_svg(report_dir: Path, svg_path: Path, aggregate_csv_path: Path) 
 
 def classify_trace_event(name: str, detail: str) -> str:
     text = f"{name} {detail}".lower()
-    if "consteval" in text or "constexpr" in text or "evaluate" in text or "constantexpr" in text:
+    if (
+        "consteval" in text
+        or "constexpr" in text
+        or "evaluate" in text
+        or "constantexpr" in text
+    ):
         return "consteval"
     if "instantiate" in text or "template" in text:
         return "template_instantiation"
-    if name == "Source" or "parse" in text or any(ext in text for ext in (".h", ".hpp", ".hh", ".hxx")):
+    if (
+        name == "Source"
+        or "parse" in text
+        or any(ext in text for ext in (".h", ".hpp", ".hh", ".hxx"))
+    ):
         return "header_parse"
     return "other"
 
@@ -330,7 +354,9 @@ def analyze_ftime_trace(build_dir: Path, report_dir: Path, ts: str) -> dict[str,
         "ftime_trace_json_count": str(len(valid_trace_files)),
         "ftime_trace_header_parse_us": str(header_us),
         "ftime_trace_consteval_us": str(consteval_us),
-        "ftime_trace_template_instantiation_us": str(category_us["template_instantiation"]),
+        "ftime_trace_template_instantiation_us": str(
+            category_us["template_instantiation"]
+        ),
         "ftime_trace_other_us": str(category_us["other"]),
         "ftime_trace_bottleneck": bottleneck,
         "ftime_trace_summary_txt": str(summary_txt),
@@ -339,19 +365,53 @@ def analyze_ftime_trace(build_dir: Path, report_dir: Path, ts: str) -> dict[str,
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Cross-platform reflection stress runner.")
-    parser.add_argument("--generator", default="MinGW Makefiles", help="CMake generator")
+    parser = argparse.ArgumentParser(
+        description="Cross-platform reflection stress runner."
+    )
+    parser.add_argument(
+        "--generator", default="MinGW Makefiles", help="CMake generator"
+    )
     parser.add_argument("--build-type", default="Release", help="CMake build type")
     parser.add_argument("--build-dir", default="build-mingw", help="Build directory")
-    parser.add_argument("--report-dir", default="reports", help="Report output directory")
-    parser.add_argument("--binary-name", default="reflect_stress", help="Built binary name")
-    parser.add_argument("--jobs", type=int, default=os.cpu_count() or 1, help="Parallel build jobs")
-    parser.add_argument("--print-raw-output", action="store_true", help="Print full raw outputs from configure/build/run")
-    parser.add_argument("--print-summary", action="store_true", help="Print parsed summary metrics")
-    parser.add_argument("--dump-runtime-metadata", action="store_true", help="Enable runtime_meta CSV dump from reflect_stress binary")
-    parser.add_argument("--ftime-trace", action="store_true", help="Enable clang -ftime-trace and auto analyze trace json")
-    parser.add_argument("--binary-arg", action="append", default=[], help="Forward one argument to reflect_stress (repeatable)")
-    parser.add_argument("--cmake-extra", action="append", default=[], help="Extra CMake configure arg (repeatable)")
+    parser.add_argument(
+        "--report-dir", default="reports", help="Report output directory"
+    )
+    parser.add_argument(
+        "--binary-name", default="reflect_stress", help="Built binary name"
+    )
+    parser.add_argument(
+        "--jobs", type=int, default=os.cpu_count() or 1, help="Parallel build jobs"
+    )
+    parser.add_argument(
+        "--print-raw-output",
+        action="store_true",
+        help="Print full raw outputs from configure/build/run",
+    )
+    parser.add_argument(
+        "--print-summary", action="store_true", help="Print parsed summary metrics"
+    )
+    parser.add_argument(
+        "--dump-runtime-metadata",
+        action="store_true",
+        help="Enable runtime_meta CSV dump from reflect_stress binary",
+    )
+    parser.add_argument(
+        "--ftime-trace",
+        action="store_true",
+        help="Enable clang -ftime-trace and auto analyze trace json",
+    )
+    parser.add_argument(
+        "--binary-arg",
+        action="append",
+        default=[],
+        help="Forward one argument to reflect_stress (repeatable)",
+    )
+    parser.add_argument(
+        "--cmake-extra",
+        action="append",
+        default=[],
+        help="Extra CMake configure arg (repeatable)",
+    )
     args = parser.parse_args()
 
     project_dir = Path(__file__).resolve().parent
@@ -391,7 +451,9 @@ def main() -> int:
     ]
     build_cmd = ["cmake", "--build", str(build_dir), "--", "-j", str(args.jobs)]
 
-    configure_exit, configure_out, configure_ns = run_cmd(configure_cmd, project_dir, args.print_raw_output)
+    configure_exit, configure_out, configure_ns = run_cmd(
+        configure_cmd, project_dir, args.print_raw_output
+    )
     txt_lines.append("[CONFIGURE OUTPUT]")
     txt_lines.append(configure_out.rstrip())
     if configure_exit != 0:
@@ -404,10 +466,14 @@ def main() -> int:
                 ("run_exit", str(configure_exit)),
             ],
         )
-        report_txt.write_text("\n".join(line for line in txt_lines if line), encoding="utf-8")
+        report_txt.write_text(
+            "\n".join(line for line in txt_lines if line), encoding="utf-8"
+        )
         return configure_exit
 
-    build_exit, build_out, build_ns = run_cmd(build_cmd, project_dir, args.print_raw_output)
+    build_exit, build_out, build_ns = run_cmd(
+        build_cmd, project_dir, args.print_raw_output
+    )
     txt_lines.append("[BUILD OUTPUT]")
     txt_lines.append(build_out.rstrip())
     if build_exit != 0:
@@ -421,7 +487,9 @@ def main() -> int:
                 ("run_exit", str(build_exit)),
             ],
         )
-        report_txt.write_text("\n".join(line for line in txt_lines if line), encoding="utf-8")
+        report_txt.write_text(
+            "\n".join(line for line in txt_lines if line), encoding="utf-8"
+        )
         return build_exit
 
     binary_path = resolve_binary_path(build_dir, args.binary_name)
@@ -429,7 +497,9 @@ def main() -> int:
     if args.dump_runtime_metadata:
         run_cmd_args.append("--dump-runtime-metadata")
     run_cmd_args.extend(args.binary_arg)
-    run_exit, run_out, run_ns = run_cmd(run_cmd_args, project_dir, args.print_raw_output)
+    run_exit, run_out, run_ns = run_cmd(
+        run_cmd_args, project_dir, args.print_raw_output
+    )
     parsed = parse_runtime_output(run_out)
 
     txt_lines.append("[RUN OUTPUT]")
@@ -463,7 +533,10 @@ def main() -> int:
         ("ftime_trace", "1" if args.ftime_trace else "0"),
         ("validated_classes", parsed.get("validated_classes", "NA")),
         ("metadata_errors", parsed.get("metadata_errors", "NA")),
-        ("runtime_validation_total_ns", parsed.get("runtime_validation_total_ns", "NA")),
+        (
+            "runtime_validation_total_ns",
+            parsed.get("runtime_validation_total_ns", "NA"),
+        ),
         ("runtime_metadata_check_ns", parsed.get("runtime_metadata_check_ns", "NA")),
         ("runtime_value_check_ns", parsed.get("runtime_value_check_ns", "NA")),
         ("runtime_overhead_ns", parsed.get("runtime_overhead_ns", "NA")),
@@ -473,7 +546,10 @@ def main() -> int:
         ("ftime_trace_json_count", trace_info["ftime_trace_json_count"]),
         ("ftime_trace_header_parse_us", trace_info["ftime_trace_header_parse_us"]),
         ("ftime_trace_consteval_us", trace_info["ftime_trace_consteval_us"]),
-        ("ftime_trace_template_instantiation_us", trace_info["ftime_trace_template_instantiation_us"]),
+        (
+            "ftime_trace_template_instantiation_us",
+            trace_info["ftime_trace_template_instantiation_us"],
+        ),
         ("ftime_trace_other_us", trace_info["ftime_trace_other_us"]),
         ("ftime_trace_bottleneck", trace_info["ftime_trace_bottleneck"]),
         ("ftime_trace_summary_txt", trace_info["ftime_trace_summary_txt"]),
@@ -494,7 +570,9 @@ def main() -> int:
             f"[META] ftime_trace_summary_txt={trace_info['ftime_trace_summary_txt']}",
         ]
     )
-    report_txt.write_text("\n".join(line for line in txt_lines if line), encoding="utf-8")
+    report_txt.write_text(
+        "\n".join(line for line in txt_lines if line), encoding="utf-8"
+    )
 
     trend_svg = report_dir / "build_trend.svg"
     trend_csv = report_dir / "build_trend_aggregated.csv"

@@ -26,9 +26,7 @@ struct TypeId {
     uint64_t lo = 0;
     uint64_t hi = 0;
 
-    constexpr bool operator==(TypeId other) const noexcept {
-        return lo == other.lo && hi == other.hi;
-    }
+    constexpr bool operator==(TypeId other) const noexcept { return lo == other.lo && hi == other.hi; }
     constexpr bool operator!=(TypeId other) const noexcept { return !(*this == other); }
 };
 

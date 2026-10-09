@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 
 def class_name(index: int) -> str:
@@ -94,7 +94,7 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("    localtime_r(&now, &tm_now);")
     lines.append("#endif")
     lines.append("    std::ostringstream oss;")
-    lines.append("    oss << std::put_time(&tm_now, \"%Y%m%d_%H%M%S\");")
+    lines.append('    oss << std::put_time(&tm_now, "%Y%m%d_%H%M%S");')
     lines.append("    return oss.str();")
     lines.append("}")
     lines.append("")
@@ -106,16 +106,26 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("};")
     lines.append("")
     lines.append("template<typename Obj, typename MemberType>")
-    lines.append("std::size_t offset_of_reflected(const Obj& obj, MemberType Obj::* ptr) {")
+    lines.append(
+        "std::size_t offset_of_reflected(const Obj& obj, MemberType Obj::* ptr) {"
+    )
     lines.append("    const auto* base = reinterpret_cast<const unsigned char*>(&obj);")
-    lines.append("    const auto* mem = reinterpret_cast<const unsigned char*>(&(obj.*ptr));")
+    lines.append(
+        "    const auto* mem = reinterpret_cast<const unsigned char*>(&(obj.*ptr));"
+    )
     lines.append("    return static_cast<std::size_t>(mem - base);")
     lines.append("}")
     lines.append("")
     lines.append("template<typename MemberTraits, typename Obj>")
-    lines.append("int validate_field(const MemberTraits& member, Obj& obj, std::int32_t expected,")
-    lines.append("                   std::size_t expected_offset, std::string_view expected_name,")
-    lines.append("                   std::string_view class_name, std::ofstream* meta_out,")
+    lines.append(
+        "int validate_field(const MemberTraits& member, Obj& obj, std::int32_t expected,"
+    )
+    lines.append(
+        "                   std::size_t expected_offset, std::string_view expected_name,"
+    )
+    lines.append(
+        "                   std::string_view class_name, std::ofstream* meta_out,"
+    )
     lines.append("                   TimingSummary& summary) {")
     lines.append("    int errors = 0;")
     lines.append("    const auto begin = std::chrono::steady_clock::now();")
@@ -125,16 +135,24 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("    const auto meta_end = std::chrono::steady_clock::now();")
     lines.append("    const auto value_begin = meta_end;")
     lines.append("    const std::int32_t actual = obj.*member._ptr;")
-    lines.append("    const std::size_t actual_offset = offset_of_reflected(obj, member._ptr);")
+    lines.append(
+        "    const std::size_t actual_offset = offset_of_reflected(obj, member._ptr);"
+    )
     lines.append("    if (actual != expected) ++errors;")
     lines.append("    if (actual_offset != expected_offset) ++errors;")
     lines.append("    const auto value_end = std::chrono::steady_clock::now();")
     lines.append("    const std::int64_t meta_ns =")
-    lines.append("        std::chrono::duration_cast<std::chrono::nanoseconds>(meta_end - meta_begin).count();")
+    lines.append(
+        "        std::chrono::duration_cast<std::chrono::nanoseconds>(meta_end - meta_begin).count();"
+    )
     lines.append("    const std::int64_t value_ns =")
-    lines.append("        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - value_begin).count();")
+    lines.append(
+        "        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - value_begin).count();"
+    )
     lines.append("    const std::int64_t total_ns =")
-    lines.append("        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - begin).count();")
+    lines.append(
+        "        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - begin).count();"
+    )
     lines.append("    summary.metadata_check_ns += meta_ns;")
     lines.append("    summary.value_check_ns += value_ns;")
     lines.append("    summary.total_ns += total_ns;")
@@ -156,9 +174,15 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("}")
     lines.append("")
     lines.append("template<typename FuncTraits, typename Obj>")
-    lines.append("int validate_checksum(const FuncTraits& func, Obj& obj, std::int64_t expected,")
-    lines.append("                      std::string_view expected_name, std::string_view class_name,")
-    lines.append("                      std::ofstream* meta_out, TimingSummary& summary) {")
+    lines.append(
+        "int validate_checksum(const FuncTraits& func, Obj& obj, std::int64_t expected,"
+    )
+    lines.append(
+        "                      std::string_view expected_name, std::string_view class_name,"
+    )
+    lines.append(
+        "                      std::ofstream* meta_out, TimingSummary& summary) {"
+    )
     lines.append("    int errors = 0;")
     lines.append("    const auto begin = std::chrono::steady_clock::now();")
     lines.append("    const auto meta_begin = begin;")
@@ -170,11 +194,17 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("    if (actual != expected) ++errors;")
     lines.append("    const auto value_end = std::chrono::steady_clock::now();")
     lines.append("    const std::int64_t meta_ns =")
-    lines.append("        std::chrono::duration_cast<std::chrono::nanoseconds>(meta_end - meta_begin).count();")
+    lines.append(
+        "        std::chrono::duration_cast<std::chrono::nanoseconds>(meta_end - meta_begin).count();"
+    )
     lines.append("    const std::int64_t value_ns =")
-    lines.append("        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - value_begin).count();")
+    lines.append(
+        "        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - value_begin).count();"
+    )
     lines.append("    const std::int64_t total_ns =")
-    lines.append("        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - begin).count();")
+    lines.append(
+        "        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - begin).count();"
+    )
     lines.append("    summary.metadata_check_ns += meta_ns;")
     lines.append("    summary.value_check_ns += value_ns;")
     lines.append("    summary.total_ns += total_ns;")
@@ -200,18 +230,28 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
         cls = class_name(i)
         checksum = checksum_name()
         checksum_expected = sum(i * 1000 + f_idx for f_idx in range(fields_per_class))
-        lines.append(f"int validate_{i:04d}(std::ofstream* meta_out, TimingSummary& summary) {{")
+        lines.append(
+            f"int validate_{i:04d}(std::ofstream* meta_out, TimingSummary& summary) {{"
+        )
         lines.append(f"    using Info = SRefl::TypeInfo<{cls}>;")
         lines.append(f"    {cls} obj;")
         lines.append("    int errors = 0;")
         for f_idx in range(fields_per_class):
             fname = field_name(f_idx)
             expected_val = i * 1000 + f_idx
-            lines.append(f"    errors += validate_field(Info::Registry::_{fname}, obj, {expected_val},")
-            lines.append(f"                             offset_of_reflected(obj, &{cls}::{fname}), \"{fname}\",")
-            lines.append(f"                             \"{cls}\", meta_out, summary);")
-        lines.append(f"    errors += validate_checksum(Info::Registry::_{checksum}, obj, {checksum_expected}LL,")
-        lines.append(f"                              \"{checksum}\", \"{cls}\", meta_out, summary);")
+            lines.append(
+                f"    errors += validate_field(Info::Registry::_{fname}, obj, {expected_val},"
+            )
+            lines.append(
+                f'                             offset_of_reflected(obj, &{cls}::{fname}), "{fname}",'
+            )
+            lines.append(f'                             "{cls}", meta_out, summary);')
+        lines.append(
+            f"    errors += validate_checksum(Info::Registry::_{checksum}, obj, {checksum_expected}LL,"
+        )
+        lines.append(
+            f'                              "{checksum}", "{cls}", meta_out, summary);'
+        )
         lines.append("    return errors;")
         lines.append("}")
         lines.append("")
@@ -220,46 +260,72 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("    bool dump_runtime_metadata = false;")
     lines.append("    for (int i = 1; i < argc; ++i) {")
     lines.append("        const std::string arg = argv[i];")
-    lines.append("        if (arg == \"--dump-runtime-metadata\" || arg == \"--dump-meta\") {")
+    lines.append(
+        '        if (arg == "--dump-runtime-metadata" || arg == "--dump-meta") {'
+    )
     lines.append("            dump_runtime_metadata = true;")
     lines.append("        }")
     lines.append("    }")
     lines.append("    std::ofstream meta_out;")
-    lines.append("    std::string meta_path = \"disabled\";")
+    lines.append('    std::string meta_path = "disabled";')
     lines.append("    if (dump_runtime_metadata) {")
-    lines.append("        std::filesystem::create_directories(\"reports\");")
-    lines.append("        meta_path = \"reports/runtime_meta_\" + make_timestamp() + \".csv\";")
+    lines.append('        std::filesystem::create_directories("reports");')
+    lines.append(
+        '        meta_path = "reports/runtime_meta_" + make_timestamp() + ".csv";'
+    )
     lines.append("        meta_out.open(meta_path, std::ios::out | std::ios::trunc);")
     lines.append("        if (!meta_out.is_open()) {")
-    lines.append("            std::printf(\"Failed to open metadata report: %s\\n\", meta_path.c_str());")
+    lines.append(
+        '            std::printf("Failed to open metadata report: %s\\n", meta_path.c_str());'
+    )
     lines.append("            return 2;")
     lines.append("        }")
-    lines.append("        meta_out << \"class_name,kind,name,expected,actual,expected_offset,actual_offset,meta_check_ns,value_check_ns,total_case_ns,ok\\n\";")
+    lines.append(
+        '        meta_out << "class_name,kind,name,expected,actual,expected_offset,actual_offset,meta_check_ns,value_check_ns,total_case_ns,ok\\n";'
+    )
     lines.append("    }")
     lines.append("    TimingSummary summary{};")
     lines.append("    int total_errors = 0;")
     for i in range(1, count + 1):
-        lines.append(f"    total_errors += validate_{i:04d}(dump_runtime_metadata ? &meta_out : nullptr, summary);")
+        lines.append(
+            f"    total_errors += validate_{i:04d}(dump_runtime_metadata ? &meta_out : nullptr, summary);"
+        )
     lines.append("    const std::int64_t total_ns = summary.total_ns;")
     lines.append("    const std::int64_t metadata_ns = summary.metadata_check_ns;")
     lines.append("    const std::int64_t value_ns = summary.value_check_ns;")
-    lines.append("    const std::int64_t overhead_ns = total_ns - metadata_ns - value_ns;")
+    lines.append(
+        "    const std::int64_t overhead_ns = total_ns - metadata_ns - value_ns;"
+    )
     lines.append("    const long long per_class_avg_ns =")
-    lines.append("        summary.rows == 0 ? 0 : static_cast<long long>(total_ns / summary.rows);")
+    lines.append(
+        "        summary.rows == 0 ? 0 : static_cast<long long>(total_ns / summary.rows);"
+    )
     lines.append("    if (meta_out.is_open()) meta_out.close();")
-    lines.append(f"    std::printf(\"Validated classes: {count}\\n\");")
-    lines.append("    std::printf(\"Metadata errors: %d\\n\", total_errors);")
-    lines.append("    std::printf(\"Runtime validation total ns: %lld\\n\", static_cast<long long>(total_ns));")
-    lines.append("    std::printf(\"Runtime metadata check ns: %lld\\n\", static_cast<long long>(metadata_ns));")
-    lines.append("    std::printf(\"Runtime value check ns: %lld\\n\", static_cast<long long>(value_ns));")
-    lines.append("    std::printf(\"Runtime overhead ns: %lld\\n\", static_cast<long long>(overhead_ns));")
-    lines.append("    std::printf(\"Per class avg ns: %lld\\n\", per_class_avg_ns);")
-    lines.append("    std::printf(\"Runtime metadata enabled: %d\\n\", dump_runtime_metadata ? 1 : 0);")
-    lines.append("    std::printf(\"Runtime metadata report: %s\\n\", meta_path.c_str());")
+    lines.append(f'    std::printf("Validated classes: {count}\\n");')
+    lines.append('    std::printf("Metadata errors: %d\\n", total_errors);')
+    lines.append(
+        '    std::printf("Runtime validation total ns: %lld\\n", static_cast<long long>(total_ns));'
+    )
+    lines.append(
+        '    std::printf("Runtime metadata check ns: %lld\\n", static_cast<long long>(metadata_ns));'
+    )
+    lines.append(
+        '    std::printf("Runtime value check ns: %lld\\n", static_cast<long long>(value_ns));'
+    )
+    lines.append(
+        '    std::printf("Runtime overhead ns: %lld\\n", static_cast<long long>(overhead_ns));'
+    )
+    lines.append('    std::printf("Per class avg ns: %lld\\n", per_class_avg_ns);')
+    lines.append(
+        '    std::printf("Runtime metadata enabled: %d\\n", dump_runtime_metadata ? 1 : 0);'
+    )
+    lines.append(
+        '    std::printf("Runtime metadata report: %s\\n", meta_path.c_str());'
+    )
     lines.append("    if (total_errors == 0) {")
-    lines.append("        std::printf(\"Verification passed\\n\");")
+    lines.append('        std::printf("Verification passed\\n");')
     lines.append("    } else {")
-    lines.append("        std::printf(\"Verification failed\\n\");")
+    lines.append('        std::printf("Verification failed\\n");')
     lines.append("    }")
     lines.append("    return total_errors == 0 ? 0 : 1;")
     lines.append("}")
@@ -287,7 +353,9 @@ endif()
 """
 
 
-def generate_readme(count: int, fields_per_class: int, inheritance_chain: int, zh_cn: bool = False) -> str:
+def generate_readme(
+    count: int, fields_per_class: int, inheritance_chain: int, zh_cn: bool = False
+) -> str:
     if zh_cn:
         return f"""# Reflection Garbage Stress Project（反射垃圾压力测试）
 
@@ -400,22 +468,35 @@ def main() -> None:
     parser.add_argument("--count", type=int, default=5000, help=count_help)
     parser.add_argument("--fields-per-class", type=int, default=100, help=fields_help)
     parser.add_argument("--inheritance-chain", type=int, default=10, help=chain_help)
-    parser.add_argument("--output", type=Path, default=Path("stress_project_test"), help=output_help)
+    parser.add_argument(
+        "--output", type=Path, default=Path("stress_project_test"), help=output_help
+    )
     parser.add_argument("--zh_cn", action="store_true", help=zh_help)
 
     args = parser.parse_args()
     if args.count <= 0:
-        raise ValueError("--count must be greater than 0" if not lang_zh else "--count 必须大于 0")
+        raise ValueError(
+            "--count must be greater than 0" if not lang_zh else "--count 必须大于 0"
+        )
     if args.fields_per_class <= 0:
-        raise ValueError("--fields-per-class must be greater than 0" if not lang_zh else "--fields-per-class 必须大于 0")
+        raise ValueError(
+            "--fields-per-class must be greater than 0"
+            if not lang_zh
+            else "--fields-per-class 必须大于 0"
+        )
     if args.inheritance_chain <= 0:
-        raise ValueError("--inheritance-chain must be greater than 0" if not lang_zh else "--inheritance-chain 必须大于 0")
+        raise ValueError(
+            "--inheritance-chain must be greater than 0"
+            if not lang_zh
+            else "--inheritance-chain 必须大于 0"
+        )
 
     output_dir = args.output
     output_dir.mkdir(parents=True, exist_ok=True)
 
     (output_dir / "generated_classes.hpp").write_text(
-        generate_header(args.count, args.fields_per_class, args.inheritance_chain), encoding="utf-8"
+        generate_header(args.count, args.fields_per_class, args.inheritance_chain),
+        encoding="utf-8",
     )
     (output_dir / "main.cpp").write_text(
         generate_main_cpp(args.count, args.fields_per_class), encoding="utf-8"
@@ -427,7 +508,10 @@ def main() -> None:
     shutil.copy(tools_dir / "run_stress.ps1", output_dir / "run_stress.ps1")
     shutil.copy(tools_dir / "run_stress.sh", output_dir / "run_stress.sh")
     (output_dir / "README.md").write_text(
-        generate_readme(args.count, args.fields_per_class, args.inheritance_chain, args.zh_cn), encoding="utf-8"
+        generate_readme(
+            args.count, args.fields_per_class, args.inheritance_chain, args.zh_cn
+        ),
+        encoding="utf-8",
     )
 
     if lang_zh:

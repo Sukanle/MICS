@@ -10,7 +10,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 DEFAULT_COUNTS = [1000, 2000, 4000, 8000, 10000]
 
 
@@ -78,8 +77,14 @@ def classify_growth(records: list[dict[str, str]]) -> tuple[str, list[str]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run class-count scaling benchmark for reflection stress test.")
-    parser.add_argument("--counts", default=",".join(str(x) for x in DEFAULT_COUNTS), help="Comma-separated class counts")
+    parser = argparse.ArgumentParser(
+        description="Run class-count scaling benchmark for reflection stress test."
+    )
+    parser.add_argument(
+        "--counts",
+        default=",".join(str(x) for x in DEFAULT_COUNTS),
+        help="Comma-separated class counts",
+    )
     parser.add_argument("--fields-per-class", type=int, default=100)
     parser.add_argument("--inheritance-chain", type=int, default=10)
     parser.add_argument("--workspace", default=".")
@@ -153,7 +158,11 @@ def main() -> int:
         build_ns = int(kv.get("build_ns", "0") or 0)
         build_ms = build_ns / 1_000_000.0
         binary_name = kv.get("binary_name", "reflect_stress")
-        binary_path = output_dir / "build-mingw" / (binary_name + (".exe" if os.name == "nt" else ""))
+        binary_path = (
+            output_dir
+            / "build-mingw"
+            / (binary_name + (".exe" if os.name == "nt" else ""))
+        )
         binary_size = binary_path.stat().st_size if binary_path.exists() else -1
 
         row = {
@@ -197,9 +206,15 @@ def main() -> int:
         for note in notes:
             fp.write(f"- {note}\n")
         fp.write("\nManual checks:\n")
-        fp.write("- IDE indexing speed: open generated_classes.hpp in VS/CLion and observe completion latency.\n")
-        fp.write("- ftime-trace flame graph: open generated .json in Chrome tracing UI.\n")
-        fp.write("- Memory peak: monitor compiler process in Task Manager during build.\n")
+        fp.write(
+            "- IDE indexing speed: open generated_classes.hpp in VS/CLion and observe completion latency.\n"
+        )
+        fp.write(
+            "- ftime-trace flame graph: open generated .json in Chrome tracing UI.\n"
+        )
+        fp.write(
+            "- Memory peak: monitor compiler process in Task Manager during build.\n"
+        )
 
     print(f"[OK] Scaling CSV: {out_csv}")
     print(f"[OK] Scaling TXT: {out_txt}")

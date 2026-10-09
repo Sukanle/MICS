@@ -15,11 +15,11 @@ MICS provides **zero-overhead compile-time static reflection** (field/method tra
 
 ### User Aliases
 
-| Alias | Namespace | Description |
-|-------|-----------|-------------|
-| `SRefl` | `mics::ct` | Compile-time static reflection |
-| `DRefl` | `mics::rt` | Runtime dynamic reflection |
-| `URefl` | `mics::utils` | ABI-stable utility container |
+| Alias   | Namespace     | Description                    |
+| ------- | ------------- | ------------------------------ |
+| `SRefl` | `mics::ct`    | Compile-time static reflection |
+| `DRefl` | `mics::rt`    | Runtime dynamic reflection     |
+| `URefl` | `mics::utils` | ABI-stable utility container   |
 
 ## Features
 
@@ -66,6 +66,7 @@ field->setter(&obj, &new_value);    // type-erased field write
 ```
 
 > [!NOTE]
+>
 > - [Static Reflection API](docs/static_utils_api.md)
 > - [Dynamic Reflection API](docs/dynamic_api.md)
 
@@ -77,41 +78,41 @@ The library provides two tiers of registration macros:
 
 These are the concise, unified entry points for everyday use:
 
-| Macro | Description |
-|-------|-------------|
-| `SKL_RFS_CLASS(ClassName)` | Begin static class registration |
-| `SKL_RFS_PROPERTY(member)` | Register a static field or method |
-| `SKL_RFS_CLASS()` | End static class registration |
-| `SKL_RFS_ENUM(EnumName)` | Begin static enum registration |
-| `SKL_RFS_ENUM_VALUE(value, name)` | Register a static enum value |
-| `SKL_RFS_ENUM()` | End static enum registration |
-| `SKL_RFD_CLASS(ClassName)` | Begin dynamic class registration |
-| `SKL_RFD_PROPERTY(member)` | Register a dynamic property |
-| `SKL_RFD_METHOD(method)` | Register a dynamic method |
-| `SKL_RFD_CLASS()` | End dynamic class registration |
-| `SKL_RFD_ENUM(EnumName)` | Begin dynamic enum registration |
-| `SKL_RFD_ENUM_VALUE(value, name)` | Register a dynamic enum value |
-| `SKL_RFD_ENUM()` | End dynamic enum registration |
+| Macro                             | Description                       |
+| --------------------------------- | --------------------------------- |
+| `SKL_RFS_CLASS(ClassName)`        | Begin static class registration   |
+| `SKL_RFS_PROPERTY(member)`        | Register a static field or method |
+| `SKL_RFS_CLASS()`                 | End static class registration     |
+| `SKL_RFS_ENUM(EnumName)`          | Begin static enum registration    |
+| `SKL_RFS_ENUM_VALUE(value, name)` | Register a static enum value      |
+| `SKL_RFS_ENUM()`                  | End static enum registration      |
+| `SKL_RFD_CLASS(ClassName)`        | Begin dynamic class registration  |
+| `SKL_RFD_PROPERTY(member)`        | Register a dynamic property       |
+| `SKL_RFD_METHOD(method)`          | Register a dynamic method         |
+| `SKL_RFD_CLASS()`                 | End dynamic class registration    |
+| `SKL_RFD_ENUM(EnumName)`          | Begin dynamic enum registration   |
+| `SKL_RFD_ENUM_VALUE(value, name)` | Register a dynamic enum value     |
+| `SKL_RFD_ENUM()`                  | End dynamic enum registration     |
 
 ### Legacy Macros (Backward Compatible)
 
 The original verbose macros remain available internally:
 
-| Simplified | Legacy Equivalent |
-|------------|-------------------|
-| `SKL_RFS_CLASS(T)` | `SKL_RFS_REGISTER_BEGIN(T)` |
-| `SKL_RFS_PROPERTY(m)` | `SKL_RFS_PROPERTY(m)` |
-| `SKL_RFS_CLASS()` | `SKL_RFS_REGISTER_END()` |
-| `SKL_RFS_ENUM(T)` | `SKL_RFS_ENUM_BEGIN(T)` |
-| `SKL_RFS_ENUM_VALUE(v, n)` | `SKL_RFS_ENUM_VALUE(v, n)` |
-| `SKL_RFS_ENUM()` | `SKL_RFS_ENUM_END()` |
-| `SKL_RFD_CLASS(T)` | `SKL_RFD_REGISTER_BEGIN(T)` |
-| `SKL_RFD_PROPERTY(m)` | `SKL_RFD_FIELD(m)` |
-| `SKL_RFD_METHOD(m)` | `SKL_RFD_METHOD(m)` |
-| `SKL_RFD_CLASS()` | `SKL_RFD_REGISTER_END()` |
-| `SKL_RFD_ENUM(T)` | `SKL_RFD_ENUM_BEGIN(T)` |
-| `SKL_RFD_ENUM_VALUE(v, n)` | `SKL_RFD_ENUM_VALUE(v, n)` |
-| `SKL_RFD_ENUM()` | `SKL_RFD_ENUM_END()` |
+| Simplified                 | Legacy Equivalent           |
+| -------------------------- | --------------------------- |
+| `SKL_RFS_CLASS(T)`         | `SKL_RFS_REGISTER_BEGIN(T)` |
+| `SKL_RFS_PROPERTY(m)`      | `SKL_RFS_PROPERTY(m)`       |
+| `SKL_RFS_CLASS()`          | `SKL_RFS_REGISTER_END()`    |
+| `SKL_RFS_ENUM(T)`          | `SKL_RFS_ENUM_BEGIN(T)`     |
+| `SKL_RFS_ENUM_VALUE(v, n)` | `SKL_RFS_ENUM_VALUE(v, n)`  |
+| `SKL_RFS_ENUM()`           | `SKL_RFS_ENUM_END()`        |
+| `SKL_RFD_CLASS(T)`         | `SKL_RFD_REGISTER_BEGIN(T)` |
+| `SKL_RFD_PROPERTY(m)`      | `SKL_RFD_FIELD(m)`          |
+| `SKL_RFD_METHOD(m)`        | `SKL_RFD_METHOD(m)`         |
+| `SKL_RFD_CLASS()`          | `SKL_RFD_REGISTER_END()`    |
+| `SKL_RFD_ENUM(T)`          | `SKL_RFD_ENUM_BEGIN(T)`     |
+| `SKL_RFD_ENUM_VALUE(v, n)` | `SKL_RFD_ENUM_VALUE(v, n)`  |
+| `SKL_RFD_ENUM()`           | `SKL_RFD_ENUM_END()`        |
 
 ## Metadata System (`metadata.h`)
 
@@ -119,11 +120,11 @@ The metadata system provides a stable SKL_ABIX through fixed-layout structures a
 
 ### Metadata Modes
 
-| Mode | Value | Description |
-|------|-------|-------------|
-| `SKL_REFT_MODE_HASH` | `0` | Hash-only, no strings — Release / minimal deployment |
-| `SKL_REFT_MODE_STR` | `1` | Essential strings — Debug / development |
-| `SKL_REFT_MODE_FULL` | `2` | Full debug metadata — Editor / IDE integration |
+| Mode                 | Value | Description                                          |
+| -------------------- | ----- | ---------------------------------------------------- |
+| `SKL_REFT_MODE_HASH` | `0`   | Hash-only, no strings — Release / minimal deployment |
+| `SKL_REFT_MODE_STR`  | `1`   | Essential strings — Debug / development              |
+| `SKL_REFT_MODE_FULL` | `2`   | Full debug metadata — Editor / IDE integration       |
 
 Default strategy: Debug → `STR`, Release → `HASH`. Override with `-DSKL_REFT_META_MODE=0|1|2`.
 
@@ -190,13 +191,13 @@ MICS/
 
 ## Supported Platforms & Toolchains
 
-| Platform | Compiler | Minimum Version | Status |
-|----------|----------|-----------------|--------|
-| Windows  | MSVC     | VS 2022 (17.0+) | ✓ |
-| Windows  | MinGW-w64 (GCC) | 13.0+ | ✓ |
-| Windows  | Clang-cl | 17.0+ | ✓ |
-| Linux    | GCC      | 13.0+ | ✓ |
-| Linux    | Clang    | 17.0+ | ✓ |
+| Platform | Compiler        | Minimum Version | Status |
+| -------- | --------------- | --------------- | ------ |
+| Windows  | MSVC            | VS 2022 (17.0+) | ✓      |
+| Windows  | MinGW-w64 (GCC) | 13.0+           | ✓      |
+| Windows  | Clang-cl        | 17.0+           | ✓      |
+| Linux    | GCC             | 13.0+           | ✓      |
+| Linux    | Clang           | 17.0+           | ✓      |
 
 **Requirements:** C++17 or later (C++20 recommended for `consteval` and `__cpp_nontype_template_args`; concepts support recommended)
 
@@ -204,14 +205,14 @@ MICS/
 
 Tests use [Catch2](https://github.com/catchorg/Catch2), driven by `main.cpp` covering:
 
-| Test Category | Tags | Coverage |
-|--------------|------|----------|
-| Static class reflection | `[static][class]` | Type metadata, field read/write, method invocation for `Player` and `Weapon` (incl. custom template names and const methods) |
-| Static enum reflection | `[static][enum]` | Value lists and `is_scoped` detection for `Fruit` (unscoped) and `Direction` (scoped `enum class`) |
-| Dynamic class reflection | `[dynamic][class]` | Type lookup by name via `Registry`, `FieldAccessor` getter/setter, `FnInfo` method lookup |
-| Dynamic enum reflection | `[dynamic][enum]` | `EnumInfo` entry iteration, `is_scoped` flag |
-| Registry queries | `[dynamic][registry]` | `find_by_name`, `type_count`, `type_at` iteration |
-| Integration consistency | `[integration]` | Verifies field/method count and name consistency between static and dynamic reflection for the same type |
+| Test Category            | Tags                  | Coverage                                                                                                                     |
+| ------------------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Static class reflection  | `[static][class]`     | Type metadata, field read/write, method invocation for `Player` and `Weapon` (incl. custom template names and const methods) |
+| Static enum reflection   | `[static][enum]`      | Value lists and `is_scoped` detection for `Fruit` (unscoped) and `Direction` (scoped `enum class`)                           |
+| Dynamic class reflection | `[dynamic][class]`    | Type lookup by name via `Registry`, `FieldAccessor` getter/setter, `FnInfo` method lookup                                    |
+| Dynamic enum reflection  | `[dynamic][enum]`     | `EnumInfo` entry iteration, `is_scoped` flag                                                                                 |
+| Registry queries         | `[dynamic][registry]` | `find_by_name`, `type_count`, `type_at` iteration                                                                            |
+| Integration consistency  | `[integration]`       | Verifies field/method count and name consistency between static and dynamic reflection for the same type                     |
 
 ```bash
 # Build and run tests

@@ -33,11 +33,11 @@ struct type_tag {
     static constexpr bool defined = false;
 };
 
-#define STATIC_TYPE_TAG(T, tag)                                                            \
-    template<>                                                                             \
-    struct mics::utils::type_tag<T> {                                                      \
-        static constexpr bool defined = true;                                              \
-        static constexpr ::mics::utils::hash64_t value = ::mics::utils::cstr64(tag);       \
+#define STATIC_TYPE_TAG(T, tag)                                                      \
+    template<>                                                                       \
+    struct mics::utils::type_tag<T> {                                                \
+        static constexpr bool defined = true;                                        \
+        static constexpr ::mics::utils::hash64_t value = ::mics::utils::cstr64(tag); \
     }
 
 namespace detail {

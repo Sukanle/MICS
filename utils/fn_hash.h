@@ -16,8 +16,6 @@
 #ifndef SKL_UTILS_FN_HASH_H
 #define SKL_UTILS_FN_HASH_H
 
-#include <stdint.h>
-
 #include "utils/hash.h"        // IWYU pragma: keep
 #include "utils/type_hash.h"   // IWYU pragma: keep
 
