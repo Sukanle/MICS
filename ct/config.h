@@ -30,7 +30,17 @@ using template_depth = uint8_t;
 using template_constants = uint8_t;
 #endif
 
-#if __has_builtin(__builtin_is_virtual_base_of)
+// `__has_builtin` is a Clang/GCC preprocessor operator. Probe it through a macro
+// so a compiler that does not provide it (notably MSVC, which warns C4067 when
+// it meets `__has_builtin(...)`) never parses the operator: combining it with
+// `&&` on a single `#if` line still emits that warning.
+#if defined(__has_builtin)
+#  define SKL_CT_HAS_VIRTUAL_BASE_OF __has_builtin(__builtin_is_virtual_base_of)
+#else
+#  define SKL_CT_HAS_VIRTUAL_BASE_OF 0
+#endif
+
+#if SKL_CT_HAS_VIRTUAL_BASE_OF
 
 template<class Base, class Derived>
 struct is_virtual_base_of : public std::bool_constant<__builtin_is_virtual_base_of(Base, Derived)> {};
@@ -57,6 +67,8 @@ template<class Base, class Derived>
 struct is_virtual_base_of<Base &, Derived &> : public std::false_type {};
 
 #endif
+
+#undef SKL_CT_HAS_VIRTUAL_BASE_OF
 template<class Base, class Derived>
 inline constexpr bool is_virtual_base_of_v = is_virtual_base_of<Base, Derived>::value;
 
