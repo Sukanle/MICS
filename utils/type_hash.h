@@ -56,6 +56,9 @@ struct is_integral : std::integral_constant<bool, std::is_integral_v<T>
 template<typename T>
 inline constexpr bool is_integral_v = is_integral<T>::value;
 
+// Converts an integral type to its stable ABI tag (i8/u8/.../u64) from
+// signedness and width. Guarded by `enable_if` so the trait cannot be named for
+// a non-integral type; `integral_type_hash` below only names it for integral T.
 template<typename T, typename = std::enable_if_t<is_integral_v<T>>>
 struct integer_trait {
     struct integer_info {
@@ -151,11 +154,26 @@ struct type_hash_impl<T &&> {
 template<typename T>
 struct dependent_false : std::false_type {};
 
+// Selects the integral hash only for integral T. MSVC instantiates the
+// discarded `if constexpr` branch in `type_hash_impl` below, so naming
+// `integer_trait<T>` there directly would report its `enable_if` as a hard
+// error for a non-integral T; going through this SFINAE-selected helper keeps
+// the name well-formed for every T.
+template<typename T, typename = void>
+struct integral_type_hash {
+    static constexpr hash64_t value = 0;
+};
+
+template<typename T>
+struct integral_type_hash<T, std::enable_if_t<is_integral_v<T>>> {
+    static constexpr hash64_t value = cstr64(integer_trait<T>::info.tag());
+};
+
 template<typename T>
 struct type_hash_impl {
     static constexpr hash64_t value = []() {
         if constexpr (is_integral_v<T>) {
-            return cstr64(integer_trait<T>::info.tag());
+            return integral_type_hash<T>::value;
         } else if constexpr (is_float_type_v<T>) {
             // `float` / `double` / `long double` collapse onto their format, so
             // a target where `double == float` gives them one identity.
