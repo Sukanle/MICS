@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "utils/string_view.h"   // IWYU pragma: keep
-#include "rt/type_info.h"   // IWYU pragma: keep
+#include "rt/type_info.h"        // IWYU pragma: keep
 
 namespace mics::rt {
 

@@ -18,8 +18,8 @@
 
 #include <stdint.h>
 
-#include "utils/vector.h"     // IWYU pragma: keep
-#include "rt/config.h"   // IWYU pragma: keep
+#include "utils/vector.h"   // IWYU pragma: keep
+#include "rt/config.h"      // IWYU pragma: keep
 
 namespace mics::rt {
 

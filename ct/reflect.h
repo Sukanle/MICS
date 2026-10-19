@@ -52,7 +52,8 @@ template<typename T>
 using ref_combinations_t = typename ref_combinations<T>::type;
 
 #if !SKL_TEMPLATE_STRING_SUPPORTED
-constexpr mics::utils::string_view strip_prefix(mics::utils::string_view name, mics::utils::string_view prefix = "&class_t::") noexcept {
+constexpr mics::utils::string_view strip_prefix(
+    mics::utils::string_view name, mics::utils::string_view prefix = "&class_t::") noexcept {
     return name.substr(prefix.size());
 }
 #endif
