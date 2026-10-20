@@ -46,7 +46,8 @@ struct EnumInfo {
         , entries(skl::mics::utils::vector_empty)
         , is_scoped(false) {}
 
-    EnumInfo(const char *n, TypeId tid, TypeId utid, skl::mics::utils::vector<EnumEntry> e, bool scoped = false) noexcept
+    EnumInfo(
+        const char *n, TypeId tid, TypeId utid, skl::mics::utils::vector<EnumEntry> e, bool scoped = false) noexcept
         : name(n)
         , type_id(tid)
         , underlying_type_id(utid)

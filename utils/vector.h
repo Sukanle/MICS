@@ -393,5 +393,5 @@ vector<_Tp> make_vector(std::vector<_Tp> &&__src) noexcept {
     return std::move(__b).build();
 }
 
-}   // namespace mics::utils
+}   // namespace skl::mics::utils
 #endif
