@@ -70,7 +70,100 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 ---
 
-### 1.3 `vector.h` — ABI 稳定不可变容器
+### 1.3 `array.h` — 定长编译期数组
+
+**命名空间：** `skl::mics::utils` / `URefl`
+
+`URefl::array<T, Count>` 是对 C 数组的最小聚合封装。它不使用分配器、不做边界检查、不依赖 `std::array`；所有操作都是 `constexpr`，适合承载内联的 TypeID 列表、方法签名列表和零基槽位表。
+
+| 符号 | 说明 |
+| ------ | ----------- |
+| `array<T, Count = 0>` | 聚合类型，公开成员 `T values[Count == 0 ? 1 : Count]`；`size()` 返回 `Count` |
+| `array{...}` | 推导指引；从花括号列表推导元素类型 `T` 和元素个数 |
+| `array{}` | 空形式的推导指引：`array<empty_element, 0>` |
+| `empty_element` | 恒等比较的标签类型，供空 CTAD 形式使用 |
+| `data()` | 指向首元素的指针；在数组生命周期内有效 |
+| `size()` | `static constexpr size_t`，返回 `Count` |
+| `operator[](i)` | 无边界检查的下标访问，提供 mutable / const 两个重载 |
+| `begin()` / `end()` | 指针迭代器，提供 mutable / const 两个重载 |
+| `operator==` / `operator!=` | `constexpr` 逐元素比较；要求 `T::operator==` |
+| `make_index_sequence<T, N, Start>(std::index_sequence)` | 按给定索引序列构造 `T{Start, Start + 1, ...}` |
+| `make_iota<T, N, Start = 1>()` | 构造 `T{Start, ..., Start + N - 1}`；默认起始值是 **1**，零基槽位需显式传 `0` |
+
+**基本用法：**
+
+```cpp
+namespace URefl = skl::mics::utils;
+
+constexpr URefl::array<int, 3> a{1, 2, 3};
+static_assert(a.size() == 3);
+static_assert(a[1] == 2);
+
+// CTAD 从列表推导类型。
+constexpr auto b = URefl::array{1, 2, 3};   // array<int, 3>
+static_assert(a == b);
+
+// 空形式是 array<empty_element, 0>。
+constexpr URefl::array empty{};
+static_assert(empty.size() == 0);
+static_assert(empty.data() != nullptr);   // 仍保留一个占位元素
+```
+
+`Count == 0` 时故意保留一个占位元素，而不是使用零长 C 数组：这样 `data()` 仍是有效指针，`begin() == end()`，而 `size()` 保持 `0`。对象在 `sizeof` 意义上仍然非空。
+
+**用 `make_iota` 构造槽位表：**
+
+```cpp
+struct Slots {
+    uint32_t area;
+    uint32_t resize;
+};
+
+// 零基：{0, 1}。InterfaceProxy 的 Slot 表应使用这种形式。
+constexpr Slots slots = URefl::make_iota<Slots, 2, 0>();
+static_assert(slots.area == 0);
+static_assert(slots.resize == 1);
+
+// 默认从 1 开始：{1, 2}。
+struct OneBased {
+    uint32_t first;
+    uint32_t second;
+};
+constexpr OneBased one_based = URefl::make_iota<OneBased, 2>();
+static_assert(one_based.first == 1);
+static_assert(one_based.second == 2);
+```
+
+`make_iota` 使用的是聚合初始化，而不是反射：`T` 必须是一个聚合类型，并且有 `N` 个可按字段顺序由生成值初始化的成员。它在声明点不会校验字段数量；数量不匹配会在聚合体实例化时报错。
+
+**显式索引序列形式：**
+
+`make_index_sequence<T, N, Start>(std::make_index_sequence<N>{})` 是底层操作，`make_iota` 只是便捷包装：
+
+```cpp
+constexpr Slots offset =
+    URefl::make_index_sequence<Slots, 2, 10>(std::make_index_sequence<2>{});
+static_assert(offset.area == 10);
+static_assert(offset.resize == 11);
+```
+
+**典型用途：**
+
+- 为 `method_signature` 提供内联的 `model::TypeId` 参数列表；
+- 接口的签名表（`Traits::signatures`）；
+- 类型化零基槽位表（`Traits::Slots` + `make_iota<Slots, N, 0>()`）；
+- `constexpr` 代码中的小型定长查找表。
+
+**限制：**
+
+- `T` 必须是同一种类型；混合元素类型无法推导。
+- 不支持扩容、分配器和边界检查；`operator[]` 刻意不检查。
+- `make_iota` 要求目标类型是聚合，并且有足够的可初始化字段。
+- `Start` 默认是 `1`（历史行为）；接口槽位应显式传 `0`。
+
+---
+
+### 1.4 `vector.h` — ABI 稳定不可变容器
 
 **命名空间：** `skl::mics::utils`
 
@@ -140,7 +233,7 @@ sv.push_back(4);  // 对 std::vector 的修改不影响原始 v
 
 ---
 
-### 1.4 `fn_hash.h` — 函数签名折叠哈希
+### 1.5 `fn_hash.h` — 函数签名折叠哈希
 
 **命名空间：** `skl::mics::utils`
 

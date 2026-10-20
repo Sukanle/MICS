@@ -19,7 +19,7 @@ MICS 在编译期提供零开销的静态反射（字段/方法遍历、类型�
 | ------- | ------------- | -------------------------------------- |
 | `SRefl` | `skl::mics::ct`    | 编译期静态反射（Static Reflection）    |
 | `DRefl` | `skl::mics::rt`    | 运行时动态反射（Dynamic Reflection）   |
-| `URefl` | `skl::mics::utils` | ABI 稳定工具容器（Utility Reflection） |
+| `URefl` | `skl::mics::utils` | 定长数组与 ABI 稳定工具（Utility Reflection） |
 
 ## 特性
 
@@ -27,6 +27,7 @@ MICS 在编译期提供零开销的静态反射（字段/方法遍历、类型�
 - **运行时动态反射**（`skl::mics::rt` / `DRefl`）— 运行时类型注册、类型擦除的字段访问以及带全局注册表的方法调用
 - **ABI 稳定容器**（`URefl::vector<T>`）— 不可变、仅移动容器，固定内存布局，跨版本二进制兼容，专为动态反射数据载体设计
 - **类型哈希** — 基于 FNV-1a 的编译期类型哈希，支持跨边界类型识别（如 DLL/SO 热重载）
+- **定长编译期数组**（`URefl::array<T, N>`）— 零分配聚合、CTAD、`constexpr` 比较与 `make_iota` 槽位表生成，可承载内联 TypeID 与签名列表
 - **函数式类型编程** — 编译期类型列表操作（`map`、`filter`、`fold`、`flat_map`、`unique` 等）
 
 ## 快速开始
@@ -182,6 +183,7 @@ MICS/
 ├── utils/                 # 共享工具（skl::mics::utils / URefl）
 │   ├── hash.h            # FNV-1a 哈希函数、调用约定标签
 │   ├── type_hash.h       # 编译期类型 → 哈希映射
+│   ├── array.h           # 定长编译期数组与 make_iota 槽位表
 │   ├── fn_hash.h         # 函数签名折叠哈希（compute_fn_hash）
 │   ├── string_view.h     # 轻量级 string_view 实现
 │   └── vector.h          # ABI 稳定不可变容器（动态反射数据载体）

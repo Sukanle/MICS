@@ -22,6 +22,7 @@
 
 #include "utils/hash.h"          // IWYU pragma: keep
 #include "utils/type_hash.h"     // IWYU pragma: keep
+#include "utils/array.h"         // IWYU pragma: keep
 #include "utils/string_view.h"   // IWYU pragma: keep
 
 #include "ct/reflect.h"   // IWYU pragma: keep

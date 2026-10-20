@@ -73,7 +73,99 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 ---
 
-### 1.3 `vector.h` — ABI Immutable Container
+### 1.3 `array.h` — Fixed-Size Compile-Time Array
+
+**Namespace:** `skl::mics::utils` / `URefl`
+
+`URefl::array<T, Count>` is a minimal aggregate over a C array. It has no allocator, no bounds checking and no dependency on `std::array`; every operation is `constexpr`, so it can carry inline TypeID lists, method-signature lists and zero-based slot tables.
+
+| Symbol | Description |
+| ------ | ----------- |
+| `array<T, Count = 0>` | Aggregate with a public `T values[Count == 0 ? 1 : Count]`; `size()` returns `Count` |
+| `array{...}` | Deduction guide; deduces `T` and the element count from a braced list |
+| `array{}` | Deduction guide for the empty form: `array<empty_element, 0>` |
+| `empty_element` | Tag type with always-equal comparison, used by the empty CTAD form |
+| `data()` | Pointer to the first element; valid for the array's lifetime |
+| `size()` | `static constexpr size_t`; returns `Count` |
+| `operator[](i)` | Unchecked element access, mutable and const overloads |
+| `begin()` / `end()` | Pointer iterators, mutable and const overloads |
+| `operator==` / `operator!=` | `constexpr` element-wise comparison; requires `T::operator==` |
+| `make_index_sequence<T, N, Start>(std::index_sequence)` | Builds `T{Start, Start + 1, ...}` for the supplied index sequence |
+| `make_iota<T, N, Start = 1>()` | Builds `T{Start, ..., Start + N - 1}`; the default start is **1**, pass `0` for zero-based slots |
+
+**Basic use:**
+
+```cpp
+namespace URefl = skl::mics::utils;
+
+constexpr URefl::array<int, 3> a{1, 2, 3};
+static_assert(a.size() == 3);
+static_assert(a[1] == 2);
+
+// CTAD names the type from the list.
+constexpr auto b = URefl::array{1, 2, 3};   // array<int, 3>
+static_assert(a == b);
+
+// The empty form is array<empty_element, 0>.
+constexpr URefl::array empty{};
+static_assert(empty.size() == 0);
+static_assert(empty.data() != nullptr);   // one dummy slot is still allocated
+```
+
+`Count == 0` is deliberately stored as one dummy element rather than a zero-length C array: `data()` remains a valid pointer and `begin() == end()`, while `size()` stays `0`. The object is still non-empty in terms of `sizeof`.
+
+**Building slot tables with `make_iota`:**
+
+```cpp
+struct Slots {
+    uint32_t area;
+    uint32_t resize;
+};
+
+// Zero-based: {0, 1}. Use this shape for InterfaceProxy slot tables.
+constexpr Slots slots = URefl::make_iota<Slots, 2, 0>();
+static_assert(slots.area == 0);
+static_assert(slots.resize == 1);
+
+// The default start is 1: {1, 2}.
+struct OneBased {
+    uint32_t first;
+    uint32_t second;
+};
+constexpr OneBased one_based = URefl::make_iota<OneBased, 2>();
+static_assert(one_based.first == 1);
+static_assert(one_based.second == 2);
+```
+
+`make_iota` is aggregate initialization, not introspection: `T` must be an aggregate with `N` members initialized by the generated values, in field order. It does not validate that the field count matches at the point of declaration, so a mismatch is reported when the aggregate is instantiated.
+
+**Explicit index sequence form:**
+
+`make_index_sequence<T, N, Start>(std::make_index_sequence<N>{})` is the underlying operation; `make_iota` is the convenient wrapper:
+
+```cpp
+constexpr Slots offset = URefl::make_index_sequence<Slots, 2, 10>(std::make_index_sequence<2>{});
+static_assert(offset.area == 10);
+static_assert(offset.resize == 11);
+```
+
+**Intended uses:**
+
+- Inline `model::TypeId` parameter lists for `method_signature`.
+- Per-interface signature tables (`Traits::signatures`).
+- Typed, zero-based slot tables (`Traits::Slots` plus `make_iota<Slots, N, 0>()`).
+- Small fixed lookup tables in `constexpr` code.
+
+**Constraints:**
+
+- `T` is homogeneous; mixed element types do not deduce.
+- No growth, no allocator, no bounds checking; `operator[]` is intentionally unchecked.
+- `make_iota` requires an aggregate target and enough initializable fields.
+- The default `Start` of `1` is historical; interfaces should pass `0` explicitly.
+
+---
+
+### 1.4 `vector.h` — ABI Immutable Container
 
 **Namespace:** `skl::mics::utils`
 
@@ -145,7 +237,7 @@ sv.push_back(4);  // modification to std::vector does not affect original v
 
 ---
 
-### 1.4 `fn_hash.h` — Function-Signature Folding Hash
+### 1.5 `fn_hash.h` — Function-Signature Folding Hash
 
 **Namespace:** `skl::mics::utils`
 

@@ -19,7 +19,7 @@ MICS provides **zero-overhead compile-time static reflection** (field/method tra
 | ------- | ------------- | ------------------------------ |
 | `SRefl` | `skl::mics::ct`    | Compile-time static reflection |
 | `DRefl` | `skl::mics::rt`    | Runtime dynamic reflection     |
-| `URefl` | `skl::mics::utils` | ABI-stable utility container   |
+| `URefl` | `skl::mics::utils` | Fixed-size arrays and ABI-stable utilities |
 
 ## Features
 
@@ -27,6 +27,7 @@ MICS provides **zero-overhead compile-time static reflection** (field/method tra
 - **Runtime Dynamic Reflection** (`skl::mics::rt` / `DRefl`) — Runtime type registration, type-erased field access, and method invocation with a global registry
 - **ABI-Stable Container** (`URefl::vector<T>`) — Immutable, move-only container with fixed memory layout, cross-version binary compatibility, designed as the data carrier for dynamic reflection
 - **Type Hashing** — FNV-1a based compile-time type hashing, enabling cross-boundary type identification (e.g., DLL/SO hot-reload)
+- **Fixed-Size Compile-Time Array** (`URefl::array<T, N>`) — Zero-allocation aggregate with CTAD, `constexpr` comparison and `make_iota` slot-table generation; carries inline TypeID and signature lists
 - **Functional-Type Programming** — Compile-time type list manipulation (`map`, `filter`, `fold`, `flat_map`, `unique`, etc.)
 
 ## Quick Start
@@ -182,6 +183,7 @@ MICS/
 ├── utils/                 # Shared utilities (skl::mics::utils / URefl)
 │   ├── hash.h            # FNV-1a hash functions, calling convention tags
 │   ├── type_hash.h       # Compile-time type → hash mapping
+│   ├── array.h           # Fixed-size compile-time array and make_iota slot tables
 │   ├── fn_hash.h         # Function-signature folding hash (compute_fn_hash)
 │   ├── string_view.h     # Lightweight string_view implementation
 │   └── vector.h          # ABI-stable immutable container (dynamic reflection data carrier)
