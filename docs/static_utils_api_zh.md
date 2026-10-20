@@ -2,7 +2,7 @@
 
 本文档涵盖编译期静态反射系统（`ct/`）和共享工具（`utils/`）。
 
-> **命名空间映射：** `Reflect::Static` → `mics::ct`（别名 `SRefl`），`Reflect::Utils` → `mics::utils`（别名 `URefl`），`Reflect::Static::utils` → `mics::ct::fp`
+> **命名空间映射：** `Reflect::Static` → `skl::mics::ct`（别名 `SRefl`），`Reflect::Utils` → `skl::mics::utils`（别名 `URefl`），`Reflect::Static::utils` → `skl::mics::ct::fp`
 
 ---
 
@@ -10,7 +10,7 @@
 
 ### 1.1 `hash.h` — FNV-1a 哈希函数
 
-**命名空间：** `mics::utils` / `URefl`
+**命名空间：** `skl::mics::utils` / `URefl`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
@@ -25,7 +25,7 @@
 **调用约定标签：**
 
 ```cpp
-namespace mics::utils::cc {
+namespace skl::mics::utils::cc {
     enum class tag : uint8_t {
         Cdecl      = 0,
         Stdcall    = 1,
@@ -45,7 +45,7 @@ constexpr auto combined = URefl::mix(h, URefl::cstr64("::field")); // 组合哈�
 
 ### 1.2 `type_hash.h` — 编译期类型 → 哈希映射
 
-**命名空间：** `mics::utils`
+**命名空间：** `skl::mics::utils`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
@@ -72,7 +72,7 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 ### 1.3 `vector.h` — ABI 稳定不可变容器
 
-**命名空间：** `mics::utils`
+**命名空间：** `skl::mics::utils`
 
 `URefl::vector<T>` 是专为动态反射数据载体设计的 ABI 稳定容器，具有以下强制约束：
 
@@ -142,13 +142,13 @@ sv.push_back(4);  // 对 std::vector 的修改不影响原始 v
 
 ### 1.4 `fn_hash.h` — 函数签名折叠哈希
 
-**命名空间：** `mics::utils`
+**命名空间：** `skl::mics::utils`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
 | `compute_fn_hash<RetHash, ArgHashes...>()` | `constexpr hash64_t` | 将「返回类型哈希 + 参数类型哈希序列」折叠成不含调用约定的稳定函数签名哈希 |
 
-函数签名折叠哈希的唯一核心：把函数签名折成不含调用约定的稳定哈希，作为两处手写算法的单一来源（single source of truth）。`mics::ct::fn_traits` 与 ABIX 跨 DLL 反射层（`skl::abix::fn_sig`）共用：
+函数签名折叠哈希的唯一核心：把函数签名折成不含调用约定的稳定哈希，作为两处手写算法的单一来源（single source of truth）。`skl::mics::ct::fn_traits` 与 ABIX 跨 DLL 反射层（`skl::abix::fn_sig`）共用：
 
 - 调用方把各自的编译期类型哈希作为模板参数传入（静态反射传 `type_hash_v<Ret>` / `type_hash_v<Args>`）。
 - 本函数**故意不**编码调用约定；调用约定由上层自行处理（如 ABIX 在调用后自行混入其 `cc::tag` 协议码）。
@@ -164,7 +164,7 @@ constexpr auto h = URefl::compute_fn_hash<URefl::type_hash_v<int>, URefl::type_h
 
 ### 2.1 `config.h` — 核心类型定义
 
-**命名空间：** `mics::ct` / `SRefl`
+**命名空间：** `skl::mics::ct` / `SRefl`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
@@ -181,7 +181,7 @@ constexpr auto h = URefl::compute_fn_hash<URefl::type_hash_v<int>, URefl::type_h
 
 ### 2.2 `template_string.h` — 非类型模板字符串
 
-**命名空间：** `mics::ct`
+**命名空间：** `skl::mics::ct`
 
 编译期字符串作为非类型模板参数（C++20 `__cpp_nontype_template_args`）。
 
@@ -206,7 +206,7 @@ struct my_trait {
 
 ### 2.3 `fp.h` / `base_fp.h` — 类型列表函数式编程
 
-**命名空间：** `mics::ct::fp`
+**命名空间：** `skl::mics::ct::fp`
 
 一个编译期函数式编程库，操作对象为 `type_list<...>`。
 
@@ -262,7 +262,7 @@ constexpr auto n = fp::size<Unique>;                      // 2
 
 ### 2.4 `var_traits.h` — 变量/字段萃取
 
-**命名空间：** `mics::ct`
+**命名空间：** `skl::mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -276,7 +276,7 @@ constexpr auto n = fp::size<Unique>;                      // 2
 
 ### 2.5 `fn_traits.h` — 函数/方法萃取
 
-**命名空间：** `mics::ct`
+**命名空间：** `skl::mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -284,7 +284,7 @@ constexpr auto n = fp::size<Unique>;                      // 2
 | `__base_fn_traits<Signature, Class, Name>` | `name`、`is_member`、`params_count`、`hash` |
 | `fn_traits<Signature, Class, Name>` | 完整萃取，含 `fn_ptr`/`m_fn_ptr`、`modifie` 位掩码 |
 
-**`hash` 来源：** 每个 `__base_fn_traits` 的 `hash` 通过 `mics::utils::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()` 计算，不含调用约定编码。
+**`hash` 来源：** 每个 `__base_fn_traits` 的 `hash` 通过 `skl::mics::utils::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()` 计算，不含调用约定编码。
 
 **`fn_qualify` 位掩码常量：**
 
@@ -313,7 +313,7 @@ constexpr auto h = Traits::hash;   // 唯一的签名哈希值
 
 ### 2.6 `enum_traits.h` — 枚举萃取
 
-**命名空间：** `mics::ct`
+**命名空间：** `skl::mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -338,7 +338,7 @@ static_assert(enum_traits<Color>::is_scoped);
 
 ### 2.7 `base_reflect.h` — 统一字段萃取
 
-**命名空间：** `mics::ct`
+**命名空间：** `skl::mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -356,7 +356,7 @@ static_assert(enum_traits<Color>::is_scoped);
 
 ### 2.8 `reflect.h` — 公共 API
 
-**命名空间：** `mics::ct`
+**命名空间：** `skl::mics::ct`
 
 | 符号 | 说明 |
 |--------|-------------|
@@ -422,9 +422,9 @@ constexpr auto info = type_info<Person>();
 在根目录 `mics.h` 中定义：
 
 ```cpp
-namespace SRefl = ::mics::ct;     // 编译期静态反射
-namespace DRefl = ::mics::rt;     // 运行时动态反射
-namespace URefl = ::mics::utils;   // ABI 稳定工具容器
+namespace SRefl = ::skl::mics::ct;     // 编译期静态反射
+namespace DRefl = ::skl::mics::rt;     // 运行时动态反射
+namespace URefl = ::skl::mics::utils;   // ABI 稳定工具容器
 ```
 
 这些提供了便捷的简写：

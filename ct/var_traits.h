@@ -17,7 +17,7 @@
 
 #include "ct/template_string.h"   // IWYU pragma: keep
 
-namespace mics::ct {
+namespace skl::mics::ct {
 
 template<typename T>
 struct var_type {
@@ -48,4 +48,4 @@ struct var_traits<T Class::*, Name> : __base_var_traits<T Class::*, Name> {
     static constexpr bool is_member = false;
 };
 
-}   // namespace mics::ct
+}   // namespace skl::mics::ct

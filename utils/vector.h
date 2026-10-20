@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_UTILS_VECTOR_H
-#define SKL_UTILS_VECTOR_H
+#ifndef SKL_MICS_UTILS_VECTOR_H
+#define SKL_MICS_UTILS_VECTOR_H
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
@@ -25,7 +26,7 @@
 #include <vector>
 #include <iterator>
 
-namespace mics::utils {
+namespace skl::mics::utils {
 
 template<typename T, typename... Args>
 T *construct_at(T *p, Args &&...args) noexcept(std::is_nothrow_constructible_v<T, Args...>) {

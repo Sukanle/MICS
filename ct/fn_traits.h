@@ -27,7 +27,7 @@
 #include "ct/config.h"            // IWYU pragma: keep
 #include "ct/template_string.h"   // IWYU pragma: keep
 
-namespace mics::ct {
+namespace skl::mics::ct {
 
 template<typename, typename = void>
 struct fn_type;
@@ -59,8 +59,8 @@ struct __base_fn_traits<Ret(Args...), Class, Name> : fn_type<Ret(Args...), Class
     static constexpr auto name = Name;
     static constexpr bool is_member = false;
     static constexpr template_depth params_count = sizeof...(Args);
-    static constexpr mics::utils::hash64_t hash =
-        mics::utils::compute_fn_hash<mics::utils::type_hash_v<Ret>, mics::utils::type_hash_v<Args>...>();
+    static constexpr skl::mics::utils::hash64_t hash =
+        skl::mics::utils::compute_fn_hash<skl::mics::utils::type_hash_v<Ret>, skl::mics::utils::type_hash_v<Args>...>();
 };
 template<SKL_NORMAL_TEMPLATE_STRING(Name), typename Class, typename Ret, typename... Args>
 struct __base_fn_traits<Ret (*)(Args...), Class, Name> : __base_fn_traits<Ret(Args...)> {};
@@ -70,8 +70,8 @@ struct __base_fn_traits<Ret (Class::*)(Args...), Class, Name> : fn_type<Ret (Cla
     static constexpr bool is_member = true;
     static constexpr bool is_static = false;
     static constexpr template_depth params_count = sizeof...(Args);
-    static constexpr mics::utils::hash64_t hash =
-        mics::utils::compute_fn_hash<mics::utils::type_hash_v<Ret>, mics::utils::type_hash_v<Args>...>();
+    static constexpr skl::mics::utils::hash64_t hash =
+        skl::mics::utils::compute_fn_hash<skl::mics::utils::type_hash_v<Ret>, skl::mics::utils::type_hash_v<Args>...>();
 };
 
 template<typename, typename = void, SKL_DEFAULT_TEMPLATE_STRING(, "")>
@@ -140,5 +140,5 @@ DEF_MEM_FN_TRAITS(const volatile && noexcept, 0x17)
 
 #undef DEF_NOMEM_FN_TRAITS
 #undef DEF_MEM_FN_TRAITS
-}   // namespace mics::ct
+}   // namespace skl::mics::ct
 #endif

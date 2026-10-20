@@ -29,11 +29,11 @@
 #include "rt/type_info.h"    // IWYU pragma: keep
 #include "rt/field_info.h"   // IWYU pragma: keep
 
-namespace mics::rt {
+namespace skl::mics::rt {
 
 template<typename T>
 constexpr TypeId type_id_of() noexcept {
-    return mics::utils::type_hash128<T>();
+    return skl::mics::utils::type_hash128<T>();
 }
 
 namespace detail {
@@ -74,5 +74,5 @@ FieldSetter make_field_setter() noexcept {
 }
 
 }   // namespace detail
-}   // namespace mics::rt
+}   // namespace skl::mics::rt
 #endif

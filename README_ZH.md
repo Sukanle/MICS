@@ -17,14 +17,14 @@ MICS 在编译期提供零开销的静态反射（字段/方法遍历、类型�
 
 | 别名    | 命名空间      | 说明                                   |
 | ------- | ------------- | -------------------------------------- |
-| `SRefl` | `mics::ct`    | 编译期静态反射（Static Reflection）    |
-| `DRefl` | `mics::rt`    | 运行时动态反射（Dynamic Reflection）   |
-| `URefl` | `mics::utils` | ABI 稳定工具容器（Utility Reflection） |
+| `SRefl` | `skl::mics::ct`    | 编译期静态反射（Static Reflection）    |
+| `DRefl` | `skl::mics::rt`    | 运行时动态反射（Dynamic Reflection）   |
+| `URefl` | `skl::mics::utils` | ABI 稳定工具容器（Utility Reflection） |
 
 ## 特性
 
-- **编译期静态反射**（`mics::ct` / `SRefl`）— 编译期类型内省、模板元编程，通过 `consteval`/`constexpr` 实现零开销的字段/方法遍历
-- **运行时动态反射**（`mics::rt` / `DRefl`）— 运行时类型注册、类型擦除的字段访问以及带全局注册表的方法调用
+- **编译期静态反射**（`skl::mics::ct` / `SRefl`）— 编译期类型内省、模板元编程，通过 `consteval`/`constexpr` 实现零开销的字段/方法遍历
+- **运行时动态反射**（`skl::mics::rt` / `DRefl`）— 运行时类型注册、类型擦除的字段访问以及带全局注册表的方法调用
 - **ABI 稳定容器**（`URefl::vector<T>`）— 不可变、仅移动容器，固定内存布局，跨版本二进制兼容，专为动态反射数据载体设计
 - **类型哈希** — 基于 FNV-1a 的编译期类型哈希，支持跨边界类型识别（如 DLL/SO 热重载）
 - **函数式类型编程** — 编译期类型列表操作（`map`、`filter`、`fold`、`flat_map`、`unique` 等）
@@ -160,17 +160,17 @@ constexpr uint32_t id32 = SKL_REFT_HASH32("Player.Health");
 MICS/
 ├── mics.h                # 主入口头文件（包含 ct + rt）
 ├── metadata.h            # 元数据系统（MetaEntry、MetaMode、SKL_REFT_HASH、StringTable）
-├── ct/                   # 编译期静态反射（mics::ct / SRefl）
+├── ct/                   # 编译期静态反射（skl::mics::ct / SRefl）
 │   ├── reflect.h         # 公共 API 与 field_traits、TypeInfo
 │   ├── base_reflect.h    # __base_field_traits（变量/函数分发）
 │   ├── base_fp.h         # 底层类型列表操作
-│   ├── fp.h              # 公共类型列表 API（mics::ct::fp）
+│   ├── fp.h              # 公共类型列表 API（skl::mics::ct::fp）
 │   ├── var_traits.h      # 变量/字段萃取
 │   ├── fn_traits.h       # 函数/方法萃取（修饰符、哈希）
 │   ├── enum_traits.h     # 枚举萃取与有作用域枚举检测
 │   ├── config.h          # type_list、template_depth、is_virtual_base_of
 │   └── template_string.h # 非类型模板参数字符串支持
-├── rt/                   # 运行时动态反射（mics::rt / DRefl）
+├── rt/                   # 运行时动态反射（skl::mics::rt / DRefl）
 │   ├── reflect.h         # 公共 API、注册宏、type_id_of
 │   ├── config.h          # TypeId、Kind、FieldKind、Visibility 枚举
 │   ├── type_info.h       # TypeInfo：聚合描述符（字段/方法/基类）
@@ -179,7 +179,7 @@ MICS/
 │   ├── enum_info.h       # EnumInfo + EnumEntry
 │   ├── any.h             # Any：类型擦除值容器（SBO 优化）
 │   └── registry.h        # Registry：全局单例类型注册表
-├── utils/                 # 共享工具（mics::utils / URefl）
+├── utils/                 # 共享工具（skl::mics::utils / URefl）
 │   ├── hash.h            # FNV-1a 哈希函数、调用约定标签
 │   ├── type_hash.h       # 编译期类型 → 哈希映射
 │   ├── fn_hash.h         # 函数签名折叠哈希（compute_fn_hash）

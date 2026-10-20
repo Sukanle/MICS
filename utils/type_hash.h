@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_UTILS_TYPE_HASH_H
-#define SKL_UTILS_TYPE_HASH_H
+#ifndef SKL_MICS_UITLS_TYPE_HASH_H
+#define SKL_MICS_UITLS_TYPE_HASH_H
 
 #include <stdint.h>
 #include <limits.h>
@@ -26,18 +26,18 @@
 #include "utils/hash.h"   // IWYU pragma: keep
 #include "rt/config.h"    // IWYU pragma: keep
 
-namespace mics::utils {
+namespace skl::mics::utils {
 
 template<typename T>
 struct type_tag {
     static constexpr bool defined = false;
 };
 
-#define STATIC_TYPE_TAG(T, tag)                                                      \
-    template<>                                                                       \
-    struct mics::utils::type_tag<T> {                                                \
-        static constexpr bool defined = true;                                        \
-        static constexpr ::mics::utils::hash64_t value = ::mics::utils::cstr64(tag); \
+#define STATIC_TYPE_TAG(T, tag)                                                            \
+    template<>                                                                             \
+    struct skl::mics::utils::type_tag<T> {                                                 \
+        static constexpr bool defined = true;                                              \
+        static constexpr skl::mics::utils::hash64_t value = skl::mics::utils::cstr64(tag); \
     }
 
 namespace detail {
@@ -200,7 +200,7 @@ constexpr hash64_t type_hash() noexcept {
 // deterministic second domain, so runtime TypeId remains 128-bit without
 // changing the existing hash64 API used by function and string metadata.
 template<typename T>
-constexpr ::mics::rt::TypeId type_hash128() noexcept {
+constexpr skl::mics::rt::TypeId type_hash128() noexcept {
     const hash64_t low = type_hash<T>();
     const hash64_t high = mix(cstr64("abix.type"), low);
     return {low, high};
@@ -209,6 +209,6 @@ constexpr ::mics::rt::TypeId type_hash128() noexcept {
 template<typename T>
 inline constexpr hash64_t type_hash_v = type_hash<T>();
 
-}   // namespace mics::utils
+}   // namespace skl::mics::utils
 
 #endif

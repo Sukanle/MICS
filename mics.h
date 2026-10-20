@@ -27,9 +27,9 @@
 #include "ct/reflect.h"   // IWYU pragma: keep
 #include "rt/reflect.h"   // IWYU pragma: keep
 
-namespace SRefl = ::mics::ct;      // NOLINT
-namespace DRefl = ::mics::rt;      // NOLINT
-namespace URefl = ::mics::utils;   // NOLINT
+namespace SRefl = skl::mics::ct;      // NOLINT
+namespace DRefl = skl::mics::rt;      // NOLINT
+namespace URefl = skl::mics::utils;   // NOLINT
 
 #define SKL_RFS_MAKE_FIELD_TRAITS(type, VAR) SKL_RFS_MAKE_##type##_FIELD_TRAITS(VAR)
 #define SKL_RFS_REGISTER_BEGIN(TYPE, ...)                             \

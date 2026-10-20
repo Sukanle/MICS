@@ -20,7 +20,7 @@
 
 #include "ct/config.h"   // IWYU pragma: keep
 
-namespace mics::ct::fp {
+namespace skl::mics::ct::fp {
 template<typename T, template_constants N>
 struct base_nth;
 template<typename T, typename... Remains>
@@ -225,5 +225,5 @@ struct base_fold<type_list<Head, Tail...>, Init, Func> {
     using current = typename Func<Init, Head>::type;
     using type = typename base_fold<type_list<Tail...>, current, Func>::type;
 };
-}   // namespace mics::ct::fp
+}   // namespace skl::mics::ct::fp
 #endif

@@ -21,7 +21,7 @@
 #include "ct/fp.h"             // IWYU pragma: keep
 #include "ct/base_reflect.h"   // IWYU pragma: keep
 
-namespace mics::ct {
+namespace skl::mics::ct {
 
 template<template<typename...> class F, typename... Args>
 inline constexpr bool NOT = !F<Args...>::value;
@@ -52,8 +52,8 @@ template<typename T>
 using ref_combinations_t = typename ref_combinations<T>::type;
 
 #if !SKL_TEMPLATE_STRING_SUPPORTED
-constexpr mics::utils::string_view strip_prefix(
-    mics::utils::string_view name, mics::utils::string_view prefix = "&class_t::") noexcept {
+constexpr skl::mics::utils::string_view strip_prefix(
+    skl::mics::utils::string_view name, skl::mics::utils::string_view prefix = "&class_t::") noexcept {
     return name.substr(prefix.size());
 }
 #endif
@@ -62,15 +62,15 @@ template<typename T, typename Class = void, SKL_DEFAULT_TEMPLATE_STRING(Name, ""
 struct field_traits : __base_field_traits<T, is_Kind<T>(), Class, Name> {
     using traits = __base_field_traits<T, is_Kind<T>(), Class, Name>;
     explicit field_traits() = default;
-    [[nodiscard]] consteval mics::utils::string_view getName() const { return _name; }
-    explicit field_traits(T &ptr, mics::utils::string_view name = "")
+    [[nodiscard]] consteval skl::mics::utils::string_view getName() const { return _name; }
+    explicit field_traits(T &ptr, skl::mics::utils::string_view name = "")
         : __base_field_traits<T, is_Kind<T>(), Class, Name>{ptr}
         , _name(name) {}
-    explicit consteval field_traits(T &&ptr, mics::utils::string_view name = "")
+    explicit consteval field_traits(T &&ptr, skl::mics::utils::string_view name = "")
         : __base_field_traits<T, is_Kind<T>(), Class, Name>{std::move(ptr)}
         , _name(name) {}
 
-    [[nodiscard]] static consteval mics::utils::string_view from_TempName() {
+    [[nodiscard]] static consteval skl::mics::utils::string_view from_TempName() {
 #if !SKL_TEMPLATE_STRING_SUPPORTED
         static_assert(Name != nullptr,
             "This function [SRef::field_traits::from_TempName] must be "
@@ -83,12 +83,12 @@ struct field_traits : __base_field_traits<T, is_Kind<T>(), Class, Name> {
     }
 
 private:
-    mics::utils::string_view _name;
+    skl::mics::utils::string_view _name;
 };
 
 template<typename T>
 consteval auto type_info() {
     return TypeInfo<T>{};
 }
-}   // namespace mics::ct
+}   // namespace skl::mics::ct
 #endif

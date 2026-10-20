@@ -39,7 +39,7 @@ This document covers the runtime dynamic reflection system (`rt/`).
 
 ## 1. `config.h` — Core Type Definitions
 
-**Namespace:** `mics::rt` / `DRefl`
+**Namespace:** `skl::mics::rt` / `DRefl`
 
 ### Type Aliases
 
@@ -81,7 +81,7 @@ This document covers the runtime dynamic reflection system (`rt/`).
 
 ## 2. `field_info.h` — Field Descriptors & Accessors
 
-**Namespace:** `mics::rt` / `DRefl`
+**Namespace:** `skl::mics::rt` / `DRefl`
 
 ### `FieldInfo`
 
@@ -124,7 +124,7 @@ if (field && field->getter) {
 
 ## 3. `fn_info.h` — Method Descriptors & Invokers
 
-**Namespace:** `mics::rt` / `DRefl`
+**Namespace:** `skl::mics::rt` / `DRefl`
 
 ### `ParamInfo`
 
@@ -170,7 +170,7 @@ if (method && method->invoker) {
 
 ## 4. `enum_info.h` — Enum Descriptors
 
-**Namespace:** `mics::rt` / `DRefl`
+**Namespace:** `skl::mics::rt` / `DRefl`
 
 ### `EnumEntry`
 
@@ -211,7 +211,7 @@ if (ei) {
 
 ## 5. `type_info.h` — Type Descriptor
 
-**Namespace:** `mics::rt` / `DRefl`
+**Namespace:** `skl::mics::rt` / `DRefl`
 
 ### `BaseInfo`
 
@@ -258,7 +258,7 @@ if (ti) {
 
 ## 6. `any.h` — Type-Erased Value Container
 
-**Namespace:** `mics::rt` / `DRefl`
+**Namespace:** `skl::mics::rt` / `DRefl`
 
 `Any` is a lightweight type-erased value container similar to `std::any`, optimized for reflection use cases.
 
@@ -300,7 +300,7 @@ auto tid = a.type_id();             // type_hash<int>()
 
 ## 7. `registry.h` — Global Type Registry
 
-**Namespace:** `mics::rt` / `DRefl`
+**Namespace:** `skl::mics::rt` / `DRefl`
 
 `Registry` is a singleton that collects all statically-registered `TypeInfo` instances.
 
@@ -338,7 +338,7 @@ reg.for_each([](const TypeInfo *ti) {
 
 ## 8. `reflect.h` — Registration Macros & Public API
 
-**Namespace:** `mics::rt` / `DRefl`
+**Namespace:** `skl::mics::rt` / `DRefl`
 
 ### `type_id_of<T>()`
 

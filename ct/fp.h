@@ -18,7 +18,7 @@
 
 #include "ct/base_fp.h"   // IWYU pragma: keep
 
-namespace mics::ct::fp {
+namespace skl::mics::ct::fp {
 
 template<typename TypeList, template_constants N>
 using nth = typename base_nth<TypeList, N>::type;
@@ -68,5 +68,5 @@ using remove = typename base_remove<TypeList, Target>::type;
 
 template<typename List, typename Init, template<typename, typename> class Func>
 using fold = typename base_fold<List, Init, Func>::type;
-}   // namespace mics::ct::fp
+}   // namespace skl::mics::ct::fp
 #endif

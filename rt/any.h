@@ -25,7 +25,7 @@
 
 #include "rt/config.h"   // IWYU pragma: keep
 
-namespace mics::rt {
+namespace skl::mics::rt {
 
 class Any {
     static constexpr size_t SBO_SIZE = 16;
@@ -105,7 +105,7 @@ public:
 
     template<typename T>
     static TypeId type_id_of() noexcept {
-        return mics::utils::type_hash128<T>();
+        return skl::mics::utils::type_hash128<T>();
     }
 
 private:
@@ -161,5 +161,5 @@ private:
     };
 };
 
-}   // namespace mics::rt
+}   // namespace skl::mics::rt
 #endif

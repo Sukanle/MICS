@@ -25,28 +25,28 @@
 
 #include "rt/config.h"   // IWYU pragma: keep
 
-namespace mics::rt {
+namespace skl::mics::rt {
 
 struct EnumEntry {
     int64_t value;
-    mics::utils::string_view name;
+    skl::mics::utils::string_view name;
 };
 
 struct EnumInfo {
     const char *name;
     TypeId type_id;
     TypeId underlying_type_id;
-    mics::utils::vector<EnumEntry> entries;
+    skl::mics::utils::vector<EnumEntry> entries;
     bool is_scoped;
 
     EnumInfo() noexcept
         : name(nullptr)
         , type_id(INVALID_TYPE_ID)
         , underlying_type_id(INVALID_TYPE_ID)
-        , entries(mics::utils::vector_empty)
+        , entries(skl::mics::utils::vector_empty)
         , is_scoped(false) {}
 
-    EnumInfo(const char *n, TypeId tid, TypeId utid, mics::utils::vector<EnumEntry> e, bool scoped = false) noexcept
+    EnumInfo(const char *n, TypeId tid, TypeId utid, skl::mics::utils::vector<EnumEntry> e, bool scoped = false) noexcept
         : name(n)
         , type_id(tid)
         , underlying_type_id(utid)
@@ -71,5 +71,5 @@ struct EnumInfo {
     }
 };
 
-}   // namespace mics::rt
+}   // namespace skl::mics::rt
 #endif

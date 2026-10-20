@@ -26,7 +26,7 @@
 #include "rt/enum_info.h"    // IWYU pragma: keep
 #include "rt/field_info.h"   // IWYU pragma: keep
 
-namespace mics::rt {
+namespace skl::mics::rt {
 
 struct BaseInfo {
     TypeId type_id;
@@ -39,9 +39,9 @@ struct TypeInfo {
     TypeId type_id;
     Kind kind;
     size_t size;
-    mics::utils::vector<BaseInfo> bases;
-    mics::utils::vector<FieldAccessor> fields;
-    mics::utils::vector<FnInfo> methods;
+    skl::mics::utils::vector<BaseInfo> bases;
+    skl::mics::utils::vector<FieldAccessor> fields;
+    skl::mics::utils::vector<FnInfo> methods;
     const EnumInfo *enum_info;
 
     TypeInfo() noexcept
@@ -49,21 +49,21 @@ struct TypeInfo {
         , type_id(INVALID_TYPE_ID)
         , kind(Kind::Struct)
         , size(0)
-        , bases(mics::utils::vector_empty)
-        , fields(mics::utils::vector_empty)
-        , methods(mics::utils::vector_empty)
+        , bases(skl::mics::utils::vector_empty)
+        , fields(skl::mics::utils::vector_empty)
+        , methods(skl::mics::utils::vector_empty)
         , enum_info(nullptr) {}
 
     const FieldAccessor *find_field(const char *field_name) const noexcept {
         for (auto &f : fields) {
-            if (f.info.name && mics::utils::string_view(f.info.name) == field_name) return &f;
+            if (f.info.name && skl::mics::utils::string_view(f.info.name) == field_name) return &f;
         }
         return nullptr;
     }
 
     const FnInfo *find_method(const char *method_name) const noexcept {
         for (auto &m : methods) {
-            if (m.name && mics::utils::string_view(m.name) == method_name) return &m;
+            if (m.name && skl::mics::utils::string_view(m.name) == method_name) return &m;
         }
         return nullptr;
     }
@@ -76,5 +76,5 @@ struct TypeInfo {
     }
 };
 
-}   // namespace mics::rt
+}   // namespace skl::mics::rt
 #endif

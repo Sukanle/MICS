@@ -20,7 +20,7 @@
 
 #include <type_traits>   // IWYU pragma: keep
 
-namespace mics::ct {
+namespace skl::mics::ct {
 #ifndef MAX_TEMPLATE_DEPTH
 #  define MAX_TEMPLATE_DEPTH std::numeric_limits<template_depth>::max()
 using template_depth = uint8_t;
@@ -87,5 +87,5 @@ struct is_type_list_of<type_list<Args...>> : std::true_type {};
 template<typename T>
 inline constexpr bool is_type_list_of_v = is_type_list_of<T>::value;
 
-}   // namespace mics::ct
+}   // namespace skl::mics::ct
 #endif

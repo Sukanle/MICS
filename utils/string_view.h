@@ -1,9 +1,9 @@
-#ifndef SKL_UTILS_STRING_VIEW_H
-#define SKL_UTILS_STRING_VIEW_H
+#ifndef SKL_MICS_UITLS_STRING_VIEW_H
+#define SKL_MICS_UITLS_STRING_VIEW_H
 
 #include <stddef.h>
 
-namespace mics::utils {
+namespace skl::mics::utils {
 
 class string_view {
 public:
@@ -58,5 +58,5 @@ private:
         return len;
     }
 };
-}   // namespace mics::utils
+}   // namespace skl::mics::utils
 #endif

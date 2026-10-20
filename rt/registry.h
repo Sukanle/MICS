@@ -23,7 +23,7 @@
 #include "utils/string_view.h"   // IWYU pragma: keep
 #include "rt/type_info.h"        // IWYU pragma: keep
 
-namespace mics::rt {
+namespace skl::mics::rt {
 
 class Registry;
 using RegistrationCallback = void (*)(Registry &);
@@ -63,7 +63,7 @@ public:
     const TypeInfo *find_by_name(const char *name) const noexcept {
         if (!name) return nullptr;
         for (auto *t : _types) {
-            if (t->name && mics::utils::string_view(t->name) == name) return t;
+            if (t->name && skl::mics::utils::string_view(t->name) == name) return t;
         }
         return nullptr;
     }
@@ -89,5 +89,5 @@ private:
     std::vector<RegistrationCallback> _callbacks;
 };
 
-}   // namespace mics::rt
+}   // namespace skl::mics::rt
 #endif

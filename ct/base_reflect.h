@@ -20,7 +20,7 @@
 #include "ct/fn_traits.h"     // IWYU pragma: keep
 #include "ct/var_traits.h"    // IWYU pragma: keep
 
-namespace mics::ct {
+namespace skl::mics::ct {
 enum class Kind : uint8_t {
     FreeOrStatic_Var,
     FreeOrStatic_Fn,
@@ -101,5 +101,5 @@ struct __base_field_traits<T, Kind::NonStaticMem_Fn, Class, Name> : fn_traits<T,
 
     typename traits::m_fn_ptr _ptr;
 };
-}   // namespace mics::ct
+}   // namespace skl::mics::ct
 #endif

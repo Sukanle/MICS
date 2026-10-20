@@ -20,7 +20,7 @@
 
 #include "rt/config.h"   // IWYU pragma: keep
 
-namespace mics::rt {
+namespace skl::mics::rt {
 
 struct FieldInfo {
     const char *name;
@@ -70,5 +70,5 @@ struct FieldAccessor {
         , setter(s) {}
 };
 
-}   // namespace mics::rt
+}   // namespace skl::mics::rt
 #endif

@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 
-namespace mics::rt {
+namespace skl::mics::rt {
 
 // Type identity is a canonical two-word value. It must not be truncated to
 // one word when crossing the runtime/ABIX metadata boundary.
@@ -57,5 +57,5 @@ enum class Visibility : uint8_t {
     Private,
 };
 
-}   // namespace mics::rt
+}   // namespace skl::mics::rt
 #endif

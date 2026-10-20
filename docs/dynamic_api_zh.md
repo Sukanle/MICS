@@ -39,7 +39,7 @@
 
 ## 1. `config.h` — 核心类型定义
 
-**命名空间：** `mics::rt` / `DRefl`
+**命名空间：** `skl::mics::rt` / `DRefl`
 
 ### 类型别名
 
@@ -81,7 +81,7 @@
 
 ## 2. `field_info.h` — 字段描述符与访问器
 
-**命名空间：** `mics::rt` / `DRefl`
+**命名空间：** `skl::mics::rt` / `DRefl`
 
 ### `FieldInfo`
 
@@ -124,7 +124,7 @@ if (field && field->getter) {
 
 ## 3. `fn_info.h` — 方法描述符与调用器
 
-**命名空间：** `mics::rt` / `DRefl`
+**命名空间：** `skl::mics::rt` / `DRefl`
 
 ### `ParamInfo`
 
@@ -170,7 +170,7 @@ if (method && method->invoker) {
 
 ## 4. `enum_info.h` — 枚举描述符
 
-**命名空间：** `mics::rt` / `DRefl`
+**命名空间：** `skl::mics::rt` / `DRefl`
 
 ### `EnumEntry`
 
@@ -211,7 +211,7 @@ if (ei) {
 
 ## 5. `type_info.h` — 类型描述符
 
-**命名空间：** `mics::rt` / `DRefl`
+**命名空间：** `skl::mics::rt` / `DRefl`
 
 ### `BaseInfo`
 
@@ -258,7 +258,7 @@ if (ti) {
 
 ## 6. `any.h` — 类型擦除值容器
 
-**命名空间：** `mics::rt` / `DRefl`
+**命名空间：** `skl::mics::rt` / `DRefl`
 
 `Any` 是一个轻量级类型擦除值容器，类似于 `std::any`，针对反射场景进行了优化。
 
@@ -300,7 +300,7 @@ auto tid = a.type_id();             // type_hash<int>()
 
 ## 7. `registry.h` — 全局类型注册表
 
-**命名空间：** `mics::rt` / `DRefl`
+**命名空间：** `skl::mics::rt` / `DRefl`
 
 `Registry` 是一个单例，收集所有静态注册的 `TypeInfo` 实例。
 
@@ -338,7 +338,7 @@ reg.for_each([](const TypeInfo *ti) {
 
 ## 8. `reflect.h` — 注册宏与公共 API
 
-**命名空间：** `mics::rt` / `DRefl`
+**命名空间：** `skl::mics::rt` / `DRefl`
 
 ### `type_id_of<T>()`
 

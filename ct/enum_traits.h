@@ -20,7 +20,7 @@
 
 #include "utils/string_view.h"   // IWYU pragma: keep
 
-namespace mics::ct {
+namespace skl::mics::ct {
 template<typename E>
 struct is_scoped_enum
     : std::integral_constant<bool, !std::is_convertible_v<E, typename std::underlying_type_t<E>> && std::is_enum_v<E>> {
@@ -44,10 +44,10 @@ template<typename E>
 struct enum_traits : enum_type<E, void> {
     struct Entry {
         E value;
-        mics::utils::string_view name;
+        skl::mics::utils::string_view name;
     };
     static constexpr bool is_scoped = is_scoped_enum_v<E>;
     explicit constexpr enum_traits() = default;
 };
-}   // namespace mics::ct
+}   // namespace skl::mics::ct
 #endif

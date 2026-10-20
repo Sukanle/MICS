@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef SKL_UTILS_HASH_H
-#define SKL_UTILS_HASH_H
+#ifndef SKL_MICS_UITLS_HASH_H
+#define SKL_MICS_UITLS_HASH_H
 
 #include <stdint.h>
 #include <stddef.h>
 
-namespace mics::utils {
+namespace skl::mics::utils {
 
 using hash64_t = uint64_t;
 using hash32_t = uint32_t;
@@ -62,6 +62,6 @@ enum class tag : uint8_t {
 };
 }   // namespace cc
 
-}   // namespace mics::utils
+}   // namespace skl::mics::utils
 
 #endif
