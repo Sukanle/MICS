@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/MICSTargets.cmake")
+
+set(MICS_VERSION "@PROJECT_VERSION@")
+set_and_check(MICS_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+set(MICS_INCLUDE_DIRS "${MICS_INCLUDE_DIR}")
+
+check_required_components(MICS)

@@ -24,13 +24,20 @@
 //   - Dynamic enum reflection (SKL_RFD_ENUM_BEGIN / SKL_RFD_ENUM_VALUE)
 // =============================================================================
 
-#include "mics.h"
+#include "SKL/MICS/MICS.h"
 
 #include <cstdio>
+#include <ostream>
 #include <string>
 #include <string_view>
 
 #include <catch2/catch_test_macros.hpp>
+
+namespace skl::mics::util {
+inline std::ostream &operator<<(std::ostream &stream, const string_view &view) {
+    return stream.write(view.data(), static_cast<std::streamsize>(view.size()));
+}
+}   // namespace skl::mics::util
 
 // =============================================================================
 // Test Types
