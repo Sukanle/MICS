@@ -23,10 +23,10 @@
 #include <limits>
 #include <type_traits>
 
-#include "utils/hash.h"   // IWYU pragma: keep
-#include "rt/config.h"    // IWYU pragma: keep
+#include "SKL/MICS/Util/Hash.h"   // IWYU pragma: keep
+#include "SKL/MICS/RT/Config.h"    // IWYU pragma: keep
 
-namespace skl::mics::utils {
+namespace skl::mics::util {
 
 template<typename T>
 struct type_tag {
@@ -35,9 +35,9 @@ struct type_tag {
 
 #define STATIC_TYPE_TAG(T, tag)                                                            \
     template<>                                                                             \
-    struct skl::mics::utils::type_tag<T> {                                                 \
+    struct skl::mics::util::type_tag<T> {                                                 \
         static constexpr bool defined = true;                                              \
-        static constexpr skl::mics::utils::hash64_t value = skl::mics::utils::cstr64(tag); \
+        static constexpr skl::mics::util::hash64_t value = skl::mics::util::cstr64(tag); \
     }
 
 namespace detail {
@@ -209,6 +209,6 @@ constexpr skl::mics::rt::TypeId type_hash128() noexcept {
 template<typename T>
 inline constexpr hash64_t type_hash_v = type_hash<T>();
 
-}   // namespace skl::mics::utils
+}   // namespace skl::mics::util
 
 #endif

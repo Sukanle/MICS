@@ -18,7 +18,7 @@
 
 #include <type_traits>
 
-#include "utils/string_view.h"   // IWYU pragma: keep
+#include "SKL/MICS/Util/StringView.h"   // IWYU pragma: keep
 
 namespace skl::mics::ct {
 template<typename E>
@@ -44,7 +44,7 @@ template<typename E>
 struct enum_traits : enum_type<E, void> {
     struct Entry {
         E value;
-        skl::mics::utils::string_view name;
+        skl::mics::util::string_view name;
     };
     static constexpr bool is_scoped = is_scoped_enum_v<E>;
     explicit constexpr enum_traits() = default;

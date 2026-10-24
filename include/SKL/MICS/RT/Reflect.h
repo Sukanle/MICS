@@ -19,21 +19,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "utils/type_hash.h"   // IWYU pragma: keep
+#include "SKL/MICS/Util/TypeHash.h"   // IWYU pragma: keep
 
-#include "rt/any.h"          // IWYU pragma: keep
-#include "rt/config.h"       // IWYU pragma: keep
-#include "rt/registry.h"     // IWYU pragma: keep
-#include "rt/fn_info.h"      // IWYU pragma: keep
-#include "rt/enum_info.h"    // IWYU pragma: keep
-#include "rt/type_info.h"    // IWYU pragma: keep
-#include "rt/field_info.h"   // IWYU pragma: keep
+#include "SKL/MICS/RT/Any.h"          // IWYU pragma: keep
+#include "SKL/MICS/RT/Config.h"       // IWYU pragma: keep
+#include "SKL/MICS/RT/Registry.h"     // IWYU pragma: keep
+#include "SKL/MICS/RT/FnInfo.h"      // IWYU pragma: keep
+#include "SKL/MICS/RT/EnumInfo.h"    // IWYU pragma: keep
+#include "SKL/MICS/RT/TypeInfo.h"    // IWYU pragma: keep
+#include "SKL/MICS/RT/FieldInfo.h"   // IWYU pragma: keep
 
 namespace skl::mics::rt {
 
 template<typename T>
 constexpr TypeId type_id_of() noexcept {
-    return skl::mics::utils::type_hash128<T>();
+    return skl::mics::util::type_hash128<T>();
 }
 
 namespace detail {

@@ -19,7 +19,7 @@
 #include <stddef.h>
 #include <utility>
 
-namespace skl::mics::utils {
+namespace skl::mics::util {
 
 // A fixed-size, zero-allocation array usable in constant expressions.
 //
@@ -84,6 +84,6 @@ constexpr T make_iota() {
     return make_index_sequence<T, N, Start>(std::make_index_sequence<N>{});
 }
 
-}   // namespace skl::mics::utils
+}   // namespace skl::mics::util
 
 #endif   // SKL_MICS_UTILS_ARRAY_H

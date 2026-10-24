@@ -18,7 +18,7 @@
 
 #include <type_traits>
 
-#include "ct/config.h"   // IWYU pragma: keep
+#include "SKL/MICS/CT/Config.h"   // IWYU pragma: keep
 
 namespace skl::mics::ct::fp {
 template<typename T, template_constants N>

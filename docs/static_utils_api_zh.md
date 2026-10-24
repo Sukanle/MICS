@@ -2,7 +2,7 @@
 
 本文档涵盖编译期静态反射系统（`ct/`）和共享工具（`utils/`）。
 
-> **命名空间映射：** `Reflect::Static` → `skl::mics::ct`（别名 `SRefl`），`Reflect::Utils` → `skl::mics::utils`（别名 `URefl`），`Reflect::Static::utils` → `skl::mics::ct::fp`
+> **命名空间映射：** `Reflect::Static` → `skl::mics::ct`（别名 `SRefl`），`Reflect::Utils` → `skl::mics::util`（别名 `URefl`），`Reflect::Static::utils` → `skl::mics::ct::fp`
 
 ---
 
@@ -10,7 +10,7 @@
 
 ### 1.1 `hash.h` — FNV-1a 哈希函数
 
-**命名空间：** `skl::mics::utils` / `URefl`
+**命名空间：** `skl::mics::util` / `URefl`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
@@ -25,7 +25,7 @@
 **调用约定标签：**
 
 ```cpp
-namespace skl::mics::utils::cc {
+namespace skl::mics::util::cc {
     enum class tag : uint8_t {
         Cdecl      = 0,
         Stdcall    = 1,
@@ -45,7 +45,7 @@ constexpr auto combined = URefl::mix(h, URefl::cstr64("::field")); // 组合哈�
 
 ### 1.2 `type_hash.h` — 编译期类型 → 哈希映射
 
-**命名空间：** `skl::mics::utils`
+**命名空间：** `skl::mics::util`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
@@ -72,7 +72,7 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 ### 1.3 `array.h` — 定长编译期数组
 
-**命名空间：** `skl::mics::utils` / `URefl`
+**命名空间：** `skl::mics::util` / `URefl`
 
 `URefl::array<T, Count>` 是对 C 数组的最小聚合封装。它不使用分配器、不做边界检查、不依赖 `std::array`；所有操作都是 `constexpr`，适合承载内联的 TypeID 列表、方法签名列表和零基槽位表。
 
@@ -93,7 +93,7 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 **基本用法：**
 
 ```cpp
-namespace URefl = skl::mics::utils;
+namespace URefl = skl::mics::util;
 
 constexpr URefl::array<int, 3> a{1, 2, 3};
 static_assert(a.size() == 3);
@@ -165,7 +165,7 @@ static_assert(offset.resize == 11);
 
 ### 1.4 `vector.h` — ABI 稳定不可变容器
 
-**命名空间：** `skl::mics::utils`
+**命名空间：** `skl::mics::util`
 
 `URefl::vector<T>` 是专为动态反射数据载体设计的 ABI 稳定容器，具有以下强制约束：
 
@@ -235,7 +235,7 @@ sv.push_back(4);  // 对 std::vector 的修改不影响原始 v
 
 ### 1.5 `fn_hash.h` — 函数签名折叠哈希
 
-**命名空间：** `skl::mics::utils`
+**命名空间：** `skl::mics::util`
 
 | 符号 | 类型 | 说明 |
 |--------|------|-------------|
@@ -377,7 +377,7 @@ constexpr auto n = fp::size<Unique>;                      // 2
 | `__base_fn_traits<Signature, Class, Name>` | `name`、`is_member`、`params_count`、`hash` |
 | `fn_traits<Signature, Class, Name>` | 完整萃取，含 `fn_ptr`/`m_fn_ptr`、`modifie` 位掩码 |
 
-**`hash` 来源：** 每个 `__base_fn_traits` 的 `hash` 通过 `skl::mics::utils::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()` 计算，不含调用约定编码。
+**`hash` 来源：** 每个 `__base_fn_traits` 的 `hash` 通过 `skl::mics::util::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()` 计算，不含调用约定编码。
 
 **`fn_qualify` 位掩码常量：**
 
@@ -517,7 +517,7 @@ constexpr auto info = type_info<Person>();
 ```cpp
 namespace SRefl = ::skl::mics::ct;     // 编译期静态反射
 namespace DRefl = ::skl::mics::rt;     // 运行时动态反射
-namespace URefl = ::skl::mics::utils;   // ABI 稳定工具容器
+namespace URefl = ::skl::mics::util;   // ABI 稳定工具容器
 ```
 
 这些提供了便捷的简写：

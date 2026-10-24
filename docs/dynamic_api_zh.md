@@ -6,109 +6,115 @@
 
 ## 架构概览
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  reflect.h（入口）                                       │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │ 注册宏（简化版）                                    │  │
-│  │ SKL_RFD_CLASS / SKL_RFD_PROPERTY / SKL_RFD_METHOD / ...      │  │
-│  │ （旧版：SKL_RFD_REGISTER_BEGIN / SKL_RFD_FIELD / ...）    │  │
-│  └──────────────┬────────────────────────────────────┘  │
-│                 │ 填充                                   │
-│  ┌──────────────▼────────────────────────────────────┐  │
-│  │ TypeInfo（描述符）                                  │  │
-│  │  ├─ FieldAccessor[]  （FieldInfo + getter/setter） │  │
-│  │  ├─ FnInfo[]         （方法元数据 + invoker）      │  │
-│  │  ├─ BaseInfo[]       （基类信息）                  │  │
-│  │  └─ EnumInfo*        （枚举值，如适用）            │  │
-│  └──────────────┬────────────────────────────────────┘  │
-│                 │ 注册到                                 │
-│  ┌──────────────▼────────────────────────────────────┐  │
-│  │ Registry（单例）                                   │  │
-│  │  find_by_id() / find_by_name() / for_each()       │  │
-│  └────────────────────────────────────────────────────┘  │
-│                                                          │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │ Any（类型擦除值容器）                               │  │
-│  │  SBO ≤ 16 字节，try_cast<T>()                      │  │
-│  └───────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph RH["reflect.h (入口)"]
+        direction TB
+
+        subgraph RM["注册宏 (简化版)"]
+            M1["SKL_RFD_CLASS / SKL_RFD_PROPERTY / SKL_RFD_METHOD / ..."]
+            M2["(旧版: SKL_RFD_REGISTER_BEGIN / SKL_RFD_FIELD / ...)"]
+        end
+
+        subgraph TI["TypeInfo (描述符)"]
+            T1["FieldAccessor[]  (FieldInfo + getter/setter)"]
+            T2["FnInfo[]  (方法元数据  + invoker)"]
+            T3["BaseInfo[]  (基类信息)"]
+            T4["EnumInfo*  (枚举值, 如适用)"]
+        end
+
+        subgraph RG["Registry (单例)"]
+            R1["find_by_id() / find_by_name() / for_each()"]
+        end
+
+        subgraph AN["Any (类型擦除值容器)"]
+            A1["SBO ≤ 16 字节, try_cast&lt;T&gt;()"]
+        end
+
+        M1 -->|填充| TI
+        TI -->|注册到| RG
+    end
 ```
 
 ---
 
-## 1. `config.h` — 核心类型定义
+## 1. `Config.h` — 核心类型定义
 
 **命名空间：** `skl::mics::rt` / `DRefl`
 
 ### 类型别名
 
-| 符号 | 类型 | 说明 |
-|--------|------|-------------|
-| `TypeId` | `uint64_t` | 唯一类型标识符（基于哈希） |
-| `FieldId` | `uint32_t` | 字段标识符 |
-| `MethodId` | `uint32_t` | 方法标识符 |
-| `INVALID_TYPE_ID` | `constexpr TypeId` | 哨兵值 `0` |
+| 符号              | 类型               | 说明                       |
+| ----------------- | ------------------ | -------------------------- |
+| `TypeId`          | `uint64_t`         | 唯一类型标识符（基于哈希） |
+| `FieldId`         | `uint32_t`         | 字段标识符                 |
+| `MethodId`        | `uint32_t`         | 方法标识符                 |
+| `INVALID_TYPE_ID` | `constexpr TypeId` | 哨兵值 `0`                 |
 
 ### 枚举
 
 **`Kind`** — 类型分类：
-| 值 | 说明 |
-|-------|-------------|
-| `Class` | `class` 类型 |
-| `Struct` | `struct` 类型 |
-| `Enum` | 枚举类型 |
-| `Primitive` | 内置基本类型 |
-| `Pointer` | 指针类型 |
-| `Reference` | 引用类型 |
+
+| 值          | 说明          |
+| ----------- | ------------- |
+| `Class`     | `class` 类型  |
+| `Struct`    | `struct` 类型 |
+| `Enum`      | 枚举类型      |
+| `Primitive` | 内置基本类型  |
+| `Pointer`   | 指针类型      |
+| `Reference` | 引用类型      |
 
 **`FieldKind`** — 字段/方法分类：
-| 值 | 说明 |
-|-------|-------------|
+
+| 值          | 说明           |
+| ----------- | -------------- |
 | `MemberVar` | 非静态成员变量 |
-| `StaticVar` | 静态成员变量 |
-| `MemberFn` | 非静态成员函数 |
-| `StaticFn` | 静态成员函数 |
+| `StaticVar` | 静态成员变量   |
+| `MemberFn`  | 非静态成员函数 |
+| `StaticFn`  | 静态成员函数   |
 
 **`Visibility`** — 访问级别：
-| 值 | 说明 |
-|-------|-------------|
-| `Public` | 公开访问 |
+
+| 值          | 说明       |
+| ----------- | ---------- |
+| `Public`    | 公开访问   |
 | `Protected` | 受保护访问 |
-| `Private` | 私有访问 |
+| `Private`   | 私有访问   |
 
 ---
 
-## 2. `field_info.h` — 字段描述符与访问器
+## 2. `FieldInfo.h` — 字段描述符与访问器
 
 **命名空间：** `skl::mics::rt` / `DRefl`
 
 ### `FieldInfo`
 
-| 成员 | 类型 | 说明 |
-|--------|------|-------------|
-| `name` | `const char*` | 字段名称 |
-| `type_id` | `TypeId` | 字段类型的哈希值 |
-| `offset` | `uint32_t` | 在类中的字节偏移量 |
-| `kind` | `FieldKind` | MemberVar / StaticVar / MemberFn / StaticFn |
-| `visibility` | `Visibility` | Public / Protected / Private |
+| 成员         | 类型          | 说明                                        |
+| ------------ | ------------- | ------------------------------------------- |
+| `name`       | `const char*` | 字段名称                                    |
+| `type_id`    | `TypeId`      | 字段类型的哈希值                            |
+| `offset`     | `uint32_t`    | 在类中的字节偏移量                          |
+| `kind`       | `FieldKind`   | MemberVar / StaticVar / MemberFn / StaticFn |
+| `visibility` | `Visibility`  | Public / Protected / Private                |
 
 **方法：**
-| 方法 | 返回值 | 说明 |
-|--------|---------|-------------|
-| `is_function()` | `bool` | `kind == MemberFn \|\| kind == StaticFn` |
+
+| 方法            | 返回值 | 说明                                       |
+| --------------- | ------ | ------------------------------------------ |
+| `is_function()` | `bool` | `kind == MemberFn \|\| kind == StaticFn`   |
 | `is_variable()` | `bool` | `kind == MemberVar \|\| kind == StaticVar` |
-| `is_static()` | `bool` | `kind == StaticVar \|\| kind == StaticFn` |
+| `is_static()`   | `bool` | `kind == StaticVar \|\| kind == StaticFn`  |
 
 ### `FieldAccessor`
 
-| 成员 | 类型 | 说明 |
-|--------|------|-------------|
-| `info` | `FieldInfo` | 字段元数据 |
-| `getter` | `FieldGetter` | `void*(*)(void* obj)` — 类型擦除的 getter |
+| 成员     | 类型          | 说明                                                  |
+| -------- | ------------- | ----------------------------------------------------- |
+| `info`   | `FieldInfo`   | 字段元数据                                            |
+| `getter` | `FieldGetter` | `void*(*)(void* obj)` — 类型擦除的 getter             |
 | `setter` | `FieldSetter` | `void(*)(void* obj, void* value)` — 类型擦除的 setter |
 
 **使用示例：**
+
 ```cpp
 auto *field = type_info->find_field("age");
 if (field && field->getter) {
@@ -122,28 +128,28 @@ if (field && field->getter) {
 
 ---
 
-## 3. `fn_info.h` — 方法描述符与调用器
+## 3. `FnInfo.h` — 方法描述符与调用器
 
 **命名空间：** `skl::mics::rt` / `DRefl`
 
 ### `ParamInfo`
 
-| 成员 | 类型 | 说明 |
-|--------|------|-------------|
-| `name` | `const char*` | 参数名称 |
-| `type_id` | `TypeId` | 参数类型的哈希值 |
+| 成员      | 类型          | 说明             |
+| --------- | ------------- | ---------------- |
+| `name`    | `const char*` | 参数名称         |
+| `type_id` | `TypeId`      | 参数类型的哈希值 |
 
 ### `FnInfo`
 
-| 成员 | 类型 | 说明 |
-|--------|------|-------------|
-| `name` | `const char*` | 方法名称 |
-| `return_type_id` | `TypeId` | 返回类型的哈希值 |
-| `params` | `URefl::vector<ParamInfo>` | 参数列表（ABI 稳定、不可变容器） |
-| `invoker` | `MethodInvoker` | `void(*)(void* obj, void** args, void* result)` |
-| `visibility` | `Visibility` | 访问级别 |
-| `is_const` | `bool` | 方法是否为 `const` 限定 |
-| `is_static` | `bool` | 方法是否为 `static` |
+| 成员             | 类型                       | 说明                                            |
+| ---------------- | -------------------------- | ----------------------------------------------- |
+| `name`           | `const char*`              | 方法名称                                        |
+| `return_type_id` | `TypeId`                   | 返回类型的哈希值                                |
+| `params`         | `URefl::vector<ParamInfo>` | 参数列表（ABI 稳定、不可变容器）                |
+| `invoker`        | `MethodInvoker`            | `void(*)(void* obj, void** args, void* result)` |
+| `visibility`     | `Visibility`               | 访问级别                                        |
+| `is_const`       | `bool`                     | 方法是否为 `const` 限定                         |
+| `is_static`      | `bool`                     | 方法是否为 `static`                             |
 
 ### `MethodInvoker`
 
@@ -156,6 +162,7 @@ using MethodInvoker = void (*)(void *obj, void **args, void *result);
 - `result`：`void*` 指向调用者分配的返回值存储空间
 
 **使用示例：**
+
 ```cpp
 auto *method = type_info->find_method("getMarried");
 if (method && method->invoker) {
@@ -168,34 +175,36 @@ if (method && method->invoker) {
 
 ---
 
-## 4. `enum_info.h` — 枚举描述符
+## 4. `EnumInfo.h` — 枚举描述符
 
 **命名空间：** `skl::mics::rt` / `DRefl`
 
 ### `EnumEntry`
 
-| 成员 | 类型 | 说明 |
-|--------|------|-------------|
-| `name` | `URefl::string_view` | 枚举值名称 |
-| `value` | `int64_t` | 枚举值（有符号 64 位整数） |
+| 成员    | 类型                 | 说明                       |
+| ------- | -------------------- | -------------------------- |
+| `name`  | `URefl::string_view` | 枚举值名称                 |
+| `value` | `int64_t`            | 枚举值（有符号 64 位整数） |
 
 ### `EnumInfo`
 
-| 成员 | 类型 | 说明 |
-|--------|------|-------------|
-| `name` | `const char*` | 枚举类型名称 |
-| `type_id` | `TypeId` | 枚举类型的哈希值 |
-| `underlying_type_id` | `TypeId` | 底层整数类型的哈希值 |
-| `entries` | `URefl::vector<EnumEntry>` | 所有枚举值条目（ABI 稳定、不可变容器） |
-| `is_scoped` | `bool` | 是否为 `enum class`（有作用域） |
+| 成员                 | 类型                       | 说明                                   |
+| -------------------- | -------------------------- | -------------------------------------- |
+| `name`               | `const char*`              | 枚举类型名称                           |
+| `type_id`            | `TypeId`                   | 枚举类型的哈希值                       |
+| `underlying_type_id` | `TypeId`                   | 底层整数类型的哈希值                   |
+| `entries`            | `URefl::vector<EnumEntry>` | 所有枚举值条目（ABI 稳定、不可变容器） |
+| `is_scoped`          | `bool`                     | 是否为 `enum class`（有作用域）        |
 
 **方法：**
-| 方法 | 返回值 | 说明 |
-|--------|---------|-------------|
-| `find_name(value)` | `const char*` | 按值查找名称，未找到返回 `nullptr` |
-| `find_value(name, out)` | `bool` | 按名称查找值，设置 `out` 并返回 `true`（若找到） |
+
+| 方法                    | 返回值        | 说明                                             |
+| ----------------------- | ------------- | ------------------------------------------------ |
+| `find_name(value)`      | `const char*` | 按值查找名称，未找到返回 `nullptr`               |
+| `find_value(name, out)` | `bool`        | 按名称查找值，设置 `out` 并返回 `true`（若找到） |
 
 **使用示例：**
+
 ```cpp
 auto *ei = type_info->enum_info;
 if (ei) {
@@ -209,39 +218,41 @@ if (ei) {
 
 ---
 
-## 5. `type_info.h` — 类型描述符
+## 5. `TypeInfo.h` — 类型描述符
 
 **命名空间：** `skl::mics::rt` / `DRefl`
 
 ### `BaseInfo`
 
-| 成员 | 类型 | 说明 |
-|--------|------|-------------|
-| `type_id` | `TypeId` | 基类类型的哈希值 |
-| `name` | `const char*` | 基类名称 |
-| `offset` | `int32_t` | 基类子对象在派生类中的字节偏移量（0 = 首个基类） |
+| 成员      | 类型          | 说明                                             |
+| --------- | ------------- | ------------------------------------------------ |
+| `type_id` | `TypeId`      | 基类类型的哈希值                                 |
+| `name`    | `const char*` | 基类名称                                         |
+| `offset`  | `int32_t`     | 基类子对象在派生类中的字节偏移量（0 = 首个基类） |
 
 ### `TypeInfo`
 
-| 成员 | 类型 | 说明 |
-|--------|------|-------------|
-| `name` | `const char*` | 类型名称 |
-| `type_id` | `TypeId` | 唯一哈希标识符 |
-| `kind` | `Kind` | Class / Struct / Enum / Primitive / Pointer / Reference |
-| `size` | `size_t` | `sizeof(T)` |
-| `bases` | `URefl::vector<BaseInfo>` | 直接基类（ABI 稳定、不可变容器） |
-| `fields` | `URefl::vector<FieldAccessor>` | 已注册的字段（ABI 稳定、不可变容器） |
-| `methods` | `URefl::vector<FnInfo>` | 已注册的方法（ABI 稳定、不可变容器） |
-| `enum_info` | `const EnumInfo*` | 指向枚举信息的指针（仅当 `kind == Enum` 时非空） |
+| 成员        | 类型                           | 说明                                                    |
+| ----------- | ------------------------------ | ------------------------------------------------------- |
+| `name`      | `const char*`                  | 类型名称                                                |
+| `type_id`   | `TypeId`                       | 唯一哈希标识符                                          |
+| `kind`      | `Kind`                         | Class / Struct / Enum / Primitive / Pointer / Reference |
+| `size`      | `size_t`                       | `sizeof(T)`                                             |
+| `bases`     | `URefl::vector<BaseInfo>`      | 直接基类（ABI 稳定、不可变容器）                        |
+| `fields`    | `URefl::vector<FieldAccessor>` | 已注册的字段（ABI 稳定、不可变容器）                    |
+| `methods`   | `URefl::vector<FnInfo>`        | 已注册的方法（ABI 稳定、不可变容器）                    |
+| `enum_info` | `const EnumInfo*`              | 指向枚举信息的指针（仅当 `kind == Enum` 时非空）        |
 
 **方法：**
-| 方法 | 返回值 | 说明 |
-|--------|---------|-------------|
-| `find_field(name)` | `const FieldAccessor*` | 按名称查找字段，未找到返回 `nullptr` |
-| `find_method(name)` | `const FnInfo*` | 按名称查找方法，未找到返回 `nullptr` |
-| `has_base(type_id)` | `bool` | 检查 `type_id` 是否为直接基类 |
+
+| 方法                | 返回值                 | 说明                                 |
+| ------------------- | ---------------------- | ------------------------------------ |
+| `find_field(name)`  | `const FieldAccessor*` | 按名称查找字段，未找到返回 `nullptr` |
+| `find_method(name)` | `const FnInfo*`        | 按名称查找方法，未找到返回 `nullptr` |
+| `has_base(type_id)` | `bool`                 | 检查 `type_id` 是否为直接基类        |
 
 **使用示例：**
+
 ```cpp
 auto *ti = Registry::instance().find_by_name("Person");
 if (ti) {
@@ -256,7 +267,7 @@ if (ti) {
 
 ---
 
-## 6. `any.h` — 类型擦除值容器
+## 6. `Any.h` — 类型擦除值容器
 
 **命名空间：** `skl::mics::rt` / `DRefl`
 
@@ -270,22 +281,23 @@ if (ti) {
 
 ### API
 
-| 方法 | 返回值 | 说明 |
-|--------|---------|-------------|
-| `Any()` | — | 默认构造函数，空值 |
-| `Any(T&& value)` | — | 从任意可移动值构造 |
-| `Any(const Any&)` | — | 拷贝构造函数（通过 clone handler 深拷贝） |
-| `Any(Any&&)` | — | 移动构造函数（窃取缓冲区） |
-| `operator=(Any)` | `Any&` | 拷贝并交换赋值 |
-| `swap(Any&)` | `void` | 交换内容 |
-| `type_id()` | `TypeId` | 所包含值的类型哈希 |
-| `has_value()` | `bool` | 是否包含值 |
-| `operator bool()` | `bool` | 等同于 `has_value()` |
-| `raw_ptr()` | `void*` | 指向所包含值的原始指针（SBO 或堆） |
-| `try_cast<T>()` | `T*` | 若类型匹配则转换为 `T*`，否则返回 `nullptr` |
-| `try_cast<T>() const` | `const T*` | const 版本 |
+| 方法                  | 返回值     | 说明                                        |
+| --------------------- | ---------- | ------------------------------------------- |
+| `Any()`               | —          | 默认构造函数，空值                          |
+| `Any(T&& value)`      | —          | 从任意可移动值构造                          |
+| `Any(const Any&)`     | —          | 拷贝构造函数（通过 clone handler 深拷贝）   |
+| `Any(Any&&)`          | —          | 移动构造函数（窃取缓冲区）                  |
+| `operator=(Any)`      | `Any&`     | 拷贝并交换赋值                              |
+| `swap(Any&)`          | `void`     | 交换内容                                    |
+| `type_id()`           | `TypeId`   | 所包含值的类型哈希                          |
+| `has_value()`         | `bool`     | 是否包含值                                  |
+| `operator bool()`     | `bool`     | 等同于 `has_value()`                        |
+| `raw_ptr()`           | `void*`    | 指向所包含值的原始指针（SBO 或堆）          |
+| `try_cast<T>()`       | `T*`       | 若类型匹配则转换为 `T*`，否则返回 `nullptr` |
+| `try_cast<T>() const` | `const T*` | const 版本                                  |
 
 **使用示例：**
+
 ```cpp
 Any a = 42;                         // int，SBO 内联
 Any b = std::string("hello");       // string，堆分配
@@ -298,7 +310,7 @@ auto tid = a.type_id();             // type_hash<int>()
 
 ---
 
-## 7. `registry.h` — 全局类型注册表
+## 7. `Registry.h` — 全局类型注册表
 
 **命名空间：** `skl::mics::rt` / `DRefl`
 
@@ -306,20 +318,21 @@ auto tid = a.type_id();             // type_hash<int>()
 
 ### API
 
-| 方法 | 返回值 | 说明 |
-|--------|---------|-------------|
-| `instance()` | `Registry&` | 获取单例实例 |
-| `register_type(info)` | `void` | 注册一个 `TypeInfo*`（若 `type_id` 重复则无操作） |
-| `register_callback(cb)` | `void` | 注册外部回调，立即调用以注入反射数据 |
-| `invoke_callbacks()` | `void` | 触发所有已注册的回调（用于延迟注册场景） |
-| `find_by_id(id)` | `const TypeInfo*` | 按 `TypeId` 哈希查找 |
-| `find_by_name(name)` | `const TypeInfo*` | 按类型名称字符串查找 |
-| `type_count()` | `size_t` | 已注册类型数量 |
-| `type_at(index)` | `const TypeInfo*` | 按索引获取类型，越界返回 `nullptr` |
-| `for_each(fn)` | `void` | 使用回调 `fn(const TypeInfo*)` 遍历所有已注册类型 |
-| `clear()` | `void` | 移除所有已注册类型 |
+| 方法                    | 返回值            | 说明                                              |
+| ----------------------- | ----------------- | ------------------------------------------------- |
+| `instance()`            | `Registry&`       | 获取单例实例                                      |
+| `register_type(info)`   | `void`            | 注册一个 `TypeInfo*`（若 `type_id` 重复则无操作） |
+| `register_callback(cb)` | `void`            | 注册外部回调，立即调用以注入反射数据              |
+| `invoke_callbacks()`    | `void`            | 触发所有已注册的回调（用于延迟注册场景）          |
+| `find_by_id(id)`        | `const TypeInfo*` | 按 `TypeId` 哈希查找                              |
+| `find_by_name(name)`    | `const TypeInfo*` | 按类型名称字符串查找                              |
+| `type_count()`          | `size_t`          | 已注册类型数量                                    |
+| `type_at(index)`        | `const TypeInfo*` | 按索引获取类型，越界返回 `nullptr`                |
+| `for_each(fn)`          | `void`            | 使用回调 `fn(const TypeInfo*)` 遍历所有已注册类型 |
+| `clear()`               | `void`            | 移除所有已注册类型                                |
 
 **使用示例：**
+
 ```cpp
 auto &reg = Registry::instance();
 
@@ -336,7 +349,7 @@ reg.for_each([](const TypeInfo *ti) {
 
 ---
 
-## 8. `reflect.h` — 注册宏与公共 API
+## 8. `Reflect.h` — 注册宏与公共 API
 
 **命名空间：** `skl::mics::rt` / `DRefl`
 
@@ -362,14 +375,14 @@ SKL_RFD_CLASS(ClassName)
 SKL_RFD_CLASS_END()
 ```
 
-| 宏 | 说明 |
-|---|------|
-| `SKL_RFD_CLASS(ClassName)` | 开始类注册，创建 `TypeInfo` |
-| `SKL_RFD_PROPERTY(member)` | 注册非静态成员变量（自动生成 getter/setter） |
+| 宏                                               | 说明                                              |
+| ------------------------------------------------ | ------------------------------------------------- |
+| `SKL_RFD_CLASS(ClassName)`                       | 开始类注册，创建 `TypeInfo`                       |
+| `SKL_RFD_PROPERTY(member)`                       | 注册非静态成员变量（自动生成 getter/setter）      |
 | `SKL_RFD_PROPERTY(member, SKL_REFT_META_STRING)` | 注册并强制保存字符串（覆盖 `SKL_REFT_META_MODE`） |
-| `SKL_RFD_METHOD(method)` | 注册成员函数（记录名称、签名和调用器） |
-| `SKL_RFD_METHOD(method, SKL_REFT_META_STRING)` | 注册并强制保存字符串 |
-| `SKL_RFD_CLASS_END()` | 结束类注册，注册到 `Registry` |
+| `SKL_RFD_METHOD(method)`                         | 注册成员函数（记录名称、签名和调用器）            |
+| `SKL_RFD_METHOD(method, SKL_REFT_META_STRING)`   | 注册并强制保存字符串                              |
+| `SKL_RFD_CLASS_END()`                            | 结束类注册，注册到 `Registry`                     |
 
 #### 旧版宏（向后兼容）
 
@@ -380,11 +393,11 @@ SKL_RFD_REGISTER_BEGIN(ClassName)
 SKL_RFD_CLASS_END()                // 或 SKL_RFD_REGISTER_END()
 ```
 
-| 简化宏 | 旧版等价宏 |
-|--------|-----------|
-| `SKL_RFD_CLASS(T)` | `SKL_RFD_REGISTER_BEGIN(T)` |
-| `SKL_RFD_PROPERTY(m)` | `SKL_RFD_FIELD(m)` |
-| `SKL_RFD_CLASS_END()` | `SKL_RFD_REGISTER_END()` |
+| 简化宏                | 旧版等价宏                  |
+| --------------------- | --------------------------- |
+| `SKL_RFD_CLASS(T)`    | `SKL_RFD_REGISTER_BEGIN(T)` |
+| `SKL_RFD_PROPERTY(m)` | `SKL_RFD_FIELD(m)`          |
+| `SKL_RFD_CLASS_END()` | `SKL_RFD_REGISTER_END()`    |
 
 #### 枚举注册
 
@@ -395,20 +408,20 @@ SKL_RFD_ENUM(EnumName)
 SKL_RFD_ENUM_END()
 ```
 
-| 宏 | 说明 |
-|-------|-------------|
-| `SKL_RFD_ENUM(EnumName)` | 开始枚举注册，创建 `EnumInfo` 和 `TypeInfo` |
-| `SKL_RFD_ENUM_VALUE(value, name)` | 注册一个枚举值条目 |
-| `SKL_RFD_ENUM_END()` | 结束枚举注册，完成注册 |
+| 宏                                | 说明                                        |
+| --------------------------------- | ------------------------------------------- |
+| `SKL_RFD_ENUM(EnumName)`          | 开始枚举注册，创建 `EnumInfo` 和 `TypeInfo` |
+| `SKL_RFD_ENUM_VALUE(value, name)` | 注册一个枚举值条目                          |
+| `SKL_RFD_ENUM_END()`              | 结束枚举注册，完成注册                      |
 
 > **注意：** 所有注册宏内部使用 `URefl::vector_builder` 构建数据，注册完成后数据转为不可变的 `URefl::vector`，确保 ABI 稳定。
 
 ### 内部辅助函数（`detail` 命名空间）
 
-| 函数 | 说明 |
-|----------|-------------|
-| `member_type<T Class::*>` | 从成员指针提取 `type` 和 `class_type` |
-| `make_field_getter<auto mp>()` | 从成员指针（模板参数）创建 `FieldGetter` |
+| 函数                           | 说明                                                                   |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| `member_type<T Class::*>`      | 从成员指针提取 `type` 和 `class_type`                                  |
+| `make_field_getter<auto mp>()` | 从成员指针（模板参数）创建 `FieldGetter`                               |
 | `make_field_setter<auto mp>()` | 从成员指针（模板参数）创建 `FieldSetter`（数组成员通过 `memcpy` 复制） |
 
 ---
@@ -416,7 +429,7 @@ SKL_RFD_ENUM_END()
 ## 9. 完整使用示例
 
 ```cpp
-#include "mics.h"
+#include "SKL/MICS/MICS.h"
 
 // ============================================================
 // 定义一个类

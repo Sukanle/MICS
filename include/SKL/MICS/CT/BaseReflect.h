@@ -16,9 +16,9 @@
 #ifndef SKL_MICS_CT_BASE_REFLECT_H_
 #define SKL_MICS_CT_BASE_REFLECT_H_
 
-#include "ct/enum_traits.h"   // IWYU pragma: keep
-#include "ct/fn_traits.h"     // IWYU pragma: keep
-#include "ct/var_traits.h"    // IWYU pragma: keep
+#include "SKL/MICS/CT/EnumTraits.h"   // IWYU pragma: keep
+#include "SKL/MICS/CT/FnTraits.h"     // IWYU pragma: keep
+#include "SKL/MICS/CT/VarTraits.h"    // IWYU pragma: keep
 
 namespace skl::mics::ct {
 enum class Kind : uint8_t {

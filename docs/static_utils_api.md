@@ -1,16 +1,16 @@
 # Static Reflection & Utils API Reference
 
-This document covers the compile-time static reflection system (`ct/`) and shared utilities (`utils/`).
+This document covers the compile-time static reflection system (`CT/`) and shared utility (`Util/`).
 
-> **Namespace mapping:** `Reflect::Static` → `skl::mics::ct` (alias `SRefl`), `Reflect::Utils` → `skl::mics::utils` (alias `URefl`), `Reflect::Static::Fp` → `skl::mics::ct::fp`
+> **Namespace mapping:** `Reflect::Static` → `skl::mics::ct` (alias `SRefl`), `Reflect::Utils` → `skl::mics::util` (alias `URefl`), `Reflect::Static::Fp` → `skl::mics::ct::fp`
 
 ---
 
-## 1. utils (`utils/`)
+## 1. Util (`Util/`)
 
-### 1.1 `hash.h` — FNV-1a Hash Functions
+### 1.1 `Hash.h` — FNV-1a Hash Functions
 
-**Namespace:** `skl::mics::utils` / `URefl`
+**Namespace:** `skl::mics::util` / `URefl`
 
 | Symbol        | Type                 | Description                                         |
 | ------------- | -------------------- | --------------------------------------------------- |
@@ -25,7 +25,7 @@ This document covers the compile-time static reflection system (`ct/`) and share
 **Calling Convention Tags:**
 
 ```cpp
-namespace skl::mics::utils::cc {
+namespace skl::mics::util::cc {
     enum class tag : uint8_t {
         Cdecl      = 0,
         Stdcall    = 1,
@@ -44,9 +44,9 @@ constexpr auto combined = URefl::mix(h, URefl::cstr64("::field")); // combine
 
 ---
 
-### 1.2 `type_hash.h` — Compile-time Type → Hash
+### 1.2 `TypeHash.h` — Compile-time Type → Hash
 
-**Namespace:** `skl::mics::utils`
+**Namespace:** `skl::mics::util`
 
 | Symbol                    | Type                 | Description                                              |
 | ------------------------- | -------------------- | -------------------------------------------------------- |
@@ -73,9 +73,9 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 ---
 
-### 1.3 `array.h` — Fixed-Size Compile-Time Array
+### 1.3 `Array.h` — Fixed-Size Compile-Time Array
 
-**Namespace:** `skl::mics::utils` / `URefl`
+**Namespace:** `skl::mics::util` / `URefl`
 
 `URefl::array<T, Count>` is a minimal aggregate over a C array. It has no allocator, no bounds checking and no dependency on `std::array`; every operation is `constexpr`, so it can carry inline TypeID lists, method-signature lists and zero-based slot tables.
 
@@ -96,7 +96,7 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 **Basic use:**
 
 ```cpp
-namespace URefl = skl::mics::utils;
+namespace URefl = skl::mics::util;
 
 constexpr URefl::array<int, 3> a{1, 2, 3};
 static_assert(a.size() == 3);
@@ -167,7 +167,7 @@ static_assert(offset.resize == 11);
 
 ### 1.4 `vector.h` — ABI Immutable Container
 
-**Namespace:** `skl::mics::utils`
+**Namespace:** `skl::mics::util`
 
 `URefl::vector<T>` is an ABI-stable container designed specifically as the data carrier for dynamic reflection, with the following mandatory constraints:
 
@@ -239,7 +239,7 @@ sv.push_back(4);  // modification to std::vector does not affect original v
 
 ### 1.5 `fn_hash.h` — Function-Signature Folding Hash
 
-**Namespace:** `skl::mics::utils`
+**Namespace:** `skl::mics::util`
 
 | Symbol                                     | Type                 | Description                                                                                           |
 | ------------------------------------------ | -------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -383,7 +383,7 @@ constexpr auto n = fp::size<Unique>;                      // 2
 | `__base_fn_traits<Signature, Class, Name>` | `name`, `is_member`, `params_count`, `hash`             |
 | `fn_traits<Signature, Class, Name>`        | Full traits with `fn_ptr`/`m_fn_ptr`, `modifie` bitmask |
 
-**`hash` source:** Each `__base_fn_traits` computes its `hash` via `skl::mics::utils::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()`; it never encodes the calling convention.
+**`hash` source:** Each `__base_fn_traits` computes its `hash` via `skl::mics::util::compute_fn_hash<type_hash_v<Ret>, type_hash_v<Args>...>()`; it never encodes the calling convention.
 
 **`fn_qualify` bitmask constants:**
 
@@ -529,7 +529,7 @@ Defined in `mics.h` (root):
 ```cpp
 namespace SRefl = ::skl::mics::ct;     // Compile-time static reflection
 namespace DRefl = ::skl::mics::rt;     // Runtime dynamic reflection
-namespace URefl = ::skl::mics::utils;   // ABI-stable utility container
+namespace URefl = ::skl::mics::util;   // ABI-stable utility container
 ```
 
 These provide convenient shorthand:

@@ -15,11 +15,11 @@ MICS provides **zero-overhead compile-time static reflection** (field/method tra
 
 ### User Aliases
 
-| Alias   | Namespace     | Description                    |
-| ------- | ------------- | ------------------------------ |
-| `SRefl` | `skl::mics::ct`    | Compile-time static reflection |
-| `DRefl` | `skl::mics::rt`    | Runtime dynamic reflection     |
-| `URefl` | `skl::mics::utils` | Fixed-size arrays and ABI-stable utilities |
+| Alias   | Namespace         | Description                                |
+| ------- | ----------------- | ------------------------------------------ |
+| `SRefl` | `skl::mics::ct`   | Compile-time static reflection             |
+| `DRefl` | `skl::mics::rt`   | Runtime dynamic reflection                 |
+| `URefl` | `skl::mics::util` | Fixed-size arrays and ABI-stable utilities |
 
 ## Features
 
@@ -33,7 +33,7 @@ MICS provides **zero-overhead compile-time static reflection** (field/method tra
 ## Quick Start
 
 ```cpp
-#include "mics.h"
+#include "SKL/MICS/MICS.h"
 
 // --- Static Reflection ---
 struct Person {
@@ -159,36 +159,37 @@ constexpr uint32_t id32 = SKL_REFT_HASH32("Player.Health");
 
 ```
 MICS/
-├── mics.h                # Main entry header (includes ct + rt)
-├── metadata.h            # Metadata system (MetaEntry, MetaMode, SKL_REFT_HASH, StringTable)
-├── ct/                   # Compile-time static reflection (skl::mics::ct / SRefl)
-│   ├── reflect.h         # Public API & field_traits, TypeInfo
-│   ├── base_reflect.h    # __base_field_traits (var/fn dispatch)
-│   ├── base_fp.h         # Low-level type list operations
-│   ├── fp.h              # Public type list API (skl::mics::ct::fp)
-│   ├── var_traits.h      # Variable/field traits
-│   ├── fn_traits.h       # Function/method traits (qualifiers, hash)
-│   ├── enum_traits.h     # Enum traits & scoped enum detection
-│   ├── config.h          # type_list, template_depth, is_virtual_base_of
-│   └── template_string.h # Non-type template parameter string support
-├── rt/                   # Runtime dynamic reflection (skl::mics::rt / DRefl)
-│   ├── reflect.h         # Public API, registration macros, type_id_of
-│   ├── config.h          # TypeId, Kind, FieldKind, Visibility enums
-│   ├── type_info.h       # TypeInfo: aggregate descriptor (fields/methods/bases)
-│   ├── field_info.h      # FieldInfo + FieldAccessor (getter/setter)
-│   ├── fn_info.h         # FnInfo + MethodInvoker + ParamInfo
-│   ├── enum_info.h       # EnumInfo + EnumEntry
-│   ├── any.h             # Any: type-erased value container (SBO)
-│   └── registry.h        # Registry: global singleton type registry
-├── utils/                 # Shared utilities (skl::mics::utils / URefl)
-│   ├── hash.h            # FNV-1a hash functions, calling convention tags
-│   ├── type_hash.h       # Compile-time type → hash mapping
-│   ├── array.h           # Fixed-size compile-time array and make_iota slot tables
-│   ├── fn_hash.h         # Function-signature folding hash (compute_fn_hash)
-│   ├── string_view.h     # Lightweight string_view implementation
-│   └── vector.h          # ABI-stable immutable container (dynamic reflection data carrier)
-├── doc/                  # API documentation
-└── HLMD/                 # Macro utility library (internal)
+├── include/SKL/MICS/
+│   ├── MICS.h               # Main entry header (includes ct + rt)
+│   ├── Metadata.h           # Metadata system (MetaEntry, MetaMode, SKL_REFT_HASH, StringTable)
+│   ├── CT/                  # Compile-time static reflection (skl::mics::ct / SRefl)
+│   │   ├── Reflect.h        # Public API & field_traits, TypeInfo
+│   │   ├── BaseReflect.h    # __base_field_traits (var/fn dispatch)
+│   │   ├── BaseFP.h         # Low-level type list operations
+│   │   ├── FP.h             # Public type list API (skl::mics::ct::fp)
+│   │   ├── VarTraits.h      # Variable/field traits
+│   │   ├── FnTraits.h       # Function/method traits (qualifiers, hash)
+│   │   ├── EnumTraits.h     # Enum traits & scoped enum detection
+│   │   ├── Config.h         # type_list, template_depth, is_virtual_base_of
+│   │   └── StringTraits.h   # Non-type template parameter string support
+│   ├── rt/                  # Runtime dynamic reflection (skl::mics::rt / DRefl)
+│   │   ├── Reflect.h        # Public API, registration macros, type_id_of
+│   │   ├── Config.h         # TypeId, Kind, FieldKind, Visibility enums
+│   │   ├── TypeInfo.h       # TypeInfo: aggregate descriptor (fields/methods/bases)
+│   │   ├── FieldInfo.h      # FieldInfo + FieldAccessor (getter/setter)
+│   │   ├── FnInfo.h         # FnInfo + MethodInvoker + ParamInfo
+│   │   ├── EnumInfo.h       # EnumInfo + EnumEntry
+│   │   ├── Any.h            # Any: type-erased value container (SBO)
+│   │   └── Registry.h       # Registry: global singleton type registry
+│   └── util/                # Shared utilities (skl::mics::util / URefl)
+│       ├── Hash.h           # FNV-1a hash functions, calling convention tags
+│       ├── TypeHash.h       # Compile-time type → hash mapping
+│       ├── Array.h          # Fixed-size compile-time array and make_iota slot tables
+│       ├── FnHash.h         # Function-signature folding hash (compute_fn_hash)
+│       ├── StringView.h     # Lightweight string_view implementation
+│       └── Vector.h         # ABI-stable immutable container (dynamic reflection data carrier)
+├── doc/                     # API documentation
+└── HLMD/                    # Macro utility library (internal)
 ```
 
 ## Supported Platforms & Toolchains

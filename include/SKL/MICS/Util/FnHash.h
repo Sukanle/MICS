@@ -16,10 +16,10 @@
 #ifndef SKL_MICS_UITLS_FN_HASH_H
 #define SKL_MICS_UITLS_FN_HASH_H
 
-#include "utils/hash.h"        // IWYU pragma: keep
-#include "utils/type_hash.h"   // IWYU pragma: keep
+#include "SKL/MICS/Util/Hash.h"        // IWYU pragma: keep
+#include "SKL/MICS/Util/TypeHash.h"   // IWYU pragma: keep
 
-namespace skl::mics::utils {
+namespace skl::mics::util {
 
 template<hash64_t RetHash, hash64_t... ArgHashes>
 constexpr hash64_t compute_fn_hash() noexcept {
@@ -33,6 +33,6 @@ constexpr hash64_t compute_fn_hash() noexcept {
     return h;
 }
 
-}   // namespace skl::mics::utils
+}   // namespace skl::mics::util
 
 #endif   // SKL_MICS_UITLS_FN_HASH_H

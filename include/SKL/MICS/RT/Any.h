@@ -21,9 +21,9 @@
 #include <utility>
 #include <type_traits>
 
-#include "utils/type_hash.h"   // IWYU pragma: keep
+#include "SKL/MICS/Util/TypeHash.h"   // IWYU pragma: keep
 
-#include "rt/config.h"   // IWYU pragma: keep
+#include "SKL/MICS/RT/Config.h"   // IWYU pragma: keep
 
 namespace skl::mics::rt {
 
@@ -105,7 +105,7 @@ public:
 
     template<typename T>
     static TypeId type_id_of() noexcept {
-        return skl::mics::utils::type_hash128<T>();
+        return skl::mics::util::type_hash128<T>();
     }
 
 private:

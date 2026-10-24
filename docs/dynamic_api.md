@@ -1,114 +1,120 @@
 # Dynamic Reflection API Reference
 
-This document covers the runtime dynamic reflection system (`rt/`).
+This document covers the runtime dynamic reflection system (`SKL/MICS/RT/`).
 
 ---
 
 ## Architecture Overview
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  reflect.h (entry)                                       │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │ Registration Macros (simplified)                   │  │
-│  │ SKL_RFD_CLASS / SKL_RFD_PROPERTY / SKL_RFD_METHOD / ...       │  │
-│  │ (legacy: SKL_RFD_REGISTER_BEGIN / SKL_RFD_FIELD / ...)    │  │
-│  └──────────────┬────────────────────────────────────┘  │
-│                 │ populates                              │
-│  ┌──────────────▼────────────────────────────────────┐  │
-│  │ TypeInfo (descriptor)                              │  │
-│  │  ├─ FieldAccessor[]  (FieldInfo + getter/setter)   │  │
-│  │  ├─ FnInfo[]         (method metadata + invoker)   │  │
-│  │  ├─ BaseInfo[]       (base class info)             │  │
-│  │  └─ EnumInfo*        (enum values, if applicable)  │  │
-│  └──────────────┬────────────────────────────────────┘  │
-│                 │ registered to                          │
-│  ┌──────────────▼────────────────────────────────────┐  │
-│  │ Registry (singleton)                               │  │
-│  │  find_by_id() / find_by_name() / for_each()        │  │
-│  └────────────────────────────────────────────────────┘  │
-│                                                          │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │ Any (type-erased value container)                  │  │
-│  │  SBO ≤ 16 bytes, try_cast<T>()                     │  │
-│  └───────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph RH["Reflect.h (entry)"]
+        direction TB
+
+        subgraph RM["Registration Macros (simplified)"]
+            M1["SKL_RFD_CLASS / SKL_RFD_PROPERTY / SKL_RFD_METHOD / ..."]
+            M2["(legacy: SKL_RFD_REGISTER_BEGIN / SKL_RFD_FIELD / ...)"]
+        end
+
+        subgraph TI["TypeInfo (descriptor)"]
+            T1["FieldAccessor[]  (FieldInfo + getter/setter)"]
+            T2["FnInfo[]  (method metadata + invoker)"]
+            T3["BaseInfo[]  (base class info)"]
+            T4["EnumInfo*  (enum values, if applicable)"]
+        end
+
+        subgraph RG["Registry (singleton)"]
+            R1["find_by_id() / find_by_name() / for_each()"]
+        end
+
+        subgraph AN["Any (type-erased value container)"]
+            A1["SBO ≤ 16 bytes, try_cast&lt;T&gt;()"]
+        end
+
+        M1 -->|populates| TI
+        TI -->|registered to| RG
+    end
 ```
 
 ---
 
-## 1. `config.h` — Core Type Definitions
+## 1. `Config.h` — Core Type Definitions
 
 **Namespace:** `skl::mics::rt` / `DRefl`
 
 ### Type Aliases
 
-| Symbol | Type | Description |
-|--------|------|-------------|
-| `TypeId` | `uint64_t` | Unique type identifier (hash-based) |
-| `FieldId` | `uint32_t` | Field identifier |
-| `MethodId` | `uint32_t` | Method identifier |
-| `INVALID_TYPE_ID` | `constexpr TypeId` | Sentinel value `0` |
+| Symbol            | Type               | Description                         |
+| ----------------- | ------------------ | ----------------------------------- |
+| `TypeId`          | `uint64_t`         | Unique type identifier (hash-based) |
+| `FieldId`         | `uint32_t`         | Field identifier                    |
+| `MethodId`        | `uint32_t`         | Method identifier                   |
+| `INVALID_TYPE_ID` | `constexpr TypeId` | Sentinel value `0`                  |
 
 ### Enumerations
 
 **`Kind`** — Type classification:
-| Value | Description |
-|-------|-------------|
-| `Class` | `class` type |
-| `Struct` | `struct` type |
-| `Enum` | Enumeration type |
+
+| Value       | Description        |
+| ----------- | ------------------ |
+| `Class`     | `class` type       |
+| `Struct`    | `struct` type      |
+| `Enum`      | Enumeration type   |
 | `Primitive` | Built-in primitive |
-| `Pointer` | Pointer type |
-| `Reference` | Reference type |
+| `Pointer`   | Pointer type       |
+| `Reference` | Reference type     |
 
 **`FieldKind`** — Field/method classification:
-| Value | Description |
-|-------|-------------|
+
+| Value       | Description                |
+| ----------- | -------------------------- |
 | `MemberVar` | Non-static member variable |
-| `StaticVar` | Static member variable |
-| `MemberFn` | Non-static member function |
-| `StaticFn` | Static member function |
+| `StaticVar` | Static member variable     |
+| `MemberFn`  | Non-static member function |
+| `StaticFn`  | Static member function     |
 
 **`Visibility`** — Access level:
-| Value | Description |
-|-------|-------------|
-| `Public` | Public access |
+
+| Value       | Description      |
+| ----------- | ---------------- |
+| `Public`    | Public access    |
 | `Protected` | Protected access |
-| `Private` | Private access |
+| `Private`   | Private access   |
 
 ---
 
-## 2. `field_info.h` — Field Descriptors & Accessors
+## 2. `FieldInfo.h` — Field Descriptors & Accessors
 
 **Namespace:** `skl::mics::rt` / `DRefl`
 
 ### `FieldInfo`
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `name` | `const char*` | Field name |
-| `type_id` | `TypeId` | Hash of field type |
-| `offset` | `uint32_t` | Byte offset within the class |
-| `kind` | `FieldKind` | MemberVar / StaticVar / MemberFn / StaticFn |
-| `visibility` | `Visibility` | Public / Protected / Private |
+| Member       | Type          | Description                                 |
+| ------------ | ------------- | ------------------------------------------- |
+| `name`       | `const char*` | Field name                                  |
+| `type_id`    | `TypeId`      | Hash of field type                          |
+| `offset`     | `uint32_t`    | Byte offset within the class                |
+| `kind`       | `FieldKind`   | MemberVar / StaticVar / MemberFn / StaticFn |
+| `visibility` | `Visibility`  | Public / Protected / Private                |
 
 **Methods:**
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `is_function()` | `bool` | `kind == MemberFn \|\| kind == StaticFn` |
-| `is_variable()` | `bool` | `kind == MemberVar \|\| kind == StaticVar` |
-| `is_static()` | `bool` | `kind == StaticVar \|\| kind == StaticFn` |
+
+| Method          | Returns | Description                                |
+| --------------- | ------- | ------------------------------------------ |
+| `is_function()` | `bool`  | `kind == MemberFn \|\| kind == StaticFn`   |
+| `is_variable()` | `bool`  | `kind == MemberVar \|\| kind == StaticVar` |
+| `is_static()`   | `bool`  | `kind == StaticVar \|\| kind == StaticFn`  |
 
 ### `FieldAccessor`
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `info` | `FieldInfo` | Field metadata |
-| `getter` | `FieldGetter` | `void*(*)(void* obj)` — type-erased getter |
+| Member   | Type          | Description                                            |
+| -------- | ------------- | ------------------------------------------------------ |
+| `info`   | `FieldInfo`   | Field metadata                                         |
+| `getter` | `FieldGetter` | `void*(*)(void* obj)` — type-erased getter             |
 | `setter` | `FieldSetter` | `void(*)(void* obj, void* value)` — type-erased setter |
 
 **Usage Example:**
+
 ```cpp
 auto *field = type_info->find_field("age");
 if (field && field->getter) {
@@ -122,28 +128,28 @@ if (field && field->getter) {
 
 ---
 
-## 3. `fn_info.h` — Method Descriptors & Invokers
+## 3. `FnInfo.h` — Method Descriptors & Invokers
 
 **Namespace:** `skl::mics::rt` / `DRefl`
 
 ### `ParamInfo`
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `name` | `const char*` | Parameter name |
-| `type_id` | `TypeId` | Hash of parameter type |
+| Member    | Type          | Description            |
+| --------- | ------------- | ---------------------- |
+| `name`    | `const char*` | Parameter name         |
+| `type_id` | `TypeId`      | Hash of parameter type |
 
 ### `FnInfo`
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `name` | `const char*` | Method name |
-| `return_type_id` | `TypeId` | Hash of return type |
-| `params` | `URefl::vector<ParamInfo>` | Parameter list (ABI-stable, immutable container) |
-| `invoker` | `MethodInvoker` | `void(*)(void* obj, void** args, void* result)` |
-| `visibility` | `Visibility` | Access level |
-| `is_const` | `bool` | Whether the method is `const`-qualified |
-| `is_static` | `bool` | Whether the method is `static` |
+| Member           | Type                       | Description                                      |
+| ---------------- | -------------------------- | ------------------------------------------------ |
+| `name`           | `const char*`              | Method name                                      |
+| `return_type_id` | `TypeId`                   | Hash of return type                              |
+| `params`         | `URefl::vector<ParamInfo>` | Parameter list (ABI-stable, immutable container) |
+| `invoker`        | `MethodInvoker`            | `void(*)(void* obj, void** args, void* result)`  |
+| `visibility`     | `Visibility`               | Access level                                     |
+| `is_const`       | `bool`                     | Whether the method is `const`-qualified          |
+| `is_static`      | `bool`                     | Whether the method is `static`                   |
 
 ### `MethodInvoker`
 
@@ -156,6 +162,7 @@ using MethodInvoker = void (*)(void *obj, void **args, void *result);
 - `result`: `void*` pointing to caller-allocated result storage
 
 **Usage Example:**
+
 ```cpp
 auto *method = type_info->find_method("getMarried");
 if (method && method->invoker) {
@@ -168,34 +175,36 @@ if (method && method->invoker) {
 
 ---
 
-## 4. `enum_info.h` — Enum Descriptors
+## 4. `EnumInfo.h` — Enum Descriptors
 
 **Namespace:** `skl::mics::rt` / `DRefl`
 
 ### `EnumEntry`
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `name` | `URefl::string_view` | Enum value name |
-| `value` | `int64_t` | Enum value (as signed 64-bit integer) |
+| Member  | Type                 | Description                           |
+| ------- | -------------------- | ------------------------------------- |
+| `name`  | `URefl::string_view` | Enum value name                       |
+| `value` | `int64_t`            | Enum value (as signed 64-bit integer) |
 
 ### `EnumInfo`
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `name` | `const char*` | Enum type name |
-| `type_id` | `TypeId` | Hash of the enum type |
-| `underlying_type_id` | `TypeId` | Hash of the underlying integer type |
-| `entries` | `URefl::vector<EnumEntry>` | All enum value entries (ABI-stable, immutable container) |
-| `is_scoped` | `bool` | Whether it's `enum class` (scoped) |
+| Member               | Type                       | Description                                              |
+| -------------------- | -------------------------- | -------------------------------------------------------- |
+| `name`               | `const char*`              | Enum type name                                           |
+| `type_id`            | `TypeId`                   | Hash of the enum type                                    |
+| `underlying_type_id` | `TypeId`                   | Hash of the underlying integer type                      |
+| `entries`            | `URefl::vector<EnumEntry>` | All enum value entries (ABI-stable, immutable container) |
+| `is_scoped`          | `bool`                     | Whether it's `enum class` (scoped)                       |
 
 **Methods:**
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `find_name(value)` | `const char*` | Lookup name by value, `nullptr` if not found |
-| `find_value(name, out)` | `bool` | Lookup value by name, sets `out` and returns `true` if found |
+
+| Method                  | Returns       | Description                                                  |
+| ----------------------- | ------------- | ------------------------------------------------------------ |
+| `find_name(value)`      | `const char*` | Lookup name by value, `nullptr` if not found                 |
+| `find_value(name, out)` | `bool`        | Lookup value by name, sets `out` and returns `true` if found |
 
 **Usage Example:**
+
 ```cpp
 auto *ei = type_info->enum_info;
 if (ei) {
@@ -209,39 +218,41 @@ if (ei) {
 
 ---
 
-## 5. `type_info.h` — Type Descriptor
+## 5. `TypeInfo.h` — Type Descriptor
 
 **Namespace:** `skl::mics::rt` / `DRefl`
 
 ### `BaseInfo`
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `type_id` | `TypeId` | Hash of base class type |
-| `name` | `const char*` | Base class name |
-| `offset` | `int32_t` | Byte offset of base subobject in derived class (0 = first base) |
+| Member    | Type          | Description                                                     |
+| --------- | ------------- | --------------------------------------------------------------- |
+| `type_id` | `TypeId`      | Hash of base class type                                         |
+| `name`    | `const char*` | Base class name                                                 |
+| `offset`  | `int32_t`     | Byte offset of base subobject in derived class (0 = first base) |
 
 ### `TypeInfo`
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `name` | `const char*` | Type name |
-| `type_id` | `TypeId` | Unique hash identifier |
-| `kind` | `Kind` | Class / Struct / Enum / Primitive / Pointer / Reference |
-| `size` | `size_t` | `sizeof(T)` |
-| `bases` | `URefl::vector<BaseInfo>` | Direct base classes (ABI-stable, immutable container) |
-| `fields` | `URefl::vector<FieldAccessor>` | Registered fields (ABI-stable, immutable container) |
-| `methods` | `URefl::vector<FnInfo>` | Registered methods (ABI-stable, immutable container) |
-| `enum_info` | `const EnumInfo*` | Pointer to enum info (non-null only when `kind == Enum`) |
+| Member      | Type                           | Description                                              |
+| ----------- | ------------------------------ | -------------------------------------------------------- |
+| `name`      | `const char*`                  | Type name                                                |
+| `type_id`   | `TypeId`                       | Unique hash identifier                                   |
+| `kind`      | `Kind`                         | Class / Struct / Enum / Primitive / Pointer / Reference  |
+| `size`      | `size_t`                       | `sizeof(T)`                                              |
+| `bases`     | `URefl::vector<BaseInfo>`      | Direct base classes (ABI-stable, immutable container)    |
+| `fields`    | `URefl::vector<FieldAccessor>` | Registered fields (ABI-stable, immutable container)      |
+| `methods`   | `URefl::vector<FnInfo>`        | Registered methods (ABI-stable, immutable container)     |
+| `enum_info` | `const EnumInfo*`              | Pointer to enum info (non-null only when `kind == Enum`) |
 
 **Methods:**
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `find_field(name)` | `const FieldAccessor*` | Find field by name, `nullptr` if not found |
-| `find_method(name)` | `const FnInfo*` | Find method by name, `nullptr` if not found |
-| `has_base(type_id)` | `bool` | Check if `type_id` is a direct base class |
+
+| Method              | Returns                | Description                                 |
+| ------------------- | ---------------------- | ------------------------------------------- |
+| `find_field(name)`  | `const FieldAccessor*` | Find field by name, `nullptr` if not found  |
+| `find_method(name)` | `const FnInfo*`        | Find method by name, `nullptr` if not found |
+| `has_base(type_id)` | `bool`                 | Check if `type_id` is a direct base class   |
 
 **Usage Example:**
+
 ```cpp
 auto *ti = Registry::instance().find_by_name("Person");
 if (ti) {
@@ -256,7 +267,7 @@ if (ti) {
 
 ---
 
-## 6. `any.h` — Type-Erased Value Container
+## 6. `Any.h` — Type-Erased Value Container
 
 **Namespace:** `skl::mics::rt` / `DRefl`
 
@@ -270,22 +281,23 @@ if (ti) {
 
 ### API
 
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `Any()` | — | Default constructor, empty |
-| `Any(T&& value)` | — | Construct from any movable value |
-| `Any(const Any&)` | — | Copy constructor (deep copy via clone handler) |
-| `Any(Any&&)` | — | Move constructor (steals buffer) |
-| `operator=(Any)` | `Any&` | Copy-and-swap assignment |
-| `swap(Any&)` | `void` | Swap contents |
-| `type_id()` | `TypeId` | Type hash of contained value |
-| `has_value()` | `bool` | Whether the Any contains a value |
-| `operator bool()` | `bool` | Same as `has_value()` |
-| `raw_ptr()` | `void*` | Raw pointer to contained value (SBO or heap) |
-| `try_cast<T>()` | `T*` | Cast to `T*` if type matches, `nullptr` otherwise |
-| `try_cast<T>() const` | `const T*` | Const version |
+| Method                | Returns    | Description                                       |
+| --------------------- | ---------- | ------------------------------------------------- |
+| `Any()`               | —          | Default constructor, empty                        |
+| `Any(T&& value)`      | —          | Construct from any movable value                  |
+| `Any(const Any&)`     | —          | Copy constructor (deep copy via clone handler)    |
+| `Any(Any&&)`          | —          | Move constructor (steals buffer)                  |
+| `operator=(Any)`      | `Any&`     | Copy-and-swap assignment                          |
+| `swap(Any&)`          | `void`     | Swap contents                                     |
+| `type_id()`           | `TypeId`   | Type hash of contained value                      |
+| `has_value()`         | `bool`     | Whether the Any contains a value                  |
+| `operator bool()`     | `bool`     | Same as `has_value()`                             |
+| `raw_ptr()`           | `void*`    | Raw pointer to contained value (SBO or heap)      |
+| `try_cast<T>()`       | `T*`       | Cast to `T*` if type matches, `nullptr` otherwise |
+| `try_cast<T>() const` | `const T*` | Const version                                     |
 
 **Usage Example:**
+
 ```cpp
 Any a = 42;                         // int, SBO inline
 Any b = std::string("hello");       // string, heap allocated
@@ -298,7 +310,7 @@ auto tid = a.type_id();             // type_hash<int>()
 
 ---
 
-## 7. `registry.h` — Global Type Registry
+## 7. `Registry.h` — Global Type Registry
 
 **Namespace:** `skl::mics::rt` / `DRefl`
 
@@ -306,20 +318,21 @@ auto tid = a.type_id();             // type_hash<int>()
 
 ### API
 
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `instance()` | `Registry&` | Get the singleton instance |
-| `register_type(info)` | `void` | Register a `TypeInfo*` (no-op if duplicate `type_id`) |
-| `register_callback(cb)` | `void` | Register an external callback, invoked immediately to inject reflection data |
-| `invoke_callbacks()` | `void` | Trigger all registered callbacks (for deferred registration) |
-| `find_by_id(id)` | `const TypeInfo*` | Lookup by `TypeId` hash |
-| `find_by_name(name)` | `const TypeInfo*` | Lookup by type name string |
-| `type_count()` | `size_t` | Number of registered types |
-| `type_at(index)` | `const TypeInfo*` | Get type by index, `nullptr` if out of bounds |
-| `for_each(fn)` | `void` | Iterate all registered types with callback `fn(const TypeInfo*)` |
-| `clear()` | `void` | Remove all registered types |
+| Method                  | Returns           | Description                                                                  |
+| ----------------------- | ----------------- | ---------------------------------------------------------------------------- |
+| `instance()`            | `Registry&`       | Get the singleton instance                                                   |
+| `register_type(info)`   | `void`            | Register a `TypeInfo*` (no-op if duplicate `type_id`)                        |
+| `register_callback(cb)` | `void`            | Register an external callback, invoked immediately to inject reflection data |
+| `invoke_callbacks()`    | `void`            | Trigger all registered callbacks (for deferred registration)                 |
+| `find_by_id(id)`        | `const TypeInfo*` | Lookup by `TypeId` hash                                                      |
+| `find_by_name(name)`    | `const TypeInfo*` | Lookup by type name string                                                   |
+| `type_count()`          | `size_t`          | Number of registered types                                                   |
+| `type_at(index)`        | `const TypeInfo*` | Get type by index, `nullptr` if out of bounds                                |
+| `for_each(fn)`          | `void`            | Iterate all registered types with callback `fn(const TypeInfo*)`             |
+| `clear()`               | `void`            | Remove all registered types                                                  |
 
 **Usage Example:**
+
 ```cpp
 auto &reg = Registry::instance();
 
@@ -336,7 +349,7 @@ reg.for_each([](const TypeInfo *ti) {
 
 ---
 
-## 8. `reflect.h` — Registration Macros & Public API
+## 8. `Reflect.h` — Registration Macros & Public API
 
 **Namespace:** `skl::mics::rt` / `DRefl`
 
@@ -362,14 +375,14 @@ SKL_RFD_CLASS(ClassName)
 SKL_RFD_CLASS_END()
 ```
 
-| Macro | Description |
-|-------|-------------|
-| `SKL_RFD_CLASS(ClassName)` | Begin class registration, creates `TypeInfo` |
-| `SKL_RFD_PROPERTY(member)` | Register a non-static member variable (auto-generates getter/setter) |
-| `SKL_RFD_PROPERTY(member, SKL_REFT_META_STRING)` | Register with forced string storage (override `SKL_REFT_META_MODE`) |
-| `SKL_RFD_METHOD(method)` | Register a member function (records name, signature, and invoker) |
-| `SKL_RFD_METHOD(method, SKL_REFT_META_STRING)` | Register with forced string storage |
-| `SKL_RFD_CLASS_END()` | End class registration, registers with `Registry` |
+| Macro                                            | Description                                                          |
+| ------------------------------------------------ | -------------------------------------------------------------------- |
+| `SKL_RFD_CLASS(ClassName)`                       | Begin class registration, creates `TypeInfo`                         |
+| `SKL_RFD_PROPERTY(member)`                       | Register a non-static member variable (auto-generates getter/setter) |
+| `SKL_RFD_PROPERTY(member, SKL_REFT_META_STRING)` | Register with forced string storage (override `SKL_REFT_META_MODE`)  |
+| `SKL_RFD_METHOD(method)`                         | Register a member function (records name, signature, and invoker)    |
+| `SKL_RFD_METHOD(method, SKL_REFT_META_STRING)`   | Register with forced string storage                                  |
+| `SKL_RFD_CLASS_END()`                            | End class registration, registers with `Registry`                    |
 
 #### Legacy Macros (Backward Compatible)
 
@@ -380,11 +393,11 @@ SKL_RFD_REGISTER_BEGIN(ClassName)
 SKL_RFD_CLASS_END()                // or SKL_RFD_REGISTER_END()
 ```
 
-| Simplified | Legacy Equivalent |
-|------------|-------------------|
-| `SKL_RFD_CLASS(T)` | `SKL_RFD_REGISTER_BEGIN(T)` |
-| `SKL_RFD_PROPERTY(m)` | `SKL_RFD_FIELD(m)` |
-| `SKL_RFD_CLASS_END()` | `SKL_RFD_REGISTER_END()` |
+| Simplified            | Legacy Equivalent           |
+| --------------------- | --------------------------- |
+| `SKL_RFD_CLASS(T)`    | `SKL_RFD_REGISTER_BEGIN(T)` |
+| `SKL_RFD_PROPERTY(m)` | `SKL_RFD_FIELD(m)`          |
+| `SKL_RFD_CLASS_END()` | `SKL_RFD_REGISTER_END()`    |
 
 #### Enum Registration
 
@@ -395,20 +408,20 @@ SKL_RFD_ENUM(EnumName)
 SKL_RFD_ENUM_END()
 ```
 
-| Macro | Description |
-|-------|-------------|
-| `SKL_RFD_ENUM(EnumName)` | Begin enum registration, creates `EnumInfo` and `TypeInfo` |
-| `SKL_RFD_ENUM_VALUE(value, name)` | Register an enum value entry |
-| `SKL_RFD_ENUM_END()` | End enum registration, finalizes registration |
+| Macro                             | Description                                                |
+| --------------------------------- | ---------------------------------------------------------- |
+| `SKL_RFD_ENUM(EnumName)`          | Begin enum registration, creates `EnumInfo` and `TypeInfo` |
+| `SKL_RFD_ENUM_VALUE(value, name)` | Register an enum value entry                               |
+| `SKL_RFD_ENUM_END()`              | End enum registration, finalizes registration              |
 
 > **Note:** All registration macros internally use `URefl::vector_builder` to construct data. After registration completes, data is converted to immutable `URefl::vector`, ensuring ABI stability.
 
 ### Internal Helpers (`detail` namespace)
 
-| Function | Description |
-|----------|-------------|
-| `member_type<T Class::*>` | Extracts `type` and `class_type` from member pointer |
-| `make_field_getter<auto mp>()` | Creates `FieldGetter` from member pointer (template param) |
+| Function                       | Description                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `member_type<T Class::*>`      | Extracts `type` and `class_type` from member pointer                                              |
+| `make_field_getter<auto mp>()` | Creates `FieldGetter` from member pointer (template param)                                        |
 | `make_field_setter<auto mp>()` | Creates `FieldSetter` from member pointer (template param); array members are copied via `memcpy` |
 
 ---
@@ -416,7 +429,7 @@ SKL_RFD_ENUM_END()
 ## 9. Complete Usage Example
 
 ```cpp
-#include "mics.h"
+#include "SKL/MICS/MICS.h"
 
 // ============================================================
 // Define a class

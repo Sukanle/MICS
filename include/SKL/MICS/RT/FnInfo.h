@@ -18,8 +18,8 @@
 
 #include <stdint.h>
 
-#include "utils/vector.h"   // IWYU pragma: keep
-#include "rt/config.h"      // IWYU pragma: keep
+#include "SKL/MICS/Util/Vector.h"   // IWYU pragma: keep
+#include "SKL/MICS/RT/Config.h"      // IWYU pragma: keep
 
 namespace skl::mics::rt {
 
@@ -33,7 +33,7 @@ struct ParamInfo {
 struct FnInfo {
     const char *name;
     TypeId return_type_id;
-    skl::mics::utils::vector<ParamInfo> params;
+    skl::mics::util::vector<ParamInfo> params;
     MethodInvoker invoker;
     Visibility visibility;
     bool is_const;
@@ -42,13 +42,13 @@ struct FnInfo {
     FnInfo() noexcept
         : name(nullptr)
         , return_type_id(INVALID_TYPE_ID)
-        , params(skl::mics::utils::vector_empty)
+        , params(skl::mics::util::vector_empty)
         , invoker(nullptr)
         , visibility(Visibility::Public)
         , is_const(false)
         , is_static(false) {}
 
-    FnInfo(const char *n, TypeId ret_tid, skl::mics::utils::vector<ParamInfo> p, MethodInvoker inv,
+    FnInfo(const char *n, TypeId ret_tid, skl::mics::util::vector<ParamInfo> p, MethodInvoker inv,
         Visibility vis = Visibility::Public, bool cnst = false, bool st = false) noexcept
         : name(n)
         , return_type_id(ret_tid)

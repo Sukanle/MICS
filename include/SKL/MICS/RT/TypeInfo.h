@@ -18,13 +18,13 @@
 
 #include <stdint.h>
 
-#include "utils/string_view.h"   // IWYU pragma: keep
-#include "utils/vector.h"        // IWYU pragma: keep
+#include "SKL/MICS/Util/StringView.h"   // IWYU pragma: keep
+#include "SKL/MICS/Util/Vector.h"       // IWYU pragma: keep
 
-#include "rt/config.h"       // IWYU pragma: keep
-#include "rt/fn_info.h"      // IWYU pragma: keep
-#include "rt/enum_info.h"    // IWYU pragma: keep
-#include "rt/field_info.h"   // IWYU pragma: keep
+#include "SKL/MICS/RT/Config.h"      // IWYU pragma: keep
+#include "SKL/MICS/RT/FnInfo.h"      // IWYU pragma: keep
+#include "SKL/MICS/RT/EnumInfo.h"    // IWYU pragma: keep
+#include "SKL/MICS/RT/FieldInfo.h"   // IWYU pragma: keep
 
 namespace skl::mics::rt {
 
@@ -39,9 +39,9 @@ struct TypeInfo {
     TypeId type_id;
     Kind kind;
     size_t size;
-    skl::mics::utils::vector<BaseInfo> bases;
-    skl::mics::utils::vector<FieldAccessor> fields;
-    skl::mics::utils::vector<FnInfo> methods;
+    skl::mics::util::vector<BaseInfo> bases;
+    skl::mics::util::vector<FieldAccessor> fields;
+    skl::mics::util::vector<FnInfo> methods;
     const EnumInfo *enum_info;
 
     TypeInfo() noexcept
@@ -49,21 +49,21 @@ struct TypeInfo {
         , type_id(INVALID_TYPE_ID)
         , kind(Kind::Struct)
         , size(0)
-        , bases(skl::mics::utils::vector_empty)
-        , fields(skl::mics::utils::vector_empty)
-        , methods(skl::mics::utils::vector_empty)
+        , bases(skl::mics::util::vector_empty)
+        , fields(skl::mics::util::vector_empty)
+        , methods(skl::mics::util::vector_empty)
         , enum_info(nullptr) {}
 
     const FieldAccessor *find_field(const char *field_name) const noexcept {
         for (auto &f : fields) {
-            if (f.info.name && skl::mics::utils::string_view(f.info.name) == field_name) return &f;
+            if (f.info.name && skl::mics::util::string_view(f.info.name) == field_name) return &f;
         }
         return nullptr;
     }
 
     const FnInfo *find_method(const char *method_name) const noexcept {
         for (auto &m : methods) {
-            if (m.name && skl::mics::utils::string_view(m.name) == method_name) return &m;
+            if (m.name && skl::mics::util::string_view(m.name) == method_name) return &m;
         }
         return nullptr;
     }

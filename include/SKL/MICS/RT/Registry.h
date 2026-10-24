@@ -20,8 +20,8 @@
 
 #include <vector>
 
-#include "utils/string_view.h"   // IWYU pragma: keep
-#include "rt/type_info.h"        // IWYU pragma: keep
+#include "SKL/MICS/Util/StringView.h"   // IWYU pragma: keep
+#include "SKL/MICS/RT/TypeInfo.h"        // IWYU pragma: keep
 
 namespace skl::mics::rt {
 
@@ -63,7 +63,7 @@ public:
     const TypeInfo *find_by_name(const char *name) const noexcept {
         if (!name) return nullptr;
         for (auto *t : _types) {
-            if (t->name && skl::mics::utils::string_view(t->name) == name) return t;
+            if (t->name && skl::mics::util::string_view(t->name) == name) return t;
         }
         return nullptr;
     }

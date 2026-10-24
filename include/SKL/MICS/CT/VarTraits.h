@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "ct/template_string.h"   // IWYU pragma: keep
+#include "SKL/MICS/CT/StringTraits.h"   // IWYU pragma: keep
 
 namespace skl::mics::ct {
 

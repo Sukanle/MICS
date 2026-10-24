@@ -51,7 +51,6 @@ enum class MetaMode : uint8_t {
 #  define SKL_REFT_HAS_FULL_META 0
 #endif
 
-// 获取当前编译模式的 MetaMode 常量
 constexpr MetaMode current_meta_mode() noexcept { return static_cast<MetaMode>(SKL_REFT_META_MODE); }
 
 struct MetaEntry {
@@ -115,8 +114,8 @@ inline const char *meta_string_lookup_by_hash(const MetaStringTable *table, uint
     return nullptr;
 }
 
-#define SKL_REFT_HASH(str) ::skl::mics::utils::hash_cstr(str)
-#define SKL_REFT_HASH32(str) ::skl::mics::utils::hash_cstr32(str)
+#define SKL_REFT_HASH(str) ::skl::mics::util::hash_cstr(str)
+#define SKL_REFT_HASH32(str) ::skl::mics::util::hash_cstr32(str)
 
 #define SKL_REFT_META_STRING 1
 

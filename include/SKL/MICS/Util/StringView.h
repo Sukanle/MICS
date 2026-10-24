@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-namespace skl::mics::utils {
+namespace skl::mics::util {
 
 class string_view {
 public:
@@ -58,5 +58,5 @@ private:
         return len;
     }
 };
-}   // namespace skl::mics::utils
+}   // namespace skl::mics::util
 #endif

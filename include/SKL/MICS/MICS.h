@@ -16,21 +16,23 @@
 #ifndef SKL_MICS_H_
 #define SKL_MICS_H_
 
-#include "HLMD/HLMD.h"   // IWYU pragma: keep
+#include <utility>
 
-#include "metadata.h"   // IWYU pragma: keep
+#include "SKL/HLMD/HLMD.h"   // IWYU pragma: keep
 
-#include "utils/hash.h"          // IWYU pragma: keep
-#include "utils/type_hash.h"     // IWYU pragma: keep
-#include "utils/array.h"         // IWYU pragma: keep
-#include "utils/string_view.h"   // IWYU pragma: keep
+#include "SKL/MICS/Metadata.h"   // IWYU pragma: keep
 
-#include "ct/reflect.h"   // IWYU pragma: keep
-#include "rt/reflect.h"   // IWYU pragma: keep
+#include "SKL/MICS/Util/Hash.h"         // IWYU pragma: keep
+#include "SKL/MICS/Util/TypeHash.h"     // IWYU pragma: keep
+#include "SKL/MICS/Util/Array.h"        // IWYU pragma: keep
+#include "SKL/MICS/Util/StringView.h"   // IWYU pragma: keep
+
+#include "SKL/MICS/CT/Reflect.h"   // IWYU pragma: keep
+#include "SKL/MICS/RT/Reflect.h"   // IWYU pragma: keep
 
 namespace SRefl = skl::mics::ct;      // NOLINT
 namespace DRefl = skl::mics::rt;      // NOLINT
-namespace URefl = skl::mics::utils;   // NOLINT
+namespace URefl = skl::mics::util;   // NOLINT
 
 #define SKL_RFS_MAKE_FIELD_TRAITS(type, VAR) SKL_RFS_MAKE_##type##_FIELD_TRAITS(VAR)
 #define SKL_RFS_REGISTER_BEGIN(TYPE, ...)                             \
@@ -112,7 +114,7 @@ namespace URefl = skl::mics::utils;   // NOLINT
         _fn.is_static = false;                                               \
         _fn.visibility = DRefl::Visibility::Public;                          \
         _fn.invoker = [](void *obj, void ** /*args*/, void * /*result*/) {}; \
-        _dyn_refl_builder_methods.push_back(_fn);                            \
+        _dyn_refl_builder_methods.push_back(std::move(_fn));                 \
     }
 
 #define SKL_RFD_REGISTER_END()                                  \
@@ -180,7 +182,7 @@ namespace URefl = skl::mics::utils;   // NOLINT
         _fn.is_static = false;                                                    \
         _fn.visibility = DRefl::Visibility::Public;                               \
         _fn.invoker = [](void * /*obj*/, void ** /*args*/, void * /*result*/) {}; \
-        _dyn_refl_builder_methods.push_back(_fn);                                 \
+        _dyn_refl_builder_methods.push_back(std::move(_fn));                      \
     }                                                                             \
     HLMD_EMPTY_ARG(__VA_ARGS__)
 

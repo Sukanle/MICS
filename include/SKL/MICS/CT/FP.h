@@ -16,7 +16,7 @@
 #ifndef SKL_MICS_CT_FP_H_
 #define SKL_MICS_CT_FP_H_
 
-#include "ct/base_fp.h"   // IWYU pragma: keep
+#include "SKL/MICS/CT/BaseFP.h"   // IWYU pragma: keep
 
 namespace skl::mics::ct::fp {
 

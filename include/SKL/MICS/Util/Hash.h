@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-namespace skl::mics::utils {
+namespace skl::mics::util {
 
 using hash64_t = uint64_t;
 using hash32_t = uint32_t;
@@ -62,6 +62,6 @@ enum class tag : uint8_t {
 };
 }   // namespace cc
 
-}   // namespace skl::mics::utils
+}   // namespace skl::mics::util
 
 #endif

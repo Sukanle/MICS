@@ -20,34 +20,34 @@
 
 #include <utility>
 
-#include "utils/string_view.h"   // IWYU pragma: keep
-#include "utils/vector.h"        // IWYU pragma: keep
+#include "SKL/MICS/Util/StringView.h"   // IWYU pragma: keep
+#include "SKL/MICS/Util/Vector.h"        // IWYU pragma: keep
 
-#include "rt/config.h"   // IWYU pragma: keep
+#include "SKL/MICS/RT/Config.h"   // IWYU pragma: keep
 
 namespace skl::mics::rt {
 
 struct EnumEntry {
     int64_t value;
-    skl::mics::utils::string_view name;
+    skl::mics::util::string_view name;
 };
 
 struct EnumInfo {
     const char *name;
     TypeId type_id;
     TypeId underlying_type_id;
-    skl::mics::utils::vector<EnumEntry> entries;
+    skl::mics::util::vector<EnumEntry> entries;
     bool is_scoped;
 
     EnumInfo() noexcept
         : name(nullptr)
         , type_id(INVALID_TYPE_ID)
         , underlying_type_id(INVALID_TYPE_ID)
-        , entries(skl::mics::utils::vector_empty)
+        , entries(skl::mics::util::vector_empty)
         , is_scoped(false) {}
 
     EnumInfo(
-        const char *n, TypeId tid, TypeId utid, skl::mics::utils::vector<EnumEntry> e, bool scoped = false) noexcept
+        const char *n, TypeId tid, TypeId utid, skl::mics::util::vector<EnumEntry> e, bool scoped = false) noexcept
         : name(n)
         , type_id(tid)
         , underlying_type_id(utid)
