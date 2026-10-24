@@ -13,9 +13,15 @@ from pathlib import Path
 DEFAULT_COUNTS = [1000, 2000, 4000, 8000, 10000]
 
 
-def run_cmd(cmd: list[str], cwd: Path) -> None:
+def default_generator() -> str:
+    if shutil.which("ninja"):
+        return "Ninja"
+    return "MinGW Makefiles" if os.name == "nt" else "Unix Makefiles"
+
+
+def run_cmd(cmd: list[str], cwd: Path, allow_failure: bool = False) -> None:
     proc = subprocess.run(cmd, cwd=str(cwd), text=True)
-    if proc.returncode != 0:
+    if proc.returncode != 0 and not allow_failure:
         raise RuntimeError(f"Command failed ({proc.returncode}): {' '.join(cmd)}")
 
 
@@ -89,8 +95,20 @@ def main() -> int:
     parser.add_argument("--inheritance-chain", type=int, default=10)
     parser.add_argument("--workspace", default=".")
     parser.add_argument("--output-dir", default="stress_project_test")
-    parser.add_argument("--generator", default="MinGW Makefiles")
-    parser.add_argument("--clean-build", action="store_true", default=True)
+    parser.add_argument(
+        "--generator", default=default_generator(), help="CMake generator"
+    )
+    parser.add_argument("--build-type", default="Release", help="CMake build type")
+    parser.add_argument("--build-dir", default="build", help="Build directory")
+    parser.add_argument(
+        "--binary-name", default="reflect_stress", help="Built binary name"
+    )
+    parser.add_argument(
+        "--clean-build",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Delete the build directory before each count",
+    )
     parser.add_argument("--dump-runtime-metadata", action="store_true")
     parser.add_argument("--print-raw-output", action="store_true")
     parser.add_argument("--ftime-trace", action="store_true")
@@ -123,59 +141,69 @@ def main() -> int:
         ]
         run_cmd(gen_cmd, workspace)
 
-        if args.clean_build:
-            build_dir = output_dir / "build-mingw"
-            if build_dir.exists():
-                shutil.rmtree(build_dir)
+        build_dir = output_dir / args.build_dir
+        if args.clean_build and build_dir.exists():
+            shutil.rmtree(build_dir)
 
         run_cmdline = [
             sys.executable,
             str(runner_script),
             "--generator",
             args.generator,
+            "--build-type",
+            args.build_type,
+            "--build-dir",
+            args.build_dir,
+            "--binary-name",
+            args.binary_name,
             "--print-summary",
         ]
         if args.print_raw_output:
             run_cmdline.append("--print-raw-output")
         if args.dump_runtime_metadata:
             run_cmdline.append("--dump-runtime-metadata")
-
-        cmake_flags: list[str] = []
         if args.ftime_trace:
-            cmake_flags.append("-ftime-trace")
+            run_cmdline.append("--ftime-trace")
         if args.ubsan:
-            cmake_flags.append("-fsanitize=undefined")
+            run_cmdline.extend(
+                [
+                    "--cxx-flags",
+                    "-fsanitize=undefined",
+                    "--linker-flags",
+                    "-fsanitize=undefined",
+                ]
+            )
 
-        if cmake_flags:
-            joined = " ".join(cmake_flags)
-            run_cmdline.extend(["--cmake-extra", f"-DCMAKE_CXX_FLAGS={joined}"])
-
-        run_cmd(run_cmdline, workspace)
+        run_cmd(run_cmdline, workspace, allow_failure=True)
 
         stress_csv = newest_stress_csv(report_dir)
         kv = parse_key_value_csv(stress_csv)
 
         build_ns = int(kv.get("build_ns", "0") or 0)
         build_ms = build_ns / 1_000_000.0
-        binary_name = kv.get("binary_name", "reflect_stress")
-        binary_path = (
-            output_dir
-            / "build-mingw"
-            / (binary_name + (".exe" if os.name == "nt" else ""))
-        )
-        binary_size = binary_path.stat().st_size if binary_path.exists() else -1
+        binary_path = kv.get("binary_path", "NA")
+        binary_size = int(kv.get("binary_size_bytes", "-1") or -1)
+
+        if binary_size < 0 and binary_path != "NA":
+            candidate = Path(binary_path)
+            if candidate.exists():
+                binary_size = candidate.stat().st_size
 
         row = {
             "timestamp": kv.get("timestamp", "NA"),
             "class_count": str(count),
             "fields_per_class": str(args.fields_per_class),
             "inheritance_chain": str(args.inheritance_chain),
+            "build_type": args.build_type,
             "dump_runtime_metadata": "1" if args.dump_runtime_metadata else "0",
             "build_ns": str(build_ns),
             "build_ms": f"{build_ms:.3f}",
             "run_exit": kv.get("run_exit", "NA"),
+            "verification": kv.get("verification", "NA"),
             "metadata_errors": kv.get("metadata_errors", "NA"),
             "runtime_meta_report": kv.get("runtime_meta_report", "NA"),
+            "binary_name": args.binary_name,
+            "binary_path": binary_path,
             "binary_size_bytes": str(binary_size),
             "stress_csv": str(stress_csv),
         }
@@ -198,6 +226,10 @@ def main() -> int:
         fp.write(f"counts={counts}\n")
         fp.write(f"fields_per_class={args.fields_per_class}\n")
         fp.write(f"inheritance_chain={args.inheritance_chain}\n")
+        fp.write(f"generator={args.generator}\n")
+        fp.write(f"build_type={args.build_type}\n")
+        fp.write(f"build_dir={output_dir / args.build_dir}\n")
+        fp.write(f"binary_name={args.binary_name}\n")
         fp.write(f"dump_runtime_metadata={1 if args.dump_runtime_metadata else 0}\n")
         fp.write(f"ftime_trace={1 if args.ftime_trace else 0}\n")
         fp.write(f"ubsan={1 if args.ubsan else 0}\n")

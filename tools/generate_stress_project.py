@@ -30,16 +30,13 @@ def class_base(index: int, inheritance_chain: int) -> str | None:
 def generate_header(count: int, fields_per_class: int, inheritance_chain: int) -> str:
     lines: list[str] = []
     lines.append("#pragma once")
-    lines.append('#include "reflect.hpp"')
+    lines.append('#include "SKL/MICS/MICS.h"')
     lines.append("#include <cstdint>")
-    lines.append("#include <string_view>")
-    lines.append("")
-    lines.append("namespace SRefl = reflect::Static;")
     lines.append("")
     lines.append("#define REFLECT_CLASS(TYPE, BODY) \\")
-    lines.append("    SKL_RFS_OBJ_BEGIN(TYPE)           \\")
-    lines.append("        BODY                      \\")
-    lines.append("    SKL_RFS_OBJ_END()")
+    lines.append("    SKL_RFS_REGISTER_BEGIN(TYPE) \\")
+    lines.append("        BODY                     \\")
+    lines.append("    SKL_RFS_REGISTER_END()")
     lines.append("")
 
     for i in range(1, count + 1):
@@ -61,8 +58,8 @@ def generate_header(count: int, fields_per_class: int, inheritance_chain: int) -
         lines.append("")
         lines.append(f"REFLECT_CLASS({cls},")
         for f_idx in range(fields_per_class):
-            lines.append(f"    RFS_OBJ_MEM({field_name(f_idx)})")
-        lines.append(f"    RFS_OBJ_MEM({checksum})")
+            lines.append(f"    SKL_RFS_PROPERTY({field_name(f_idx)})")
+        lines.append(f"    SKL_RFS_PROPERTY({checksum})")
         lines.append(")")
         lines.append("")
 
@@ -98,6 +95,12 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("    return oss.str();")
     lines.append("}")
     lines.append("")
+    lines.append("std::string_view to_std_view(URefl::string_view view) {")
+    lines.append(
+        "    return std::string_view(view.data(), view.size());"
+    )
+    lines.append("}")
+    lines.append("")
     lines.append("struct TimingSummary {")
     lines.append("    std::int64_t total_ns = 0;")
     lines.append("    std::int64_t metadata_check_ns = 0;")
@@ -121,17 +124,18 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
         "int validate_field(const MemberTraits& member, Obj& obj, std::int32_t expected,"
     )
     lines.append(
-        "                   std::size_t expected_offset, std::string_view expected_name,"
+        "                   std::size_t expected_offset, URefl::string_view actual_name,"
     )
     lines.append(
-        "                   std::string_view class_name, std::ofstream* meta_out,"
+        "                   URefl::string_view expected_name, URefl::string_view class_name,"
     )
-    lines.append("                   TimingSummary& summary) {")
+    lines.append(
+        "                   std::ofstream* meta_out, TimingSummary& summary) {"
+    )
     lines.append("    int errors = 0;")
     lines.append("    const auto begin = std::chrono::steady_clock::now();")
     lines.append("    const auto meta_begin = begin;")
-    lines.append("    const std::string_view member_name = member.getName();")
-    lines.append("    if (member_name != expected_name) ++errors;")
+    lines.append("    if (actual_name != expected_name) ++errors;")
     lines.append("    const auto meta_end = std::chrono::steady_clock::now();")
     lines.append("    const auto value_begin = meta_end;")
     lines.append("    const std::int32_t actual = obj.*member._ptr;")
@@ -158,9 +162,9 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("    summary.total_ns += total_ns;")
     lines.append("    ++summary.rows;")
     lines.append("    if (meta_out != nullptr && meta_out->is_open()) {")
-    lines.append("        (*meta_out) << class_name << ','")
+    lines.append("        (*meta_out) << to_std_view(class_name) << ','")
     lines.append("                    << \"field\" << ','")
-    lines.append("                    << member_name << ','")
+    lines.append("                    << to_std_view(actual_name) << ','")
     lines.append("                    << expected << ','")
     lines.append("                    << actual << ','")
     lines.append("                    << expected_offset << ','")
@@ -178,16 +182,16 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
         "int validate_checksum(const FuncTraits& func, Obj& obj, std::int64_t expected,"
     )
     lines.append(
-        "                      std::string_view expected_name, std::string_view class_name,"
+        "                      URefl::string_view actual_name, URefl::string_view expected_name,"
     )
     lines.append(
-        "                      std::ofstream* meta_out, TimingSummary& summary) {"
+        "                      URefl::string_view class_name, std::ofstream* meta_out,"
     )
+    lines.append("                      TimingSummary& summary) {")
     lines.append("    int errors = 0;")
     lines.append("    const auto begin = std::chrono::steady_clock::now();")
     lines.append("    const auto meta_begin = begin;")
-    lines.append("    const std::string_view name = func.getName();")
-    lines.append("    if (name != expected_name) ++errors;")
+    lines.append("    if (actual_name != expected_name) ++errors;")
     lines.append("    const auto meta_end = std::chrono::steady_clock::now();")
     lines.append("    const auto value_begin = meta_end;")
     lines.append("    const std::int64_t actual = (obj.*func._ptr)();")
@@ -210,9 +214,9 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("    summary.total_ns += total_ns;")
     lines.append("    ++summary.rows;")
     lines.append("    if (meta_out != nullptr && meta_out->is_open()) {")
-    lines.append("        (*meta_out) << class_name << ','")
+    lines.append("        (*meta_out) << to_std_view(class_name) << ','")
     lines.append("                    << \"function\" << ','")
-    lines.append("                    << name << ','")
+    lines.append("                    << to_std_view(actual_name) << ','")
     lines.append("                    << expected << ','")
     lines.append("                    << actual << ','")
     lines.append("                    << \"NA\" << ','")
@@ -243,15 +247,19 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
                 f"    errors += validate_field(Info::Registry::_{fname}, obj, {expected_val},"
             )
             lines.append(
-                f'                             offset_of_reflected(obj, &{cls}::{fname}), "{fname}",'
+                f'                             offset_of_reflected(obj, &{cls}::{fname}),'
+            )
+            lines.append(
+                f'                             Info::Registry::_{fname}.getName(), "{fname}",'
             )
             lines.append(f'                             "{cls}", meta_out, summary);')
         lines.append(
             f"    errors += validate_checksum(Info::Registry::_{checksum}, obj, {checksum_expected}LL,"
         )
         lines.append(
-            f'                              "{checksum}", "{cls}", meta_out, summary);'
+            f'                              Info::Registry::_{checksum}.getName(), "{checksum}",'
         )
+        lines.append(f'                              "{cls}", meta_out, summary);')
         lines.append("    return errors;")
         lines.append("}")
         lines.append("")
@@ -333,18 +341,22 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     return "\n".join(lines) + "\n"
 
 
-def generate_cmake() -> str:
-    return """cmake_minimum_required(VERSION 3.20)
+def generate_cmake(mics_dir: Path) -> str:
+    include_dir = (mics_dir / "include").as_posix()
+    hlmd_include_dir = (mics_dir / "HLMD").as_posix()
+    return f"""cmake_minimum_required(VERSION 3.20)
 project(ReflectionGarbageStress LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(reflect_stress main.cpp)
 target_include_directories(reflect_stress PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    "${{CMAKE_CURRENT_SOURCE_DIR}}"
+    "{include_dir}"
+    "{hlmd_include_dir}"
 )
 
 if (MINGW)
@@ -372,22 +384,22 @@ python tools/generate_stress_project.py --count {count} --fields-per-class {fiel
 ```
 
 ## 运行
+在当前目录执行：
 ```bash
-python stress_project_test/run_stress.py --generator "MinGW Makefiles"
+python run_stress.py
 ```
 
 常用参数：
+- `--build-dir`：构建目录（默认 `build`）
+- `--generator`：CMake 生成器（默认自动选择 Ninja / Unix Makefiles / MinGW Makefiles）
 - `--print-raw-output`：打印 configure/build/run 原始输出
 - `--print-summary`：打印解析后的关键指标
 - `--dump-runtime-metadata`：开启运行时逐类元数据写入
-- `--ftime-trace`：开启 clang -ftime-trace 并自动分析瓶颈
+- `--ftime-trace`：开启 clang `-ftime-trace` 并自动分析瓶颈
+- `--cxx-flags`：附加 C++ 编译参数（可重复）
+- `--linker-flags`：附加链接参数（可重复）
 - `--binary-arg xxx`：透传参数给 reflect_stress（可重复）
 - `--cmake-extra xxx`：附加 CMake 配置参数（可重复）
-
-## 快捷脚本
-- Windows CMD: `run_mingw.bat`
-- PowerShell: `run_stress.ps1`
-- Bash: `run_stress.sh`
 
 ## 报告
 每次运行会在 `reports/` 目录输出带时间戳的文件：
@@ -415,22 +427,22 @@ python tools/generate_stress_project.py --count {count} --fields-per-class {fiel
 ```
 
 ## Running
+From this directory:
 ```bash
-python stress_project_test/run_stress.py --generator "MinGW Makefiles"
+python run_stress.py
 ```
 
 Common options:
+- `--build-dir`: Build directory (default: `build`)
+- `--generator`: CMake generator (defaults to Ninja / Unix Makefiles / MinGW Makefiles)
 - `--print-raw-output`: Print raw configure/build/run output
 - `--print-summary`: Print parsed key metrics
 - `--dump-runtime-metadata`: Enable per-class runtime metadata dump
-- `--ftime-trace`: Enable clang -ftime-trace and auto-analyze bottlenecks
+- `--ftime-trace`: Enable clang `-ftime-trace` and auto-analyze bottlenecks
+- `--cxx-flags`: Extra C++ compile flags (repeatable)
+- `--linker-flags`: Extra linker flags (repeatable)
 - `--binary-arg xxx`: Forward argument to reflect_stress (repeatable)
 - `--cmake-extra xxx`: Extra CMake configure argument (repeatable)
-
-## Wrapper Scripts
-- Windows CMD: `run_mingw.bat`
-- PowerShell: `run_stress.ps1`
-- Bash: `run_stress.sh`
 
 ## Reports
 Each run produces timestamped files in the `reports/` directory:
@@ -501,12 +513,12 @@ def main() -> None:
     (output_dir / "main.cpp").write_text(
         generate_main_cpp(args.count, args.fields_per_class), encoding="utf-8"
     )
-    (output_dir / "CMakeLists.txt").write_text(generate_cmake(), encoding="utf-8")
-    tools_dir = Path(__file__).resolve().parent
-    shutil.copy(tools_dir / "run_stress.py", output_dir / "run_stress.py")
-    shutil.copy(tools_dir / "run_stress.bat", output_dir / "run_stress.bat")
-    shutil.copy(tools_dir / "run_stress.ps1", output_dir / "run_stress.ps1")
-    shutil.copy(tools_dir / "run_stress.sh", output_dir / "run_stress.sh")
+    mics_dir = Path(__file__).resolve().parent.parent
+    (output_dir / "CMakeLists.txt").write_text(generate_cmake(mics_dir), encoding="utf-8")
+    shutil.copy(
+        Path(__file__).resolve().parent / "run_stress.py",
+        output_dir / "run_stress.py",
+    )
     (output_dir / "README.md").write_text(
         generate_readme(
             args.count, args.fields_per_class, args.inheritance_chain, args.zh_cn

@@ -8,6 +8,8 @@ import json
 import math
 import os
 import platform
+import shlex
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -15,6 +17,12 @@ from pathlib import Path
 
 def timestamp() -> str:
     return dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+def default_generator() -> str:
+    if shutil.which("ninja"):
+        return "Ninja"
+    return "MinGW Makefiles" if os.name == "nt" else "Unix Makefiles"
 
 
 def run_cmd(cmd: list[str], cwd: Path, print_raw_output: bool) -> tuple[int, str, int]:
@@ -56,12 +64,32 @@ def parse_runtime_output(output: str) -> dict[str, str]:
         value = value.strip()
         if key in mapping:
             result[mapping[key]] = value
+
+    if "Verification passed" in output:
+        result["verification"] = "passed"
+    elif "Verification failed" in output:
+        result["verification"] = "failed"
     return result
 
 
-def resolve_binary_path(build_dir: Path, binary_name: str) -> Path:
+def resolve_binary_path(build_dir: Path, binary_name: str, build_type: str) -> Path:
     suffix = ".exe" if os.name == "nt" and not binary_name.endswith(".exe") else ""
-    return build_dir / f"{binary_name}{suffix}"
+    filename = f"{binary_name}{suffix}"
+    candidates = [
+        build_dir / filename,
+        build_dir / build_type / filename,
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    matches = sorted(
+        (path for path in build_dir.rglob(filename) if path.is_file()),
+        key=lambda path: path.stat().st_mtime,
+    )
+    if matches:
+        return matches[-1]
+    return candidates[0]
 
 
 def write_summary_csv(path: Path, rows: list[tuple[str, str]]) -> None:
@@ -369,10 +397,10 @@ def main() -> int:
         description="Cross-platform reflection stress runner."
     )
     parser.add_argument(
-        "--generator", default="MinGW Makefiles", help="CMake generator"
+        "--generator", default=default_generator(), help="CMake generator"
     )
     parser.add_argument("--build-type", default="Release", help="CMake build type")
-    parser.add_argument("--build-dir", default="build-mingw", help="Build directory")
+    parser.add_argument("--build-dir", default="build", help="Build directory")
     parser.add_argument(
         "--report-dir", default="reports", help="Report output directory"
     )
@@ -399,6 +427,18 @@ def main() -> int:
         "--ftime-trace",
         action="store_true",
         help="Enable clang -ftime-trace and auto analyze trace json",
+    )
+    parser.add_argument(
+        "--cxx-flags",
+        action="append",
+        default=[],
+        help="Extra C++ compiler flags passed through CMAKE_CXX_FLAGS (repeatable)",
+    )
+    parser.add_argument(
+        "--linker-flags",
+        action="append",
+        default=[],
+        help="Extra linker flags passed through CMAKE_EXE_LINKER_FLAGS (repeatable)",
     )
     parser.add_argument(
         "--binary-arg",
@@ -435,8 +475,20 @@ def main() -> int:
     ]
 
     cmake_extra_args = list(args.cmake_extra)
+
+    cxx_flags: list[str] = []
     if args.ftime_trace:
-        cmake_extra_args.append("-DCMAKE_CXX_FLAGS=-ftime-trace")
+        cxx_flags.append("-ftime-trace")
+    for raw_flags in args.cxx_flags:
+        cxx_flags.extend(shlex.split(raw_flags))
+    if cxx_flags:
+        cmake_extra_args.append(f"-DCMAKE_CXX_FLAGS={' '.join(cxx_flags)}")
+
+    linker_flags: list[str] = []
+    for raw_flags in args.linker_flags:
+        linker_flags.extend(shlex.split(raw_flags))
+    if linker_flags:
+        cmake_extra_args.append(f"-DCMAKE_EXE_LINKER_FLAGS={' '.join(linker_flags)}")
 
     configure_cmd = [
         "cmake",
@@ -449,7 +501,15 @@ def main() -> int:
         f"-DCMAKE_BUILD_TYPE={args.build_type}",
         *cmake_extra_args,
     ]
-    build_cmd = ["cmake", "--build", str(build_dir), "--", "-j", str(args.jobs)]
+    build_cmd = [
+        "cmake",
+        "--build",
+        str(build_dir),
+        "--config",
+        args.build_type,
+        "--parallel",
+        str(args.jobs),
+    ]
 
     configure_exit, configure_out, configure_ns = run_cmd(
         configure_cmd, project_dir, args.print_raw_output
@@ -492,7 +552,27 @@ def main() -> int:
         )
         return build_exit
 
-    binary_path = resolve_binary_path(build_dir, args.binary_name)
+    binary_path = resolve_binary_path(build_dir, args.binary_name, args.build_type)
+    if not binary_path.exists():
+        message = f"Built binary not found: {binary_path}"
+        print(f"[ERROR] {message}")
+        txt_lines.append(f"[ERROR] {message}")
+        write_summary_csv(
+            report_csv,
+            [
+                ("status", "binary_not_found"),
+                ("timestamp", ts),
+                ("configure_ns", str(configure_ns)),
+                ("build_ns", str(build_ns)),
+                ("run_exit", "1"),
+                ("binary_path", str(binary_path)),
+            ],
+        )
+        report_txt.write_text(
+            "\n".join(line for line in txt_lines if line), encoding="utf-8"
+        )
+        return 1
+
     run_cmd_args = [str(binary_path)]
     if args.dump_runtime_metadata:
         run_cmd_args.append("--dump-runtime-metadata")
@@ -501,6 +581,8 @@ def main() -> int:
         run_cmd_args, project_dir, args.print_raw_output
     )
     parsed = parse_runtime_output(run_out)
+
+    binary_size_bytes = binary_path.stat().st_size
 
     txt_lines.append("[RUN OUTPUT]")
     txt_lines.append(run_out.rstrip())
@@ -523,14 +605,18 @@ def main() -> int:
         ("timestamp", ts),
         ("toolchain_generator", args.generator),
         ("build_type", args.build_type),
+        ("build_dir", str(build_dir)),
         ("configure_ns", str(configure_ns)),
         ("build_ns", str(build_ns)),
         ("run_ns", str(run_ns)),
         ("pipeline_ns", str(pipeline_ns)),
         ("run_exit", str(run_exit)),
+        ("verification", parsed.get("verification", "NA")),
         ("print_raw_output", "1" if args.print_raw_output else "0"),
         ("dump_runtime_metadata", "1" if args.dump_runtime_metadata else "0"),
         ("ftime_trace", "1" if args.ftime_trace else "0"),
+        ("cxx_flags", " ".join(cxx_flags)),
+        ("linker_flags", " ".join(linker_flags)),
         ("validated_classes", parsed.get("validated_classes", "NA")),
         ("metadata_errors", parsed.get("metadata_errors", "NA")),
         (
@@ -543,6 +629,9 @@ def main() -> int:
         ("per_class_avg_ns", parsed.get("per_class_avg_ns", "NA")),
         ("runtime_metadata_enabled", parsed.get("runtime_metadata_enabled", "NA")),
         ("runtime_meta_report", parsed.get("runtime_meta_report", "NA")),
+        ("binary_name", args.binary_name),
+        ("binary_path", str(binary_path)),
+        ("binary_size_bytes", str(binary_size_bytes)),
         ("ftime_trace_json_count", trace_info["ftime_trace_json_count"]),
         ("ftime_trace_header_parse_us", trace_info["ftime_trace_header_parse_us"]),
         ("ftime_trace_consteval_us", trace_info["ftime_trace_consteval_us"]),
@@ -563,6 +652,9 @@ def main() -> int:
             f"[META] build_ns={build_ns}",
             f"[META] run_ns={run_ns}",
             f"[META] pipeline_ns={pipeline_ns}",
+            f"[META] binary_path={binary_path}",
+            f"[META] binary_size_bytes={binary_size_bytes}",
+            f"[META] verification={parsed.get('verification', 'NA')}",
             f"[META] print_raw_output={1 if args.print_raw_output else 0}",
             f"[META] dump_runtime_metadata={1 if args.dump_runtime_metadata else 0}",
             f"[META] ftime_trace={1 if args.ftime_trace else 0}",
