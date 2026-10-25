@@ -26,7 +26,7 @@
 
 #include "SKL/MICS/MICS.h"
 
-#include <cstdio>
+#include <stdio.h>
 #include <ostream>
 #include <string>
 #include <string_view>
@@ -51,7 +51,7 @@ public:
 
     void heal(int amount) {
         health += amount;
-        std::printf("    [Player::heal] +%d health -> %d\n", amount, health);
+        printf("    [Player::heal] +%d health -> %d\n", amount, health);
     }
 
     [[nodiscard]] bool isAlive() const { return health > 0; }
@@ -59,7 +59,7 @@ public:
     void takeDamage(int amount) {
         health -= amount;
         if (health < 0) health = 0;
-        std::printf("    [Player::takeDamage] -%d health -> %d\n", amount, health);
+        printf("    [Player::takeDamage] -%d health -> %d\n", amount, health);
     }
 };
 

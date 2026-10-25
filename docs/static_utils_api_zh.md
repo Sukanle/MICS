@@ -186,8 +186,8 @@ static_assert(offset.resize == 11);
 
 | 方法 | 返回值 | 说明 |
 |--------|---------|-------------|
-| `size()` | `std::size_t` | 元素个数 |
-| `capacity()` | `std::size_t` | 分配容量 |
+| `size()` | `size_t` | 元素个数 |
+| `capacity()` | `size_t` | 分配容量 |
 | `empty()` | `bool` | 是否为空 |
 | `operator[](i)` | `const T&` | 下标访问（无边界检查） |
 | `at(i)` | `const T&` | 下标访问（有边界检查） |
@@ -222,8 +222,8 @@ b.push_back(3);
 URefl::vector<int> v = std::move(b).build();
 
 // 只读访问
-for (std::size_t i = 0; i < v.size(); ++i) {
-    std::printf("%d\n", v[i]);
+for (size_t i = 0; i < v.size(); ++i) {
+    printf("%d\n", v[i]);
 }
 
 // 转换为 std::vector 进行外部操作

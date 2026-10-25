@@ -189,8 +189,8 @@ static_assert(offset.resize == 11);
 
 | Method              | Returns          | Description                          |
 | ------------------- | ---------------- | ------------------------------------ |
-| `size()`            | `std::size_t`    | Element count                        |
-| `capacity()`        | `std::size_t`    | Allocated capacity                   |
+| `size()`            | `size_t`    | Element count                        |
+| `capacity()`        | `size_t`    | Allocated capacity                   |
 | `empty()`           | `bool`           | Whether empty                        |
 | `operator[](i)`     | `const T&`       | Subscript access (no bounds check)   |
 | `at(i)`             | `const T&`       | Subscript access (with bounds check) |
@@ -226,8 +226,8 @@ b.push_back(3);
 URefl::vector<int> v = std::move(b).build();
 
 // Read-only access
-for (std::size_t i = 0; i < v.size(); ++i) {
-    std::printf("%d\n", v[i]);
+for (size_t i = 0; i < v.size(); ++i) {
+    printf("%d\n", v[i]);
 }
 
 // Convert to std::vector for external manipulation

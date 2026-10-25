@@ -39,7 +39,7 @@ MICS provides **zero-overhead compile-time static reflection** (field/method tra
 struct Person {
     std::string name;
     int age = 0;
-    void greet() const { std::printf("Hello, I'm %s\n", name.c_str()); }
+    void greet() const { printf("Hello, I'm %s\n", name.c_str()); }
 };
 
 // Register fields and methods at compile time

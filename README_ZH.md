@@ -39,7 +39,7 @@ MICS 在编译期提供零开销的静态反射（字段/方法遍历、类型�
 struct Person {
     std::string name;
     int age = 0;
-    void greet() const { std::printf("Hello, I'm %s\n", name.c_str()); }
+    void greet() const { printf("Hello, I'm %s\n", name.c_str()); }
 };
 
 // 在编译期注册字段和方法

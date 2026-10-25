@@ -31,7 +31,7 @@ def generate_header(count: int, fields_per_class: int, inheritance_chain: int) -
     lines: list[str] = []
     lines.append("#pragma once")
     lines.append('#include "SKL/MICS/MICS.h"')
-    lines.append("#include <cstdint>")
+    lines.append("#include <stdint.h>")
     lines.append("")
     lines.append("#define REFLECT_CLASS(TYPE, BODY) \\")
     lines.append("    SKL_RFS_REGISTER_BEGIN(TYPE) \\")
@@ -49,10 +49,10 @@ def generate_header(count: int, fields_per_class: int, inheritance_chain: int) -
         for f_idx in range(fields_per_class):
             fname = field_name(f_idx)
             init = i * 1000 + f_idx
-            lines.append(f"    std::int32_t {fname} = {init};")
+            lines.append(f"    int32_t {fname} = {init};")
         sum_expr = " + ".join(field_name(f_idx) for f_idx in range(fields_per_class))
-        lines.append(f"    [[nodiscard]] std::int64_t {checksum}() const noexcept {{")
-        lines.append(f"        return static_cast<std::int64_t>({sum_expr});")
+        lines.append(f"    [[nodiscard]] int64_t {checksum}() const noexcept {{")
+        lines.append(f"        return static_cast<int64_t>({sum_expr});")
         lines.append("    }")
         lines.append("};")
         lines.append("")
@@ -70,9 +70,9 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines: list[str] = []
     lines.append('#include "generated_classes.hpp"')
     lines.append("#include <chrono>")
-    lines.append("#include <cstdint>")
-    lines.append("#include <cstddef>")
-    lines.append("#include <cstdio>")
+    lines.append("#include <stdint.h>")
+    lines.append("#include <stddef.h>")
+    lines.append("#include <stdio.h>")
     lines.append("#include <ctime>")
     lines.append("#include <filesystem>")
     lines.append("#include <fstream>")
@@ -102,29 +102,29 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("}")
     lines.append("")
     lines.append("struct TimingSummary {")
-    lines.append("    std::int64_t total_ns = 0;")
-    lines.append("    std::int64_t metadata_check_ns = 0;")
-    lines.append("    std::int64_t value_check_ns = 0;")
-    lines.append("    std::int64_t rows = 0;")
+    lines.append("    int64_t total_ns = 0;")
+    lines.append("    int64_t metadata_check_ns = 0;")
+    lines.append("    int64_t value_check_ns = 0;")
+    lines.append("    int64_t rows = 0;")
     lines.append("};")
     lines.append("")
     lines.append("template<typename Obj, typename MemberType>")
     lines.append(
-        "std::size_t offset_of_reflected(const Obj& obj, MemberType Obj::* ptr) {"
+        "size_t offset_of_reflected(const Obj& obj, MemberType Obj::* ptr) {"
     )
     lines.append("    const auto* base = reinterpret_cast<const unsigned char*>(&obj);")
     lines.append(
         "    const auto* mem = reinterpret_cast<const unsigned char*>(&(obj.*ptr));"
     )
-    lines.append("    return static_cast<std::size_t>(mem - base);")
+    lines.append("    return static_cast<size_t>(mem - base);")
     lines.append("}")
     lines.append("")
     lines.append("template<typename MemberTraits, typename Obj>")
     lines.append(
-        "int validate_field(const MemberTraits& member, Obj& obj, std::int32_t expected,"
+        "int validate_field(const MemberTraits& member, Obj& obj, int32_t expected,"
     )
     lines.append(
-        "                   std::size_t expected_offset, URefl::string_view actual_name,"
+        "                   size_t expected_offset, URefl::string_view actual_name,"
     )
     lines.append(
         "                   URefl::string_view expected_name, URefl::string_view class_name,"
@@ -138,22 +138,22 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("    if (actual_name != expected_name) ++errors;")
     lines.append("    const auto meta_end = std::chrono::steady_clock::now();")
     lines.append("    const auto value_begin = meta_end;")
-    lines.append("    const std::int32_t actual = obj.*member._ptr;")
+    lines.append("    const int32_t actual = obj.*member._ptr;")
     lines.append(
-        "    const std::size_t actual_offset = offset_of_reflected(obj, member._ptr);"
+        "    const size_t actual_offset = offset_of_reflected(obj, member._ptr);"
     )
     lines.append("    if (actual != expected) ++errors;")
     lines.append("    if (actual_offset != expected_offset) ++errors;")
     lines.append("    const auto value_end = std::chrono::steady_clock::now();")
-    lines.append("    const std::int64_t meta_ns =")
+    lines.append("    const int64_t meta_ns =")
     lines.append(
         "        std::chrono::duration_cast<std::chrono::nanoseconds>(meta_end - meta_begin).count();"
     )
-    lines.append("    const std::int64_t value_ns =")
+    lines.append("    const int64_t value_ns =")
     lines.append(
         "        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - value_begin).count();"
     )
-    lines.append("    const std::int64_t total_ns =")
+    lines.append("    const int64_t total_ns =")
     lines.append(
         "        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - begin).count();"
     )
@@ -179,7 +179,7 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("")
     lines.append("template<typename FuncTraits, typename Obj>")
     lines.append(
-        "int validate_checksum(const FuncTraits& func, Obj& obj, std::int64_t expected,"
+        "int validate_checksum(const FuncTraits& func, Obj& obj, int64_t expected,"
     )
     lines.append(
         "                      URefl::string_view actual_name, URefl::string_view expected_name,"
@@ -194,18 +194,18 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("    if (actual_name != expected_name) ++errors;")
     lines.append("    const auto meta_end = std::chrono::steady_clock::now();")
     lines.append("    const auto value_begin = meta_end;")
-    lines.append("    const std::int64_t actual = (obj.*func._ptr)();")
+    lines.append("    const int64_t actual = (obj.*func._ptr)();")
     lines.append("    if (actual != expected) ++errors;")
     lines.append("    const auto value_end = std::chrono::steady_clock::now();")
-    lines.append("    const std::int64_t meta_ns =")
+    lines.append("    const int64_t meta_ns =")
     lines.append(
         "        std::chrono::duration_cast<std::chrono::nanoseconds>(meta_end - meta_begin).count();"
     )
-    lines.append("    const std::int64_t value_ns =")
+    lines.append("    const int64_t value_ns =")
     lines.append(
         "        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - value_begin).count();"
     )
-    lines.append("    const std::int64_t total_ns =")
+    lines.append("    const int64_t total_ns =")
     lines.append(
         "        std::chrono::duration_cast<std::chrono::nanoseconds>(value_end - begin).count();"
     )
@@ -284,7 +284,7 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
     lines.append("        meta_out.open(meta_path, std::ios::out | std::ios::trunc);")
     lines.append("        if (!meta_out.is_open()) {")
     lines.append(
-        '            std::printf("Failed to open metadata report: %s\\n", meta_path.c_str());'
+        '            printf("Failed to open metadata report: %s\\n", meta_path.c_str());'
     )
     lines.append("            return 2;")
     lines.append("        }")
@@ -298,42 +298,42 @@ def generate_main_cpp(count: int, fields_per_class: int) -> str:
         lines.append(
             f"    total_errors += validate_{i:04d}(dump_runtime_metadata ? &meta_out : nullptr, summary);"
         )
-    lines.append("    const std::int64_t total_ns = summary.total_ns;")
-    lines.append("    const std::int64_t metadata_ns = summary.metadata_check_ns;")
-    lines.append("    const std::int64_t value_ns = summary.value_check_ns;")
+    lines.append("    const int64_t total_ns = summary.total_ns;")
+    lines.append("    const int64_t metadata_ns = summary.metadata_check_ns;")
+    lines.append("    const int64_t value_ns = summary.value_check_ns;")
     lines.append(
-        "    const std::int64_t overhead_ns = total_ns - metadata_ns - value_ns;"
+        "    const int64_t overhead_ns = total_ns - metadata_ns - value_ns;"
     )
     lines.append("    const long long per_class_avg_ns =")
     lines.append(
         "        summary.rows == 0 ? 0 : static_cast<long long>(total_ns / summary.rows);"
     )
     lines.append("    if (meta_out.is_open()) meta_out.close();")
-    lines.append(f'    std::printf("Validated classes: {count}\\n");')
-    lines.append('    std::printf("Metadata errors: %d\\n", total_errors);')
+    lines.append(f'    printf("Validated classes: {count}\\n");')
+    lines.append('    printf("Metadata errors: %d\\n", total_errors);')
     lines.append(
-        '    std::printf("Runtime validation total ns: %lld\\n", static_cast<long long>(total_ns));'
+        '    printf("Runtime validation total ns: %lld\\n", static_cast<long long>(total_ns));'
     )
     lines.append(
-        '    std::printf("Runtime metadata check ns: %lld\\n", static_cast<long long>(metadata_ns));'
+        '    printf("Runtime metadata check ns: %lld\\n", static_cast<long long>(metadata_ns));'
     )
     lines.append(
-        '    std::printf("Runtime value check ns: %lld\\n", static_cast<long long>(value_ns));'
+        '    printf("Runtime value check ns: %lld\\n", static_cast<long long>(value_ns));'
     )
     lines.append(
-        '    std::printf("Runtime overhead ns: %lld\\n", static_cast<long long>(overhead_ns));'
+        '    printf("Runtime overhead ns: %lld\\n", static_cast<long long>(overhead_ns));'
     )
-    lines.append('    std::printf("Per class avg ns: %lld\\n", per_class_avg_ns);')
+    lines.append('    printf("Per class avg ns: %lld\\n", per_class_avg_ns);')
     lines.append(
-        '    std::printf("Runtime metadata enabled: %d\\n", dump_runtime_metadata ? 1 : 0);'
+        '    printf("Runtime metadata enabled: %d\\n", dump_runtime_metadata ? 1 : 0);'
     )
     lines.append(
-        '    std::printf("Runtime metadata report: %s\\n", meta_path.c_str());'
+        '    printf("Runtime metadata report: %s\\n", meta_path.c_str());'
     )
     lines.append("    if (total_errors == 0) {")
-    lines.append('        std::printf("Verification passed\\n");')
+    lines.append('        printf("Verification passed\\n");')
     lines.append("    } else {")
-    lines.append('        std::printf("Verification failed\\n");')
+    lines.append('        printf("Verification failed\\n");')
     lines.append("    }")
     lines.append("    return total_errors == 0 ? 0 : 1;")
     lines.append("}")
