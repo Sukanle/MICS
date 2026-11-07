@@ -9,6 +9,7 @@
 ![Version](https://img.shields.io/badge/Version-1.0.0-green)
 
 English | [中文](README_ZH.md)
+
 </div>
 
 MICS provides **zero-overhead compile-time static reflection** (field/method traversal, type list functional programming) and **runtime dynamic reflection** (global registry, type-erased accessors, method invokers) over a unified type metadata framework. Its underlying ABI-stable container (`URefl::vector<T>`) ensures cross-DLL/SO binary compatibility.

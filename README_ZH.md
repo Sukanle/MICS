@@ -9,16 +9,17 @@
 ![Version](https://img.shields.io/badge/Version-1.0.0-green)
 
 [English](README.md) | 中文
+
 </div>
 
 MICS 在编译期提供零开销的静态反射（字段/方法遍历、类型列表函数式操作），在运行时提供基于全局注册表的动态类型查询（类型擦除访问器、方法调用器）。其底层以 ABI 稳定容器（`URefl::vector<T>`）承载元数据，确保跨 DLL/SO 边界二进制兼容。
 
 ### 用户别名
 
-| 别名    | 命名空间      | 说明                                   |
-| ------- | ------------- | -------------------------------------- |
-| `SRefl` | `skl::mics::ct`    | 编译期静态反射（Static Reflection）    |
-| `DRefl` | `skl::mics::rt`    | 运行时动态反射（Dynamic Reflection）   |
+| 别名    | 命名空间          | 说明                                          |
+| ------- | ----------------- | --------------------------------------------- |
+| `SRefl` | `skl::mics::ct`   | 编译期静态反射（Static Reflection）           |
+| `DRefl` | `skl::mics::rt`   | 运行时动态反射（Dynamic Reflection）          |
 | `URefl` | `skl::mics::util` | 定长数组与 ABI 稳定工具（Utility Reflection） |
 
 ## 特性
@@ -159,28 +160,28 @@ constexpr uint32_t id32 = SKL_REFT_HASH32("Player.Health");
 
 ```
 MICS/
-├── include/SKL/MICS/        
+├── include/SKL/MICS/
 │   ├── MICS.h               # 主入口头文件（包含 ct + rt）
 │   ├── Metadata.h           # 元数据系统（MetaEntry、MetaMode、SKL_REFT_HASH、StringTable）
 │   ├── CT/                  # 编译期静态反射（skl::mics::ct / SRefl）
-│   │   ├── Reflect.h        # 公共 API 与 field_traits、TypeInfo  
-│   │   ├── BaseReflect.h    # __base_field_traits（变量/函数分发）  
-│   │   ├── BaseFP.h         # 底层类型列表操作  
-│   │   ├── FP.h             # 公共类型列表 API（skl::mics::ct::fp）  
-│   │   ├── VarTraits.h      # 变量/字段萃取  
-│   │   ├── FnTraits.h       # 函数/方法萃取（修饰符、哈希）  
-│   │   ├── EnumTraits.h     # 枚举萃取与有作用域枚举检测  
-│   │   ├── Config.h         # type_list、template_depth、is_virtual_base_of  
-│   │   └── StringTraits.h   # 非类型模板参数字符串支持  
+│   │   ├── Reflect.h        # 公共 API 与 field_traits、TypeInfo
+│   │   ├── BaseReflect.h    # __base_field_traits（变量/函数分发）
+│   │   ├── BaseFP.h         # 底层类型列表操作
+│   │   ├── FP.h             # 公共类型列表 API（skl::mics::ct::fp）
+│   │   ├── VarTraits.h      # 变量/字段萃取
+│   │   ├── FnTraits.h       # 函数/方法萃取（修饰符、哈希）
+│   │   ├── EnumTraits.h     # 枚举萃取与有作用域枚举检测
+│   │   ├── Config.h         # type_list、template_depth、is_virtual_base_of
+│   │   └── StringTraits.h   # 非类型模板参数字符串支持
 │   ├── rt/                  # 运行时动态反射（skl::mics::rt / DRefl）
-│   │   ├── Reflect.h        # 公共 API、注册宏、type_id_of  
-│   │   ├── Config.h         # TypeId、Kind、FieldKind、Visibility 枚举  
-│   │   ├── TypeInfo.h       # TypeInfo：聚合描述符（字段/方法/基类）  
-│   │   ├── FieldInfo.h      # FieldInfo + FieldAccessor（getter/setter）  
-│   │   ├── FnInfo.h         # FnInfo + MethodInvoker + ParamInfo  
-│   │   ├── EnumInfo.h       # EnumInfo + EnumEntry  
-│   │   ├── Any.h            # Any：类型擦除值容器（SBO 优化）  
-│   │   └── Registry.h       # Registry：全局单例类型注册表  
+│   │   ├── Reflect.h        # 公共 API、注册宏、type_id_of
+│   │   ├── Config.h         # TypeId、Kind、FieldKind、Visibility 枚举
+│   │   ├── TypeInfo.h       # TypeInfo：聚合描述符（字段/方法/基类）
+│   │   ├── FieldInfo.h      # FieldInfo + FieldAccessor（getter/setter）
+│   │   ├── FnInfo.h         # FnInfo + MethodInvoker + ParamInfo
+│   │   ├── EnumInfo.h       # EnumInfo + EnumEntry
+│   │   ├── Any.h            # Any：类型擦除值容器（SBO 优化）
+│   │   └── Registry.h       # Registry：全局单例类型注册表
 │   └── util/                ## 共享工具（skl::mics::util / URefl）
 │       ├── Hash.h           # FNV-1a 哈希函数、调用约定标签
 │       ├── TypeHash.h       # 编译期类型 → 哈希映射

@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "SKL/MICS/Util/StringView.h"   // IWYU pragma: keep
-#include "SKL/MICS/RT/TypeInfo.h"        // IWYU pragma: keep
+#include "SKL/MICS/RT/TypeInfo.h"       // IWYU pragma: keep
 
 namespace skl::mics::rt {
 

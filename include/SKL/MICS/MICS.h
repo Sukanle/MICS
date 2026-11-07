@@ -30,8 +30,8 @@
 #include "SKL/MICS/CT/Reflect.h"   // IWYU pragma: keep
 #include "SKL/MICS/RT/Reflect.h"   // IWYU pragma: keep
 
-namespace SRefl = skl::mics::ct;      // NOLINT
-namespace DRefl = skl::mics::rt;      // NOLINT
+namespace SRefl = skl::mics::ct;     // NOLINT
+namespace DRefl = skl::mics::rt;     // NOLINT
 namespace URefl = skl::mics::util;   // NOLINT
 
 #define SKL_RFS_MAKE_FIELD_TRAITS(type, VAR) SKL_RFS_MAKE_##type##_FIELD_TRAITS(VAR)

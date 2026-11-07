@@ -54,8 +54,7 @@ constexpr auto combined = URefl::mix(h, URefl::cstr64("::field")); // combine
 | `type_tag<T>`             | struct               | User-extensible tag with `STATIC_TYPE_TAG(T, tag)` macro |
 | `STATIC_TYPE_TAG(T, tag)` | macro                | Register a custom hash tag for user type `T`             |
 
-**Built-in type tags:**
-`void`, `bool`, `char`, `int8_t`, `uint8_t`, `int16_t`, `uint16_t`, `int32_t`, `uint32_t`, `long`, `unsigned long`, `int64_t`, `uint64_t`, `float`, `double`, `long double`, `char8_t`, `char16_t`, `char32_t`, `wchar_t`
+**Built-in type tags:** `void`, `bool`, `char`, `int8_t`, `uint8_t`, `int16_t`, `uint16_t`, `int32_t`, `uint32_t`, `long`, `unsigned long`, `int64_t`, `uint64_t`, `float`, `double`, `long double`, `char8_t`, `char16_t`, `char32_t`, `wchar_t`
 
 **Pointer/Reference derivation:**
 
@@ -79,19 +78,19 @@ STATIC_TYPE_TAG(MyStruct, "MyStruct");
 
 `URefl::array<T, Count>` is a minimal aggregate over a C array. It has no allocator, no bounds checking and no dependency on `std::array`; every operation is `constexpr`, so it can carry inline TypeID lists, method-signature lists and zero-based slot tables.
 
-| Symbol | Description |
-| ------ | ----------- |
-| `array<T, Count = 0>` | Aggregate with a public `T values[Count == 0 ? 1 : Count]`; `size()` returns `Count` |
-| `array{...}` | Deduction guide; deduces `T` and the element count from a braced list |
-| `array{}` | Deduction guide for the empty form: `array<empty_element, 0>` |
-| `empty_element` | Tag type with always-equal comparison, used by the empty CTAD form |
-| `data()` | Pointer to the first element; valid for the array's lifetime |
-| `size()` | `static constexpr size_t`; returns `Count` |
-| `operator[](i)` | Unchecked element access, mutable and const overloads |
-| `begin()` / `end()` | Pointer iterators, mutable and const overloads |
-| `operator==` / `operator!=` | `constexpr` element-wise comparison; requires `T::operator==` |
-| `make_index_sequence<T, N, Start>(std::index_sequence)` | Builds `T{Start, Start + 1, ...}` for the supplied index sequence |
-| `make_iota<T, N, Start = 1>()` | Builds `T{Start, ..., Start + N - 1}`; the default start is **1**, pass `0` for zero-based slots |
+| Symbol                                                  | Description                                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `array<T, Count = 0>`                                   | Aggregate with a public `T values[Count == 0 ? 1 : Count]`; `size()` returns `Count`             |
+| `array{...}`                                            | Deduction guide; deduces `T` and the element count from a braced list                            |
+| `array{}`                                               | Deduction guide for the empty form: `array<empty_element, 0>`                                    |
+| `empty_element`                                         | Tag type with always-equal comparison, used by the empty CTAD form                               |
+| `data()`                                                | Pointer to the first element; valid for the array's lifetime                                     |
+| `size()`                                                | `static constexpr size_t`; returns `Count`                                                       |
+| `operator[](i)`                                         | Unchecked element access, mutable and const overloads                                            |
+| `begin()` / `end()`                                     | Pointer iterators, mutable and const overloads                                                   |
+| `operator==` / `operator!=`                             | `constexpr` element-wise comparison; requires `T::operator==`                                    |
+| `make_index_sequence<T, N, Start>(std::index_sequence)` | Builds `T{Start, Start + 1, ...}` for the supplied index sequence                                |
+| `make_iota<T, N, Start = 1>()`                          | Builds `T{Start, ..., Start + N - 1}`; the default start is **1**, pass `0` for zero-based slots |
 
 **Basic use:**
 
@@ -189,8 +188,8 @@ static_assert(offset.resize == 11);
 
 | Method              | Returns          | Description                          |
 | ------------------- | ---------------- | ------------------------------------ |
-| `size()`            | `size_t`    | Element count                        |
-| `capacity()`        | `size_t`    | Allocated capacity                   |
+| `size()`            | `size_t`         | Element count                        |
+| `capacity()`        | `size_t`         | Allocated capacity                   |
 | `empty()`           | `bool`           | Whether empty                        |
 | `operator[](i)`     | `const T&`       | Subscript access (no bounds check)   |
 | `at(i)`             | `const T&`       | Subscript access (with bounds check) |

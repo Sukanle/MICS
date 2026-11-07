@@ -18,10 +18,7 @@
 #   target_link_libraries(my_target PRIVATE MICS::MICS)
 
 cmake_minimum_required(VERSION 3.20)
-project(
-    MICS
-    VERSION 1.0.0
-    LANGUAGES CXX)
+project(MICS VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -83,11 +80,7 @@ if(MICS_INSTALL)
     install(DIRECTORY ${MICS_INCLUDE_DIR}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(DIRECTORY ${MICS_HLMD_INCLUDE_DIR}/SKL/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SKL)
 
-    install(
-        EXPORT MICSTargets
-        FILE MICSTargets.cmake
-        NAMESPACE MICS::
-        DESTINATION ${MICS_CMAKE_INSTALL_DIR})
+    install(EXPORT MICSTargets FILE MICSTargets.cmake NAMESPACE MICS:: DESTINATION ${MICS_CMAKE_INSTALL_DIR})
 
     configure_package_config_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/cmake/MICSConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/MICSConfig.cmake
@@ -97,10 +90,12 @@ if(MICS_INSTALL)
     write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/MICSConfigVersion.cmake
         VERSION ${PROJECT_VERSION}
-        COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
+        COMPATIBILITY SameMajorVersion
+        ARCH_INDEPENDENT)
 
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MICSConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/MICSConfigVersion.cmake
-            DESTINATION ${MICS_CMAKE_INSTALL_DIR})
+    install(
+        FILES ${CMAKE_CURRENT_BINARY_DIR}/MICSConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/MICSConfigVersion.cmake
+        DESTINATION ${MICS_CMAKE_INSTALL_DIR})
 
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/licenses/MICS)
 endif()

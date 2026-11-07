@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 #include "SKL/MICS/Util/Vector.h"   // IWYU pragma: keep
-#include "SKL/MICS/RT/Config.h"      // IWYU pragma: keep
+#include "SKL/MICS/RT/Config.h"     // IWYU pragma: keep
 
 namespace skl::mics::rt {
 

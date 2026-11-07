@@ -24,7 +24,7 @@
 #include <type_traits>
 
 #include "SKL/MICS/Util/Hash.h"   // IWYU pragma: keep
-#include "SKL/MICS/RT/Config.h"    // IWYU pragma: keep
+#include "SKL/MICS/RT/Config.h"   // IWYU pragma: keep
 
 namespace skl::mics::util {
 
@@ -33,10 +33,10 @@ struct type_tag {
     static constexpr bool defined = false;
 };
 
-#define STATIC_TYPE_TAG(T, tag)                                                            \
-    template<>                                                                             \
-    struct skl::mics::util::type_tag<T> {                                                 \
-        static constexpr bool defined = true;                                              \
+#define STATIC_TYPE_TAG(T, tag)                                                          \
+    template<>                                                                           \
+    struct skl::mics::util::type_tag<T> {                                                \
+        static constexpr bool defined = true;                                            \
         static constexpr skl::mics::util::hash64_t value = skl::mics::util::cstr64(tag); \
     }
 

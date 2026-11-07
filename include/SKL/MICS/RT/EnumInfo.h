@@ -21,7 +21,7 @@
 #include <utility>
 
 #include "SKL/MICS/Util/StringView.h"   // IWYU pragma: keep
-#include "SKL/MICS/Util/Vector.h"        // IWYU pragma: keep
+#include "SKL/MICS/Util/Vector.h"       // IWYU pragma: keep
 
 #include "SKL/MICS/RT/Config.h"   // IWYU pragma: keep
 
@@ -46,8 +46,7 @@ struct EnumInfo {
         , entries(skl::mics::util::vector_empty)
         , is_scoped(false) {}
 
-    EnumInfo(
-        const char *n, TypeId tid, TypeId utid, skl::mics::util::vector<EnumEntry> e, bool scoped = false) noexcept
+    EnumInfo(const char *n, TypeId tid, TypeId utid, skl::mics::util::vector<EnumEntry> e, bool scoped = false) noexcept
         : name(n)
         , type_id(tid)
         , underlying_type_id(utid)
