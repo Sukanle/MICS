@@ -62,15 +62,15 @@ template<typename T, typename Class = void, SKL_DEFAULT_TEMPLATE_STRING(Name, ""
 struct field_traits : __base_field_traits<T, is_Kind<T>(), Class, Name> {
     using traits = __base_field_traits<T, is_Kind<T>(), Class, Name>;
     explicit field_traits() = default;
-    [[nodiscard]] consteval skl::mics::util::string_view getName() const { return _name; }
+    [[nodiscard]] SKL_CONSTEVAL skl::mics::util::string_view getName() const { return _name; }
     explicit field_traits(T &ptr, skl::mics::util::string_view name = "")
         : __base_field_traits<T, is_Kind<T>(), Class, Name>{ptr}
         , _name(name) {}
-    explicit consteval field_traits(T &&ptr, skl::mics::util::string_view name = "")
+    explicit SKL_CONSTEVAL field_traits(T &&ptr, skl::mics::util::string_view name = "")
         : __base_field_traits<T, is_Kind<T>(), Class, Name>{std::move(ptr)}
         , _name(name) {}
 
-    [[nodiscard]] static consteval skl::mics::util::string_view from_TempName() {
+    [[nodiscard]] static SKL_CONSTEVAL skl::mics::util::string_view from_TempName() {
 #if !SKL_TEMPLATE_STRING_SUPPORTED
         static_assert(Name != nullptr,
             "This function [SRef::field_traits::from_TempName] must be "
@@ -87,7 +87,7 @@ private:
 };
 
 template<typename T>
-consteval auto type_info() {
+SKL_CONSTEVAL auto type_info() {
     return TypeInfo<T>{};
 }
 }   // namespace skl::mics::ct

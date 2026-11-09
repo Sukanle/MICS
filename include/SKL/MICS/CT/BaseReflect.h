@@ -28,7 +28,7 @@ enum class Kind : uint8_t {
     NonStaticMem_Fn,
 };
 template<typename T>
-consteval Kind is_Kind() {
+SKL_CONSTEVAL Kind is_Kind() {
     if constexpr (std::is_member_function_pointer_v<T>)
         return Kind::NonStaticMem_Fn;
     else if constexpr (std::is_member_object_pointer_v<T>)
@@ -44,9 +44,9 @@ template<typename T, typename Class, SKL_NORMAL_TEMPLATE_STRING(Name)>
 struct __base_field_traits<T, Kind::FreeOrStatic_Var, Class, Name> : var_traits<T, Name> {
     using traits = var_traits<T, Name>;
 
-    [[nodiscard]] consteval bool is_member() const { return traits::is_member; }
-    [[nodiscard]] consteval bool is_function() const { return false; }
-    [[nodiscard]] consteval bool is_variable() const { return true; }
+    [[nodiscard]] SKL_CONSTEVAL bool is_member() const { return traits::is_member; }
+    [[nodiscard]] SKL_CONSTEVAL bool is_function() const { return false; }
+    [[nodiscard]] SKL_CONSTEVAL bool is_variable() const { return true; }
     explicit __base_field_traits(typename traits::type &ptr)
         : _ptr(ptr) {}
     explicit __base_field_traits(typename traits::type &&ptr)
@@ -59,11 +59,11 @@ template<typename T, typename Class, SKL_NORMAL_TEMPLATE_STRING(Name)>
 struct __base_field_traits<T, Kind::NonStaticMem_Var, Class, Name> : var_traits<T, Name> {
     using traits = var_traits<T, Name>;
 
-    [[nodiscard]] static consteval bool is_member() { return true; }
-    [[nodiscard]] static consteval bool is_function() { return false; }
-    [[nodiscard]] static consteval bool is_variable() { return true; }
-    [[nodiscard]] static consteval bool is_static() { return false; }
-    explicit consteval __base_field_traits(typename traits::m_var_ptr &&ptr)
+    [[nodiscard]] static SKL_CONSTEVAL bool is_member() { return true; }
+    [[nodiscard]] static SKL_CONSTEVAL bool is_function() { return false; }
+    [[nodiscard]] static SKL_CONSTEVAL bool is_variable() { return true; }
+    [[nodiscard]] static SKL_CONSTEVAL bool is_static() { return false; }
+    explicit SKL_CONSTEVAL __base_field_traits(typename traits::m_var_ptr &&ptr)
         : _ptr(std::move(ptr)) {}
 
     typename traits::m_var_ptr _ptr;
@@ -73,10 +73,10 @@ template<typename T, typename Class, SKL_NORMAL_TEMPLATE_STRING(Name)>
 struct __base_field_traits<T, Kind::FreeOrStatic_Fn, Class, Name> : fn_traits<T, Class, Name> {
     using traits = fn_traits<T, Class, Name>;
 
-    [[nodiscard]] consteval static bool is_member() { return traits::is_member; }
-    [[nodiscard]] consteval static bool is_function() { return true; }
-    [[nodiscard]] consteval static bool is_variable() { return false; }
-    [[nodiscard]] consteval static template_depth params_count() { return traits::params_count; }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_member() { return traits::is_member; }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_function() { return true; }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_variable() { return false; }
+    [[nodiscard]] SKL_CONSTEVAL static template_depth params_count() { return traits::params_count; }
     explicit __base_field_traits(typename traits::fn_ptr &&ptr)
         : _ptr(std::move(ptr)) {}
 
@@ -86,17 +86,17 @@ template<typename T, typename Class, SKL_NORMAL_TEMPLATE_STRING(Name)>
 struct __base_field_traits<T, Kind::NonStaticMem_Fn, Class, Name> : fn_traits<T, Class, Name> {
     using traits = fn_traits<T, Class, Name>;
 
-    [[nodiscard]] consteval static bool is_member() { return traits::is_member; }
-    [[nodiscard]] consteval static bool is_static() { return traits::is_static; }
-    [[nodiscard]] consteval static bool is_const() { return (traits::modifie & fn_qualify::SREFL_CONST); }
-    [[nodiscard]] consteval static bool is_volatile() { return (traits::modifie & fn_qualify::SREFL_VOLATILE); }
-    [[nodiscard]] consteval static bool is_lvalue() { return (traits::modifie & fn_qualify::SREFL_LVALUE); }
-    [[nodiscard]] consteval static bool is_rvalue() { return (traits::modifie & fn_qualify::SREFL_RVALUE); }
-    [[nodiscard]] consteval static bool is_noexcept() { return (traits::modifie & fn_qualify::SREFL_NOEXCEPT); }
-    [[nodiscard]] consteval static bool is_function() { return true; }
-    [[nodiscard]] consteval static bool is_variable() { return false; }
-    [[nodiscard]] consteval static template_depth params_count() { return traits::params_count; }
-    explicit consteval __base_field_traits(typename traits::m_fn_ptr &&ptr)
+    [[nodiscard]] SKL_CONSTEVAL static bool is_member() { return traits::is_member; }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_static() { return traits::is_static; }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_const() { return (traits::modifie & fn_qualify::SREFL_CONST); }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_volatile() { return (traits::modifie & fn_qualify::SREFL_VOLATILE); }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_lvalue() { return (traits::modifie & fn_qualify::SREFL_LVALUE); }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_rvalue() { return (traits::modifie & fn_qualify::SREFL_RVALUE); }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_noexcept() { return (traits::modifie & fn_qualify::SREFL_NOEXCEPT); }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_function() { return true; }
+    [[nodiscard]] SKL_CONSTEVAL static bool is_variable() { return false; }
+    [[nodiscard]] SKL_CONSTEVAL static template_depth params_count() { return traits::params_count; }
+    explicit SKL_CONSTEVAL __base_field_traits(typename traits::m_fn_ptr &&ptr)
         : _ptr(std::move(ptr)) {}
 
     typename traits::m_fn_ptr _ptr;

@@ -16,8 +16,10 @@
 #pragma once
 
 #include <string_view>   // IWYU pragma: keep
-#ifndef __cpp_consteval
-#  define consteval constexpr
+#if defined(__cpp_consteval)
+#  define SKL_CONSTEVAL consteval
+#else
+#  define SKL_CONSTEVAL constexpr
 #endif
 
 #if defined(__cpp_nontype_template_args) && __cpp_nontype_template_args >= 201'911L
@@ -40,9 +42,9 @@ struct template_string {
     static_assert(N <= MAX_VARNAME_SIZE,
         "Variable name exceeds maximum allowed length "
         "of " NUM2STR(MAX_VARNAME_SIZE_CONIG));
-    consteval template_string(const char (&str)[N]) { std::copy(str, str + N, _data); }
-    [[nodiscard]] consteval const char *data() const noexcept { return _data; }
-    [[nodiscard]] consteval uint8_t size() const noexcept { return N - 1; }
+    SKL_CONSTEVAL template_string(const char (&str)[N]) { std::copy(str, str + N, _data); }
+    [[nodiscard]] SKL_CONSTEVAL const char *data() const noexcept { return _data; }
+    [[nodiscard]] SKL_CONSTEVAL uint8_t size() const noexcept { return N - 1; }
     char _data[N];
 };
 #  define SKL_DEFAULT_TEMPLATE_STRING(name, str) \
@@ -50,7 +52,7 @@ struct template_string {
 #  define SKL_NORMAL_TEMPLATE_STRING(name) skl::mics::ct::template_string name
 #  define SKL_MAKE_TEMPLATE_STRING(str) , str
 template<template_string Name>
-consteval auto NameAccessor() {
+SKL_CONSTEVAL auto NameAccessor() {
     return Name.data();
 }
 #else
@@ -58,7 +60,7 @@ consteval auto NameAccessor() {
 #  define SKL_NORMAL_TEMPLATE_STRING(name) const char *name
 #  define SKL_MAKE_TEMPLATE_STRING(str)
 template<const char *Name>
-consteval const char *NameAccessor() {
+SKL_CONSTEVAL const char *NameAccessor() {
     return Name;
 }
 #endif
