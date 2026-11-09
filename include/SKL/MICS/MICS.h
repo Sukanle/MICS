@@ -54,7 +54,7 @@ namespace URefl = skl::mics::util;   // NOLINT
 #define SKL_RFS_ENUM_BEGIN(TYPE)                                                                                 \
     template<>                                                                                                   \
     struct SRefl::TypeInfo<TYPE> : SRefl::enum_traits<TYPE> {                                                    \
-        using traits = enum_traits<TYPE>;                                                                        \
+        using traits = SRefl::enum_traits<TYPE>;                                                                 \
         using enum_t = traits::type;                                                                             \
         static constexpr URefl::string_view _name = traits::is_scoped ? #TYPE " [enum class]" : #TYPE " [enum]"; \
         static constexpr traits::Entry list[] = {
